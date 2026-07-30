@@ -156,6 +156,18 @@ export interface Review {
   createdAt: string;
 }
 
+export interface Notification {
+  id: string;
+  recipientType: 'USER' | 'ADMIN';
+  recipientId?: string;
+  title: string;
+  message: string;
+  type: 'ORDER_STATUS' | 'SYSTEM' | 'LOW_STOCK' | 'REVIEW';
+  isRead: boolean;
+  link?: string;
+  createdAt: string;
+}
+
 export const HERO_SLIDES: HeroSlide[] = [
   {
     id: 'slide-1',

@@ -3,6 +3,12 @@ const router = express.Router();
 const { Order, Product } = require('../models');
 const { verifyAdminToken } = require('../middleware');
 const { isDbReady, memoryOrders, memoryProducts } = require('../store');
+const { 
+  sendOrderConfirmationEmail, 
+  sendOrderDispatchEmail, 
+  triggerLowStockNotification, 
+  triggerNewOrderAdminNotification 
+} = require('../services/notificationService');
 
 // GET all orders
 router.get('/', verifyAdminToken, async (req, res) => {
@@ -99,7 +105,11 @@ router.post('/', async (req, res) => {
 
     memoryOrders.unshift(newOrderObj);
 
-    // Decrement stock in memoryProducts
+    // Trigger Order Confirmation Email & Admin Notification
+    sendOrderConfirmationEmail(newOrderObj);
+    triggerNewOrderAdminNotification(newOrderObj);
+
+    // Decrement stock in memoryProducts & Check Low Stock (< 3 units)
     if (o.items && Array.isArray(o.items)) {
       for (const item of o.items) {
         const prod = memoryProducts.find(p => p.id === item.productId || p.id === item.id);
@@ -107,6 +117,9 @@ router.post('/', async (req, res) => {
           prod.variants.forEach(v => {
             if (v.id === item.variantId || !item.variantId) {
               v.stockQuantity = Math.max(0, v.stockQuantity - (item.quantity || 1));
+              if (v.stockQuantity < 3) {
+                triggerLowStockNotification(prod, v.stockQuantity);
+              }
             }
           });
         }
@@ -124,6 +137,9 @@ router.post('/', async (req, res) => {
               dbProd.variants.forEach(v => {
                 if (v.id === item.variantId || !item.variantId) {
                   v.stockQuantity = Math.max(0, v.stockQuantity - (item.quantity || 1));
+                  if (v.stockQuantity < 3) {
+                    triggerLowStockNotification(dbProd, v.stockQuantity);
+                  }
                 }
               });
               await dbProd.save();
@@ -180,6 +196,10 @@ router.put('/:id/fulfillment', verifyAdminToken, async (req, res) => {
         timestamp: new Date().toISOString(),
         note: note || `Status updated to ${status || ord.status}`
       });
+    }
+
+    if (status === 'DISPATCHED' || status === 'IN_TRANSIT') {
+      sendOrderDispatchEmail(ord);
     }
 
     if (isDbReady()) {

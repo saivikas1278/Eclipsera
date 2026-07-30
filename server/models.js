@@ -156,6 +156,19 @@ const auditLogSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Notification Schema
+const notificationSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
+  recipientType: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
+  recipientId: String,
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  type: { type: String, enum: ['ORDER_STATUS', 'SYSTEM', 'LOW_STOCK', 'REVIEW'], default: 'ORDER_STATUS' },
+  isRead: { type: Boolean, default: false },
+  link: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
 const Product = mongoose.model('Product', productSchema);
 const Artisan = mongoose.model('Artisan', artisanSchema);
 const Order = mongoose.model('Order', orderSchema);
@@ -163,6 +176,7 @@ const Profile = mongoose.model('Profile', profileSchema);
 const Coupon = mongoose.model('Coupon', couponSchema);
 const Review = mongoose.model('Review', reviewSchema);
 const AuditLog = mongoose.model('AuditLog', auditLogSchema);
+const Notification = mongoose.model('Notification', notificationSchema);
 
 module.exports = {
   Product,
@@ -171,5 +185,6 @@ module.exports = {
   Profile,
   Coupon,
   Review,
-  AuditLog
+  AuditLog,
+  Notification
 };

@@ -310,9 +310,46 @@ const initialReviews = [
   }
 ];
 
+const initialNotifications = [
+  {
+    id: 'notif-1',
+    recipientType: 'USER',
+    recipientId: 'ananya@eclipsera.com',
+    title: 'Order Dispatched! 🚚',
+    message: 'Your Channapatna Engine toy has been dispatched via BlueDart Express. AWB: ECL-AWB-984321.',
+    type: 'ORDER_STATUS',
+    isRead: false,
+    link: '/track-order',
+    createdAt: new Date(Date.now() - 3600000 * 3).toISOString()
+  },
+  {
+    id: 'notif-2',
+    recipientType: 'ADMIN',
+    recipientId: 'admin',
+    title: 'Low Stock Alert: Jaipur Quartz Terracotta Vases',
+    message: 'Inventory dropped to 2 units. Consider contacting Devika Devi for restock.',
+    type: 'LOW_STOCK',
+    isRead: false,
+    link: '/admin/dashboard',
+    createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
+  },
+  {
+    id: 'notif-3',
+    recipientType: 'ADMIN',
+    recipientId: 'admin',
+    title: 'New Review Moderation Required',
+    message: 'Patron Ananya Roy submitted a review for Channapatna Toy Engine.',
+    type: 'REVIEW',
+    isRead: true,
+    link: '/admin/dashboard',
+    createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
+  }
+];
+
 let memoryOrders = [...initialOrders];
 let memoryArtisans = [...initialArtisans];
 let memoryReviews = [...initialReviews];
+let memoryNotifications = [...initialNotifications];
 
 const isDbReady = () => mongoose.connection && mongoose.connection.readyState === 1;
 
@@ -321,5 +358,6 @@ module.exports = {
   memoryProducts,
   memoryOrders,
   memoryArtisans,
-  memoryReviews
+  memoryReviews,
+  memoryNotifications
 };

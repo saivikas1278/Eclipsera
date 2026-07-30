@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import { Product, Order, Artisan } from '../../shared/data/mockData';
-import { uploadImageToAPI } from '../../shared/services/apiService';
+import { uploadImageToAPI, fetchNotificationsAPI, markNotificationReadAPI, markAllNotificationsReadAPI } from '../../shared/services/apiService';
 import { 
   LayoutDashboard, Package, ShoppingBag, Layers, 
   Plus, Edit3, Trash2, LogOut, Search, CheckCircle2, 
-  X, AlertTriangle, Upload, Eye, Check, RefreshCw, UserCheck, ShieldCheck, Award, Star
+  X, AlertTriangle, Upload, Eye, Check, RefreshCw, UserCheck, ShieldCheck, Award, Star, Bell, CheckCheck
 } from 'lucide-react';
 
 export const AdminDashboardView: React.FC = () => {
@@ -25,7 +25,7 @@ export const AdminDashboardView: React.FC = () => {
   } = useAdmin();
 
   // Active Navigation Tab
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'inventory' | 'artisans' | 'reviews'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'inventory' | 'artisans' | 'reviews' | 'alerts'>('dashboard');
 
   // --- PRODUCT MANAGEMENT STATES ---
   const [prodSearch, setProdSearch] = useState('');
@@ -112,6 +112,36 @@ export const AdminDashboardView: React.FC = () => {
     await deleteReviewAPI(revId);
     setAdminReviews(prev => prev.filter(r => r.id !== revId));
     showToast('Review permanently deleted.', 'info');
+  };
+
+  // --- ADMIN NOTIFICATION STATES ---
+  const [adminNotifications, setAdminNotifications] = useState<any[]>([]);
+  const [unreadAdminNotifCount, setUnreadAdminNotifCount] = useState(0);
+  const [isAdminNotifOpen, setIsAdminNotifOpen] = useState(false);
+  const [alertFilter, setAlertFilter] = useState<'ALL' | 'LOW_STOCK' | 'ORDER_STATUS' | 'REVIEW'>('ALL');
+
+  useEffect(() => {
+    async function loadAdminNotifs() {
+      const res = await fetchNotificationsAPI('ADMIN', 'admin');
+      if (res && res.notifications) {
+        setAdminNotifications(res.notifications);
+        setUnreadAdminNotifCount(res.unreadCount || 0);
+      }
+    }
+    loadAdminNotifs();
+  }, []);
+
+  const handleMarkAdminNotifRead = async (id: string) => {
+    await markNotificationReadAPI(id);
+    setAdminNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    setUnreadAdminNotifCount(prev => Math.max(0, prev - 1));
+  };
+
+  const handleMarkAllAdminNotifsRead = async () => {
+    await markAllNotificationsReadAPI('ADMIN', 'admin');
+    setAdminNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    setUnreadAdminNotifCount(0);
+    showToast('All admin system alerts marked as read.', 'success');
   };
 
   // --- INVENTORY STATES ---
@@ -517,6 +547,25 @@ export const AdminDashboardView: React.FC = () => {
               <Star className="w-4 h-4 text-gold-400" />
               <span>Review Moderation</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('alerts')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                activeTab === 'alerts'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Bell className="w-4 h-4 text-amber-400" />
+                <span>System Alerts</span>
+              </div>
+              {unreadAdminNotifCount > 0 && (
+                <span className="px-1.5 py-0.5 bg-amber-950 text-amber-400 border border-amber-800 rounded text-[9px] font-mono font-bold animate-pulse">
+                  {unreadAdminNotifCount}
+                </span>
+              )}
+            </button>
           </nav>
         </div>
 
@@ -540,7 +589,84 @@ export const AdminDashboardView: React.FC = () => {
       {/* 2. MAIN CONTENT AREA */}
       <main className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
         
-        {/* TAB 1: DASHBOARD OVERVIEW */}
+        {/* ADMIN TOP HEADER BAR */}
+        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
+          <div>
+            <h1 className="font-serif text-xl font-bold text-white tracking-tight">eclipsera_premium Admin Portal</h1>
+            <span className="text-[10px] font-mono text-zinc-400">Authenticated Session • Live Cloud Inventory Sync</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Admin Notification Bell Popover */}
+            <div className="relative">
+              <button
+                onClick={() => setIsAdminNotifOpen(!isAdminNotifOpen)}
+                className="p-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-300 relative transition-all"
+                title="System Notifications"
+              >
+                <Bell className="w-4 h-4 text-amber-400" />
+                {unreadAdminNotifCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-amber-500 text-zinc-950 font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                    {unreadAdminNotifCount}
+                  </span>
+                )}
+              </button>
+
+              {isAdminNotifOpen && (
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl z-50 p-4 space-y-3 animate-fade-in text-zinc-100">
+                  <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                    <div className="flex items-center gap-1.5 font-bold text-xs">
+                      <Bell className="w-4 h-4 text-amber-400" />
+                      <span>Admin Alerts & System Logs</span>
+                      {unreadAdminNotifCount > 0 && (
+                        <span className="bg-amber-500 text-zinc-950 text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                          {unreadAdminNotifCount} Unread
+                        </span>
+                      )}
+                    </div>
+                    {unreadAdminNotifCount > 0 && (
+                      <button
+                        onClick={handleMarkAllAdminNotifsRead}
+                        className="text-[10px] text-amber-400 hover:underline font-bold flex items-center gap-1"
+                      >
+                        <CheckCheck className="w-3 h-3" /> Mark All Read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-72 overflow-y-auto space-y-2 no-scrollbar">
+                    {adminNotifications.length === 0 ? (
+                      <p className="text-center text-xs text-zinc-500 py-4">No active system alerts.</p>
+                    ) : (
+                      adminNotifications.map(n => (
+                        <div
+                          key={n.id}
+                          onClick={() => {
+                            handleMarkAdminNotifRead(n.id);
+                            if (n.type === 'LOW_STOCK') setActiveTab('inventory');
+                            if (n.type === 'REVIEW') setActiveTab('reviews');
+                            if (n.type === 'ORDER_STATUS') setActiveTab('orders');
+                            setIsAdminNotifOpen(false);
+                          }}
+                          className={`p-3 rounded-xl border text-xs cursor-pointer transition-all ${n.isRead ? 'bg-zinc-950/60 border-zinc-800 opacity-60' : 'bg-zinc-950 border-amber-500/50 shadow-md'}`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <h5 className="font-serif font-bold text-white">{n.title}</h5>
+                            {!n.isRead && <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0 mt-1"></span>}
+                          </div>
+                          <p className="text-zinc-400 text-[11px] mt-1 leading-relaxed">{n.message}</p>
+                          <span className="text-[9px] text-amber-400 block mt-1.5 font-mono">
+                            {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
         {activeTab === 'dashboard' && (
           <div className="space-y-6 animate-fade-in">
             
@@ -1181,6 +1307,114 @@ export const AdminDashboardView: React.FC = () => {
                           </tr>
                         );
                       })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* 7. SYSTEM ALERTS VIEW */}
+        {activeTab === 'alerts' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-white tracking-tight">Platform System Alerts & Audit Logs</h2>
+                <p className="text-zinc-400 text-xs mt-1">Review historical low stock triggers, customer order receipts, and moderation logs.</p>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs font-bold bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800">
+                <button
+                  onClick={() => setAlertFilter('ALL')}
+                  className={`px-3 py-1.5 rounded-xl transition-all ${alertFilter === 'ALL' ? 'bg-indigo-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                >
+                  All ({adminNotifications.length})
+                </button>
+                <button
+                  onClick={() => setAlertFilter('LOW_STOCK')}
+                  className={`px-3 py-1.5 rounded-xl transition-all ${alertFilter === 'LOW_STOCK' ? 'bg-rose-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                >
+                  Low Stock
+                </button>
+                <button
+                  onClick={() => setAlertFilter('ORDER_STATUS')}
+                  className={`px-3 py-1.5 rounded-xl transition-all ${alertFilter === 'ORDER_STATUS' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                >
+                  Orders
+                </button>
+                <button
+                  onClick={() => setAlertFilter('REVIEW')}
+                  className={`px-3 py-1.5 rounded-xl transition-all ${alertFilter === 'REVIEW' ? 'bg-amber-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                >
+                  Reviews
+                </button>
+              </div>
+            </div>
+
+            {/* System Alerts Table */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-zinc-800 bg-zinc-950/40 text-zinc-400 font-bold uppercase text-[10px] tracking-wider">
+                      <th className="py-3.5 px-4">Timestamp</th>
+                      <th className="py-3.5 px-4">Category Type</th>
+                      <th className="py-3.5 px-4">Alert Title</th>
+                      <th className="py-3.5 px-4">Message Details</th>
+                      <th className="py-3.5 px-4">Status</th>
+                      <th className="py-3.5 px-4 text-right">Quick Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60">
+                    {adminNotifications
+                      .filter(n => alertFilter === 'ALL' || n.type === alertFilter)
+                      .map(n => (
+                        <tr key={n.id} className="hover:bg-zinc-800/40 transition-colors">
+                          <td className="py-3.5 px-4 font-mono text-zinc-400 text-[11px]">
+                            {new Date(n.createdAt).toLocaleString()}
+                          </td>
+                          
+                          <td className="py-3.5 px-4">
+                            {n.type === 'LOW_STOCK' ? (
+                              <span className="px-2 py-0.5 bg-rose-950 text-rose-400 border border-rose-800 rounded text-[9px] font-bold uppercase">
+                                Low Stock Alert
+                              </span>
+                            ) : n.type === 'REVIEW' ? (
+                              <span className="px-2 py-0.5 bg-amber-950 text-amber-400 border border-amber-800 rounded text-[9px] font-bold uppercase">
+                                Review Moderation
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded text-[9px] font-bold uppercase">
+                                Order Lifecycle
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4 font-bold text-white max-w-xs truncate">{n.title}</td>
+
+                          <td className="py-3.5 px-4 text-zinc-300 max-w-md">{n.message}</td>
+
+                          <td className="py-3.5 px-4">
+                            {n.isRead ? (
+                              <span className="text-zinc-500 font-bold text-[10px]">Read</span>
+                            ) : (
+                              <span className="text-amber-400 font-bold text-[10px] animate-pulse">Unread</span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-right">
+                            {!n.isRead && (
+                              <button
+                                onClick={() => handleMarkAdminNotifRead(n.id)}
+                                className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded text-[10px] font-bold uppercase"
+                              >
+                                Mark Read
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>

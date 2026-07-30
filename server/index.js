@@ -11,6 +11,7 @@ const auditLogsRoutes = require('./routes/auditLogs');
 const uploadRoutes = require('./routes/upload');
 const reviewsRoutes = require('./routes/reviews');
 const artisansRoutes = require('./routes/artisans');
+const notificationsRoutes = require('./routes/notifications');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,7 @@ app.use('/api/audit-logs', auditLogsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/artisans', artisansRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', database: 'MongoDB Atlas Cloud Database Engine', storage: 'Cloudinary CDN', app: 'eclipsera_premium' });

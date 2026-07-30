@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '../../context/UserContext';
-import { ShoppingBag, Heart, Search, Sparkles, X, Menu, Package, ChevronRight, User } from 'lucide-react';
+import { ShoppingBag, Heart, Search, Sparkles, X, Menu, Package, ChevronRight, User, Bell, CheckCheck } from 'lucide-react';
+import { fetchNotificationsAPI, markNotificationReadAPI, markAllNotificationsReadAPI } from '../../../shared/services/apiService';
 
 export const Header: React.FC = () => {
   const { 
@@ -20,6 +21,40 @@ export const Header: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Notification Center State
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [userNotifications, setUserNotifications] = useState<any[]>([]);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+
+  useEffect(() => {
+    async function loadNotifs() {
+      const email = currentUser?.email || 'ananya@eclipsera.com';
+      const res = await fetchNotificationsAPI('USER', email);
+      if (res && res.notifications) {
+        setUserNotifications(res.notifications);
+        setUnreadNotifCount(res.unreadCount || 0);
+      }
+    }
+    loadNotifs();
+  }, [currentUser?.email]);
+
+  const handleMarkNotifRead = async (id: string, link?: string) => {
+    await markNotificationReadAPI(id);
+    setUserNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    setUnreadNotifCount(prev => Math.max(0, prev - 1));
+    if (link) {
+      setIsNotifOpen(false);
+      setCurrentView('track-order');
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    const email = currentUser?.email || 'ananya@eclipsera.com';
+    await markAllNotificationsReadAPI('USER', email);
+    setUserNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    setUnreadNotifCount(0);
+  };
 
   const cartItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -119,6 +154,70 @@ export const Header: React.FC = () => {
                   </span>
                 )}
               </button>
+
+              {/* Notification Center Bell Popover */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsNotifOpen(!isNotifOpen)}
+                  className="text-obsidian-900 hover:text-gold-600 p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors relative rounded-full hover:bg-cream-200"
+                  aria-label="View Notifications"
+                >
+                  <Bell className="w-5 h-5" />
+                  {unreadNotifCount > 0 && (
+                    <span className="absolute top-1 right-1 bg-gold-500 text-obsidian-900 text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-extrabold animate-pulse shadow-sm">
+                      {unreadNotifCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Popover Dropdown */}
+                {isNotifOpen && (
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-cream-100 border border-gold-500/40 rounded-2xl shadow-2xl z-50 p-4 space-y-3 animate-fade-in text-obsidian-900">
+                    <div className="flex items-center justify-between border-b border-cream-300 pb-2">
+                      <div className="flex items-center gap-1.5 font-bold text-xs">
+                        <Bell className="w-4 h-4 text-gold-600" />
+                        <span>Order Updates & Alerts</span>
+                        {unreadNotifCount > 0 && (
+                          <span className="bg-gold-500 text-obsidian-900 text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                            {unreadNotifCount} New
+                          </span>
+                        )}
+                      </div>
+                      {unreadNotifCount > 0 && (
+                        <button
+                          onClick={handleMarkAllRead}
+                          className="text-[10px] text-gold-700 hover:underline font-bold flex items-center gap-1"
+                        >
+                          <CheckCheck className="w-3 h-3" /> Mark All Read
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-72 overflow-y-auto space-y-2 no-scrollbar">
+                      {userNotifications.length === 0 ? (
+                        <p className="text-center text-xs text-obsidian-900/50 py-4">No recent order notifications.</p>
+                      ) : (
+                        userNotifications.map(n => (
+                          <div
+                            key={n.id}
+                            onClick={() => handleMarkNotifRead(n.id, n.link)}
+                            className={`p-3 rounded-xl border text-xs cursor-pointer transition-all ${n.isRead ? 'bg-white/60 border-cream-300 opacity-75' : 'bg-white border-gold-500/60 shadow-sm font-semibold'}`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <h5 className="font-serif font-bold text-obsidian-900">{n.title}</h5>
+                              {!n.isRead && <span className="w-2 h-2 rounded-full bg-gold-500 shrink-0 mt-1"></span>}
+                            </div>
+                            <p className="text-obsidian-900/80 text-[11px] mt-1 leading-relaxed font-sans">{n.message}</p>
+                            <span className="text-[9px] text-gold-700 block mt-1.5 font-mono font-bold">
+                              {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Cart Drawer Trigger with Count Badge */}
               <button 

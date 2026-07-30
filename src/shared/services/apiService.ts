@@ -382,3 +382,37 @@ export async function deleteReviewAPI(reviewId: string) {
     return null;
   }
 }
+
+export async function fetchNotificationsAPI(recipientType = 'USER', recipientId = '') {
+  try {
+    const res = await fetch(`${API_BASE_URL}/notifications?recipientType=${recipientType}&recipientId=${encodeURIComponent(recipientId)}`);
+    if (!res.ok) throw new Error('Failed to fetch notifications');
+    return await res.json();
+  } catch (e) {
+    return { recipientType, unreadCount: 0, notifications: [] };
+  }
+}
+
+export async function markNotificationReadAPI(notificationId: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
+      method: 'PATCH'
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function markAllNotificationsReadAPI(recipientType = 'USER', recipientId = '') {
+  try {
+    const res = await fetch(`${API_BASE_URL}/notifications/read-all`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipientType, recipientId })
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
