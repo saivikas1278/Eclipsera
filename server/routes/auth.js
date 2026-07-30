@@ -67,6 +67,14 @@ router.post('/register', async (req, res) => {
       } catch (e) {}
     }
 
+    // Set HTTP-Only auth cookie
+    res.cookie('eclipsera_token', `usr_session_${newId}`, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/'
+    });
+
     res.json({
       success: true,
       user: {
@@ -123,10 +131,14 @@ router.post('/login', async (req, res) => {
       }
     }
 
+    // Set HTTP-Only Cookie
+    const userId = user.id || user._id || `usr-${Date.now()}`;
+    res.setHeader('Set-Cookie', `eclipsera_token=usr_session_${userId}; HttpOnly; Path=/; SameSite=Lax; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''}`);
+
     res.json({
       success: true,
       user: {
-        id: user.id || user._id,
+        id: userId,
         name: user.fullName || user.name,
         email: user.email,
         phone: user.phone || '',
@@ -137,6 +149,15 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Logout Endpoint — Clears HTTP-Only Cookies
+router.post('/logout', (req, res) => {
+  res.setHeader('Set-Cookie', [
+    'eclipsera_token=; HttpOnly; Path=/; Max-Age=0',
+    'eclipsera_admin_token=; HttpOnly; Path=/; Max-Age=0'
+  ]);
+  res.json({ success: true, message: 'Logged out successfully.' });
 });
 
 // Google OAuth 2.0 Login / Registration Endpoint
@@ -187,6 +208,9 @@ router.post('/google', async (req, res) => {
         address: { street: '', city: '', state: '', pincode: '' }
       });
     }
+
+    // Set HTTP-Only auth cookie
+    res.setHeader('Set-Cookie', `eclipsera_token=usr_session_${user.id}; HttpOnly; Path=/; SameSite=Lax; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''}`);
 
     res.json({
       success: true,
@@ -242,6 +266,9 @@ router.put('/profile/:id', async (req, res) => {
 router.post('/admin-login', (req, res) => {
   const { password } = req.body;
   if (password === 'admin123' || password === 'eclipsera' || password === 'admin' || password === 'admin123456') {
+    // Set HTTP-Only admin cookie
+    res.setHeader('Set-Cookie', `eclipsera_admin_token=admin-authenticated-cookie-token; HttpOnly; Path=/; SameSite=Lax; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''}`);
+    
     return res.json({ 
       success: true, 
       role: 'admin',

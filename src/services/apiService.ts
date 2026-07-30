@@ -416,3 +416,25 @@ export async function markAllNotificationsReadAPI(recipientType = 'USER', recipi
     return null;
   }
 }
+
+export async function downloadReportCSV(type: 'sales' | 'tax' | 'inventory') {
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/reports/${type}`, {
+      headers: getAdminHeaders()
+    });
+    if (!res.ok) throw new Error(`Failed to export ${type} report`);
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `eclipsera_${type}_report_${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    return true;
+  } catch (e) {
+    console.error(`Error downloading ${type} report CSV:`, e);
+    return false;
+  }
+}
