@@ -322,3 +322,63 @@ export async function requestOrderReturnAPI(id: string, returnData: any) {
     return null;
   }
 }
+
+export async function fetchProductReviewsAPI(productId: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/reviews/product/${productId}`);
+    if (!res.ok) throw new Error('Failed to fetch reviews');
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function submitReviewAPI(reviewData: any) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reviewData)
+    });
+    return await res.json();
+  } catch (e) {
+    return { error: 'Network error submitting review' };
+  }
+}
+
+export async function fetchAdminReviewsAPI() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/reviews/admin/all`, {
+      headers: getAdminHeaders()
+    });
+    if (!res.ok) throw new Error('Failed to fetch reviews');
+    return await res.json();
+  } catch (e) {
+    return [];
+  }
+}
+
+export async function moderateReviewAPI(reviewId: string, status: string, adminReply?: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/reviews/admin/${reviewId}/moderate`, {
+      method: 'PATCH',
+      headers: getAdminHeaders(),
+      body: JSON.stringify({ status, adminReply })
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function deleteReviewAPI(reviewId: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/reviews/admin/${reviewId}`, {
+      method: 'DELETE',
+      headers: getAdminHeaders()
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}

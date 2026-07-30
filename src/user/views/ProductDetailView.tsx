@@ -18,7 +18,9 @@ export const ProductDetailView: React.FC = () => {
     addQaToProduct,
     toggleCompare,
     compareProductIds,
-    openProductDetail
+    openProductDetail,
+    orders,
+    currentUser
   } = useUser();
 
   const product = products.find(p => p.slug === selectedProductSlug) || products[0];
@@ -42,32 +44,56 @@ export const ProductDetailView: React.FC = () => {
   // GI Certificate Modal State
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
 
-  // Review Form State
+  // Verified Review States
   const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
-  const [reviewerName, setReviewerName] = useState('');
+  const [reviewerName, setReviewerName] = useState(currentUser?.name || '');
+  const [reviewTitle, setReviewTitle] = useState('');
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [reviewPhotos, setReviewPhotos] = useState<string[]>([]);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [reviewsList, setReviewsList] = useState<any[]>([]);
-  
-  // Q&A input state
-  const [newQuestion, setNewQuestion] = useState('');
+  const [aggregatedStats, setAggregatedStats] = useState<{ averageRating: number; totalCount: number; ratingBreakdown: any }>({
+    averageRating: 5.0,
+    totalCount: 0,
+    ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+  });
 
+  // Filter States
+  const [reviewStarFilter, setReviewStarFilter] = useState<number | 'ALL'>('ALL');
+  const [photosOnlyFilter, setPhotosOnlyFilter] = useState(false);
+
+  // Q&A & Zoom States
+  const [newQuestion, setNewQuestion] = useState('');
   const [zoomStyle, setZoomStyle] = useState<{ display: string; backgroundPosition: string }>({ display: 'none', backgroundPosition: '0% 0%' });
 
-  // Load Reviews from Neon Cloud PostgreSQL
+  // Check if current user is a verified purchaser with a DELIVERED order for this product
+  const isVerifiedBuyer = orders.some(o => {
+    const isDelivered = o.status === 'DELIVERED';
+    const matchesUser = currentUser && (
+      (o.customerEmail && o.customerEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+      (o.customerName && o.customerName.toLowerCase() === currentUser.name.toLowerCase())
+    );
+    const containsProduct = o.items && o.items.some((i: any) => i.productId === product?.id || i.id === product?.id);
+    return isDelivered && (matchesUser || containsProduct);
+  });
+
+  // Load Reviews from API
   useEffect(() => {
     async function loadProductReviews() {
       if (!product || !product.id) return;
-      const apiRevs = await fetchReviewsFromAPI(product.id);
-      if (apiRevs && apiRevs.length) {
-        setReviewsList(apiRevs);
+      const { fetchProductReviewsAPI } = await import('../../shared/services/apiService');
+      const data = await fetchProductReviewsAPI(product.id);
+      if (data && data.reviews) {
+        setReviewsList(data.reviews);
+        setAggregatedStats({
+          averageRating: data.averageRating || 5.0,
+          totalCount: data.totalCount || data.reviews.length,
+          ratingBreakdown: data.ratingBreakdown || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+        });
       } else {
-        // Fallback reviews
         setReviewsList([
-          { id: 'rev-fb1', patronName: "Siddharth Verma", rating: 5, comment: "Exceptional weight and texture. You can feel the master craftsmanship in the wood lathe work. Fits perfectly in our living room.", date: "2026-07-15T08:00:00Z" },
-          { id: 'rev-fb2', patronName: "Divya Nair", rating: 4, comment: "Extremely beautiful piece. The colors are so organic and look very premium. Delivery took about 4 days to Bangalore.", date: "2026-07-18T10:30:00Z" }
+          { id: 'rev-fb1', userName: "Ananya Roy", rating: 5, title: "Exquisite Craftsmanship", comment: "The vegetable dye sheen on this wooden toy engine is smooth and safe. Certificate included!", isVerifiedPurchase: true, createdAt: "2026-07-15T08:00:00Z" }
         ]);
       }
     }
@@ -90,34 +116,50 @@ export const ProductDetailView: React.FC = () => {
   const handleReviewPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     setIsUploadingPhoto(true);
-    showToast('Uploading photo to Cloudinary...', 'info');
+    const { uploadImageToAPI } = await import('../../shared/services/apiService');
     const uploadedUrl = await uploadImageToAPI(file);
-    setIsUploadingPhoto(false);
     if (uploadedUrl) {
       setReviewPhotos(prev => [...prev, uploadedUrl]);
-      showToast('Review photo uploaded to Cloudinary!', 'success');
+      showToast('Photo uploaded to Cloudinary CDN!', 'success');
+    } else {
+      // Local fallback
+      setReviewPhotos(prev => [...prev, URL.createObjectURL(file)]);
     }
+    setIsUploadingPhoto(false);
   };
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reviewComment.trim()) return;
-    const newRev = {
-      id: `rev-${Date.now()}`,
+
+    const { submitReviewAPI } = await import('../../shared/services/apiService');
+    
+    const payload = {
       productId: product.id,
-      patronName: reviewerName || 'Verified Patron',
+      userId: currentUser?.id,
+      userEmail: currentUser?.email,
+      userName: reviewerName || currentUser?.name || 'Verified Patron',
+      title: reviewTitle || 'Authentic Artisanal Review',
       rating: reviewRating,
       comment: reviewComment,
-      photos: reviewPhotos
+      images: reviewPhotos,
+      bypassVerification: isVerifiedBuyer // Pass true if buyer order verified
     };
-    setReviewsList(prev => [newRev, ...prev]);
+
+    const res = await submitReviewAPI(payload);
+
+    if (res && res.error) {
+      showToast(res.error, 'warning');
+      return;
+    }
+
     setIsReviewFormOpen(false);
-    setReviewerName('');
+    setReviewTitle('');
     setReviewComment('');
     setReviewPhotos([]);
-    showToast('Thank you! Your verified review has been published.', 'success');
-    await createReviewInAPI(newRev);
+    showToast('Your review has been submitted for curator moderation! Thank you.', 'success');
   };
 
   const handleQaSubmit = (e: React.FormEvent) => {
@@ -678,55 +720,105 @@ export const ProductDetailView: React.FC = () => {
                 
                 {/* Total rating score */}
                 <div className="md:col-span-3 text-center space-y-1">
-                  <span className="font-serif text-4xl font-extrabold">{product.rating}</span>
-                  {renderStars(product.rating, 5)}
-                  <p className="text-[10px] text-obsidian-900/50 uppercase font-bold tracking-widest mt-1">Based on {reviewsList.length} reviews</p>
+                  <span className="font-serif text-4xl font-extrabold">{aggregatedStats.averageRating || product.rating}</span>
+                  {renderStars(aggregatedStats.averageRating || product.rating, 5)}
+                  <p className="text-[10px] text-obsidian-900/50 uppercase font-bold tracking-widest mt-1">Based on {aggregatedStats.totalCount || reviewsList.length} reviews</p>
                 </div>
 
                 {/* Rating stars bars */}
                 <div className="md:col-span-6 space-y-2">
-                  {starsBreakdown.map(({ stars, percentage }) => (
-                    <div key={stars} className="flex items-center gap-3">
-                      <span className="w-8 font-semibold text-right">{stars} ★</span>
-                      <div className="flex-1 h-2 bg-cream-200 rounded-full overflow-hidden">
-                        <div className="h-full bg-gold-500 rounded-full" style={{ width: `${percentage}%` }} />
+                  {[5, 4, 3, 2, 1].map(stars => {
+                    const count = aggregatedStats.ratingBreakdown[stars] || 0;
+                    const total = aggregatedStats.totalCount || reviewsList.length || 1;
+                    const percentage = Math.round((count / total) * 100);
+                    return (
+                      <div key={stars} className="flex items-center gap-3">
+                        <span className="w-8 font-semibold text-right">{stars} ★</span>
+                        <div className="flex-1 h-2 bg-cream-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-gold-500 rounded-full" style={{ width: `${percentage}%` }} />
+                        </div>
+                        <span className="w-8 text-obsidian-900/60 font-semibold">{percentage}%</span>
                       </div>
-                      <span className="w-8 text-obsidian-900/60 font-semibold">{percentage}%</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
-                {/* Call to write review */}
-                <div className="md:col-span-3 text-center sm:text-right">
-                  <button 
-                    onClick={() => setIsReviewFormOpen(!isReviewFormOpen)}
-                    className="w-full sm:w-auto bg-obsidian-900 text-cream-100 hover:bg-gold-500 hover:text-obsidian-900 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
-                  >
-                    + Write A Review
-                  </button>
+                {/* Call to write review / Verified Lock */}
+                <div className="md:col-span-3 text-center sm:text-right space-y-2">
+                  {isVerifiedBuyer ? (
+                    <button 
+                      onClick={() => setIsReviewFormOpen(!isReviewFormOpen)}
+                      className="w-full sm:w-auto bg-obsidian-900 text-cream-100 hover:bg-gold-500 hover:text-obsidian-900 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md"
+                    >
+                      + Write A Verified Review
+                    </button>
+                  ) : (
+                    <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-center text-[10px]">
+                      <span className="font-bold text-amber-800 flex items-center justify-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-gold-600" />
+                        Verified Buyers Only
+                      </span>
+                      <p className="text-amber-900/70 mt-0.5">Reviews are strictly reserved for patrons with a delivered order of this item.</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Review submit form */}
+              {/* Review Filter Controls */}
+              <div className="flex flex-wrap items-center justify-between gap-4 bg-cream-100/60 p-3 rounded-2xl border border-cream-200 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-obsidian-900 uppercase text-[10px] tracking-wider">Filter:</span>
+                  <button
+                    onClick={() => setReviewStarFilter('ALL')}
+                    className={`px-3 py-1 rounded-lg font-bold transition-all ${reviewStarFilter === 'ALL' ? 'bg-gold-500 text-obsidian-900' : 'bg-white text-obsidian-900/70 hover:text-obsidian-900'}`}
+                  >
+                    All
+                  </button>
+                  {[5, 4, 3, 2, 1].map(st => (
+                    <button
+                      key={st}
+                      onClick={() => setReviewStarFilter(st)}
+                      className={`px-2.5 py-1 rounded-lg font-bold transition-all ${reviewStarFilter === st ? 'bg-gold-500 text-obsidian-900' : 'bg-white text-obsidian-900/70 hover:text-obsidian-900'}`}
+                    >
+                      {st} ★
+                    </button>
+                  ))}
+                </div>
+
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-obsidian-900">
+                  <input
+                    type="checkbox"
+                    checked={photosOnlyFilter}
+                    onChange={(e) => setPhotosOnlyFilter(e.target.checked)}
+                    className="accent-gold-500 w-4 h-4 rounded"
+                  />
+                  <span>With Photos Only</span>
+                </label>
+              </div>
+
+              {/* Review submit form modal */}
               {isReviewFormOpen && (
-                <form onSubmit={handleReviewSubmit} className="p-5 bg-cream-100/80 rounded-2xl border border-gold-500/30 space-y-4 text-xs animate-fade-in text-obsidian-900">
-                  <h4 className="font-serif font-bold text-sm text-obsidian-900">Share Your Craft Experience</h4>
+                <form onSubmit={handleReviewSubmit} className="p-6 bg-cream-100 rounded-3xl border-2 border-gold-500 space-y-4 text-xs animate-fade-in text-obsidian-900 shadow-xl">
+                  <h4 className="font-serif font-bold text-base text-obsidian-900 flex items-center gap-2">
+                    <Star className="w-5 h-5 text-gold-500 fill-current" />
+                    <span>Write Your Verified Heritage Review</span>
+                  </h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="font-bold uppercase block mb-1">Your Name</label>
+                      <label className="font-bold uppercase block mb-1 text-[10px] text-gold-700">Review Title</label>
                       <input 
                         type="text" 
                         required
-                        placeholder="e.g. Ananya Sharma"
-                        value={reviewerName}
-                        onChange={(e) => setReviewerName(e.target.value)}
+                        placeholder="e.g. Masterpiece Finish & Insured Delivery"
+                        value={reviewTitle}
+                        onChange={(e) => setReviewTitle(e.target.value)}
                         className="w-full bg-white border border-cream-300 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-gold-500 text-obsidian-900"
                       />
                     </div>
 
                     <div>
-                      <label className="font-bold uppercase block mb-1">Rating (1 to 5 Stars)</label>
+                      <label className="font-bold uppercase block mb-1 text-[10px] text-gold-700">Rating (1 to 5 Stars)</label>
                       <div className="flex items-center gap-1 pt-1">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button 
@@ -744,11 +836,11 @@ export const ProductDetailView: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="font-bold uppercase block mb-1">Your Written Review</label>
+                    <label className="font-bold uppercase block mb-1 text-[10px] text-gold-700">Your Detailed Review</label>
                     <textarea 
                       required
                       rows={3}
-                      placeholder="Describe the craft quality, texture finish, and delivery experience..."
+                      placeholder="Describe the craft weight, texture finish, and delivery experience..."
                       value={reviewComment}
                       onChange={(e) => setReviewComment(e.target.value)}
                       className="w-full bg-white border border-cream-300 rounded-xl p-3 text-xs font-medium focus:outline-none focus:border-gold-500 text-obsidian-900"
@@ -757,52 +849,85 @@ export const ProductDetailView: React.FC = () => {
 
                   {/* Cloudinary Photo Uploader */}
                   <div>
-                    <label className="font-bold uppercase block mb-1">Upload Unboxing Photo (Cloudinary)</label>
+                    <label className="font-bold uppercase block mb-1 text-[10px] text-gold-700">Attach Unboxing Photo (Cloudinary CDN)</label>
                     <div className="flex items-center gap-3">
-                      <label className="cursor-pointer bg-white border border-dashed border-gold-500/50 hover:bg-gold-500/10 text-gold-700 px-4 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-all">
-                        <Upload className="w-4 h-4" />
-                        <span>{isUploadingPhoto ? 'Uploading...' : 'Choose Photo File'}</span>
+                      <label className="cursor-pointer bg-white border border-dashed border-gold-500 hover:bg-gold-50 text-gold-700 px-4 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-all text-xs">
+                        <Upload className="w-4 h-4 text-gold-600" />
+                        <span>{isUploadingPhoto ? 'Uploading to Cloudinary...' : 'Choose Image File'}</span>
                         <input type="file" accept="image/*" onChange={handleReviewPhotoUpload} disabled={isUploadingPhoto} className="hidden" />
                       </label>
 
                       {reviewPhotos.map((ph, idx) => (
-                        <img key={idx} src={ph} alt="" className="w-10 h-10 object-cover rounded-lg border border-gold-500/40" />
+                        <img key={idx} src={ph} alt="" className="w-12 h-12 object-cover rounded-xl border border-gold-500/40 shadow-sm" />
                       ))}
                     </div>
                   </div>
 
-                  <button 
-                    type="submit" 
-                    className="px-6 py-2.5 bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 rounded-xl font-bold uppercase tracking-wider transition-all"
-                  >
-                    Submit Verified Patron Review
-                  </button>
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button 
+                      type="button" 
+                      onClick={() => setIsReviewFormOpen(false)}
+                      className="px-4 py-2 bg-cream-300 text-obsidian-900 rounded-xl font-bold uppercase text-xs"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="px-6 py-2.5 bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 rounded-xl font-bold uppercase tracking-wider transition-all shadow-gold-glow"
+                    >
+                      Submit For Moderation
+                    </button>
+                  </div>
                 </form>
               )}
 
-              {/* Reviews list */}
+              {/* Reviews List Display */}
               <div className="space-y-4">
-                {reviewsList.map(rev => (
-                  <div key={rev.id} className="p-4 bg-cream-100/70 rounded-2xl border border-cream-200 space-y-2 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-obsidian-900">{rev.patronName}</span>
-                      <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-700 font-bold rounded text-[10px] flex items-center gap-1">
-                        <Check className="w-3 h-3" /> Verified Patron
-                      </span>
-                    </div>
-                    {renderStars(rev.rating, 3.5)}
-                    <p className="text-obsidian-900/80 leading-relaxed font-sans">
-                      "{rev.comment}"
-                    </p>
-                    {rev.photos && rev.photos.length > 0 && (
-                      <div className="flex gap-2 pt-1">
-                        {rev.photos.map((ph: string, idx: number) => (
-                          <img key={idx} src={ph} alt="" className="w-12 h-12 object-cover rounded-lg border border-gold-500/30" />
-                        ))}
+                {reviewsList
+                  .filter(r => reviewStarFilter === 'ALL' || Math.round(r.rating) === reviewStarFilter)
+                  .filter(r => !photosOnlyFilter || (r.images?.length > 0 || r.photos?.length > 0))
+                  .map(rev => (
+                    <div key={rev.id} className="p-5 bg-cream-100/70 rounded-3xl border border-cream-200 space-y-3 text-xs shadow-sm">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-obsidian-900">{rev.userName || rev.patronName || 'Heritage Patron'}</span>
+                            {(rev.isVerifiedPurchase || rev.isVerified) && (
+                              <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-800 border border-emerald-500/30 font-bold rounded text-[10px] flex items-center gap-1">
+                                <Check className="w-3 h-3 text-emerald-600" /> Verified Heritage Buyer
+                              </span>
+                            )}
+                          </div>
+                          <span className="font-serif font-bold text-xs text-obsidian-900 block mt-1">{rev.title || 'Artisanal Craft Review'}</span>
+                        </div>
+
+                        <div className="flex items-center text-gold-500 font-bold">
+                          {'★'.repeat(rev.rating || 5)}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      <p className="text-obsidian-900/80 leading-relaxed font-sans text-xs">
+                        "{rev.comment}"
+                      </p>
+
+                      {/* Cloudinary Photos */}
+                      {(rev.images?.length > 0 || rev.photos?.length > 0) && (
+                        <div className="flex gap-2 pt-1">
+                          {(rev.images || rev.photos).map((ph: string, idx: number) => (
+                            <img key={idx} src={ph} alt="" className="w-16 h-16 object-cover rounded-xl border border-gold-500/30 shadow-sm" />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Curator Official Store Reply */}
+                      {rev.adminReply && (
+                        <div className="mt-3 p-3 bg-amber-50 border-l-4 border-gold-500 rounded-r-2xl space-y-1">
+                          <span className="text-[10px] font-bold uppercase text-gold-800 block">Official Eclipsera Guild Curator Response</span>
+                          <p className="text-obsidian-900/85 italic text-xs">"{rev.adminReply}"</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
               </div>
 
               {/* Product Q&A Section */}

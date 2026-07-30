@@ -273,8 +273,46 @@ let memoryProducts = [...initialProducts].map(p => ({
   craftingHours: 120,
   artisan: initialArtisans.find(a => a.name.includes(p.artisanName.split(' ')[0])) || initialArtisans[0]
 }));
+const initialReviews = [
+  {
+    id: 'rev-101',
+    productId: 'prod-1',
+    userId: 'usr-1001',
+    userName: 'Ananya Roy',
+    patronName: 'Ananya Roy',
+    title: 'Exquisite Lacquered Channapatna Craft',
+    rating: 5,
+    comment: 'The vegetable dye sheen on this wooden toy engine is smooth and safe for kids. Authentic craft certificate included!',
+    images: ['https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1000&q=85'],
+    photos: ['https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1000&q=85'],
+    isVerifiedPurchase: true,
+    isVerified: true,
+    status: 'APPROVED',
+    adminReply: 'Thank you Ananya! We are proud to support Master B. Ramappa’s 25-year legacy of non-toxic lacquerware.',
+    createdAt: new Date(Date.now() - 86400000 * 4).toISOString()
+  },
+  {
+    id: 'rev-102',
+    productId: 'prod-3',
+    userId: 'usr-1002',
+    userName: 'Siddharth Verma',
+    patronName: 'Siddharth Verma',
+    title: 'Stunning Jaipur Quartz Terracotta Glaze',
+    rating: 5,
+    comment: 'Hand-painted turquoise oxide glaze looks majestic under gallery lighting. Packaged in custom padded wooden box.',
+    images: ['https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=1000&q=85'],
+    photos: ['https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=1000&q=85'],
+    isVerifiedPurchase: true,
+    isVerified: true,
+    status: 'APPROVED',
+    adminReply: 'Warm regards Siddharth! Devika Devi takes 45 hours to formulate the natural blue quartz glaze.',
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
+  }
+];
+
 let memoryOrders = [...initialOrders];
 let memoryArtisans = [...initialArtisans];
+let memoryReviews = [...initialReviews];
 
 const isDbReady = () => mongoose.connection && mongoose.connection.readyState === 1;
 
@@ -282,5 +320,6 @@ module.exports = {
   isDbReady,
   memoryProducts,
   memoryOrders,
-  memoryArtisans
+  memoryArtisans,
+  memoryReviews
 };

@@ -128,6 +128,24 @@ export interface Coupon {
   description: string;
 }
 
+export interface Review {
+  id: string;
+  productId: string;
+  userId?: string;
+  userName?: string;
+  patronName?: string;
+  title?: string;
+  rating: number;
+  comment: string;
+  images?: string[];
+  photos?: string[];
+  isVerifiedPurchase?: boolean;
+  isVerified?: boolean;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  adminReply?: string;
+  createdAt: string;
+}
+
 export const HERO_SLIDES: HeroSlide[] = [
   {
     id: 'slide-1',

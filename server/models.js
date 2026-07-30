@@ -132,12 +132,19 @@ const couponSchema = new mongoose.Schema({
 // Review Schema
 const reviewSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
-  productId: String,
+  productId: { type: String, required: true },
+  userId: String,
+  userName: String,
   patronName: String,
-  rating: Number,
+  title: String,
+  rating: { type: Number, required: true, min: 1, max: 5 },
   comment: String,
+  images: [String],
   photos: [String],
+  isVerifiedPurchase: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: true },
+  status: { type: String, enum: ['PENDING', 'APPROVED', 'REJECTED'], default: 'PENDING' },
+  adminReply: String,
   createdAt: { type: Date, default: Date.now }
 });
 

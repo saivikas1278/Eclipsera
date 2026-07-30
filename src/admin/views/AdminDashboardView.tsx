@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import { Product, Order, Artisan } from '../../shared/data/mockData';
 import { uploadImageToAPI } from '../../shared/services/apiService';
 import { 
   LayoutDashboard, Package, ShoppingBag, Layers, 
   Plus, Edit3, Trash2, LogOut, Search, CheckCircle2, 
-  X, AlertTriangle, Upload, Eye, Check, RefreshCw, UserCheck, ShieldCheck, Award
+  X, AlertTriangle, Upload, Eye, Check, RefreshCw, UserCheck, ShieldCheck, Award, Star
 } from 'lucide-react';
 
 export const AdminDashboardView: React.FC = () => {
@@ -25,7 +25,7 @@ export const AdminDashboardView: React.FC = () => {
   } = useAdmin();
 
   // Active Navigation Tab
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'inventory' | 'artisans'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'inventory' | 'artisans' | 'reviews'>('dashboard');
 
   // --- PRODUCT MANAGEMENT STATES ---
   const [prodSearch, setProdSearch] = useState('');
@@ -73,6 +73,46 @@ export const AdminDashboardView: React.FC = () => {
 
   // Packing Slip Modal State
   const [packingSlipOrder, setPackingSlipOrder] = useState<Order | null>(null);
+
+  // --- REVIEW MODERATION STATES ---
+  const [adminReviews, setAdminReviews] = useState<any[]>([]);
+  const [reviewFilterTab, setReviewFilterTab] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
+  const [replyingReview, setReplyingReview] = useState<any | null>(null);
+  const [replyText, setReplyText] = useState('');
+
+  // Load reviews for moderation
+  useEffect(() => {
+    async function loadAdminReviews() {
+      const { fetchAdminReviewsAPI } = await import('../../shared/services/apiService');
+      const list = await fetchAdminReviewsAPI();
+      setAdminReviews(list || []);
+    }
+    loadAdminReviews();
+  }, []);
+
+  const handleModerateReview = async (revId: string, status: string) => {
+    const { moderateReviewAPI } = await import('../../shared/services/apiService');
+    await moderateReviewAPI(revId, status);
+    setAdminReviews(prev => prev.map(r => r.id === revId ? { ...r, status } : r));
+    showToast(`Review status updated to ${status}!`, 'success');
+  };
+
+  const handleSaveAdminReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyingReview) return;
+    const { moderateReviewAPI } = await import('../../shared/services/apiService');
+    await moderateReviewAPI(replyingReview.id, replyingReview.status || 'APPROVED', replyText);
+    setAdminReviews(prev => prev.map(r => r.id === replyingReview.id ? { ...r, adminReply: replyText } : r));
+    showToast(`Curator response published for Review #${replyingReview.id}!`, 'success');
+    setReplyingReview(null);
+  };
+
+  const handleDeleteReview = async (revId: string) => {
+    const { deleteReviewAPI } = await import('../../shared/services/apiService');
+    await deleteReviewAPI(revId);
+    setAdminReviews(prev => prev.filter(r => r.id !== revId));
+    showToast('Review permanently deleted.', 'info');
+  };
 
   // --- INVENTORY STATES ---
   const [stockEdits, setStockEdits] = useState<{ [key: string]: number }>({});
@@ -464,6 +504,18 @@ export const AdminDashboardView: React.FC = () => {
             >
               <UserCheck className="w-4 h-4 text-emerald-400" />
               <span>Artisans & Guilds</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                activeTab === 'reviews'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+              }`}
+            >
+              <Star className="w-4 h-4 text-gold-400" />
+              <span>Review Moderation</span>
             </button>
           </nav>
         </div>
@@ -969,6 +1021,171 @@ export const AdminDashboardView: React.FC = () => {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* 6. REVIEW MODERATION VIEW */}
+        {activeTab === 'reviews' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-white tracking-tight">Verified Buyer Review Moderation</h2>
+                <p className="text-zinc-400 text-xs mt-1">Approve, reject, or publish curator responses to patron customer reviews.</p>
+              </div>
+
+              {/* Filter Tabs */}
+              <div className="flex items-center gap-2 text-xs font-bold bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800">
+                <button
+                  onClick={() => setReviewFilterTab('ALL')}
+                  className={`px-3 py-1.5 rounded-xl transition-all ${reviewFilterTab === 'ALL' ? 'bg-indigo-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                >
+                  All ({adminReviews.length})
+                </button>
+                <button
+                  onClick={() => setReviewFilterTab('PENDING')}
+                  className={`px-3 py-1.5 rounded-xl transition-all ${reviewFilterTab === 'PENDING' ? 'bg-amber-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                >
+                  Pending ({adminReviews.filter(r => r.status === 'PENDING').length})
+                </button>
+                <button
+                  onClick={() => setReviewFilterTab('APPROVED')}
+                  className={`px-3 py-1.5 rounded-xl transition-all ${reviewFilterTab === 'APPROVED' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                >
+                  Approved ({adminReviews.filter(r => r.status === 'APPROVED').length})
+                </button>
+                <button
+                  onClick={() => setReviewFilterTab('REJECTED')}
+                  className={`px-3 py-1.5 rounded-xl transition-all ${reviewFilterTab === 'REJECTED' ? 'bg-rose-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                >
+                  Rejected ({adminReviews.filter(r => r.status === 'REJECTED').length})
+                </button>
+              </div>
+            </div>
+
+            {/* Reviews Moderation Table */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-zinc-800 bg-zinc-950/40 text-zinc-400 font-bold uppercase text-[10px] tracking-wider">
+                      <th className="py-3.5 px-4">Patron & Product</th>
+                      <th className="py-3.5 px-4">Rating & Review Title</th>
+                      <th className="py-3.5 px-4">Review Content & Photos</th>
+                      <th className="py-3.5 px-4">Verification</th>
+                      <th className="py-3.5 px-4">Status</th>
+                      <th className="py-3.5 px-4 text-right">Moderation Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60">
+                    {adminReviews
+                      .filter(r => reviewFilterTab === 'ALL' || r.status === reviewFilterTab)
+                      .map(rev => {
+                        const targetProd = products.find(p => p.id === rev.productId);
+                        return (
+                          <tr key={rev.id} className="hover:bg-zinc-800/40 transition-colors">
+                            <td className="py-3.5 px-4">
+                              <div className="space-y-0.5">
+                                <span className="font-bold text-white block">{rev.userName || rev.patronName || 'Patron'}</span>
+                                <span className="text-[10px] text-indigo-400 font-mono block truncate max-w-[160px]">
+                                  {targetProd?.title || `ID: ${rev.productId}`}
+                                </span>
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4">
+                              <div className="space-y-1">
+                                <div className="flex items-center text-amber-400 font-bold">
+                                  {'★'.repeat(rev.rating || 5)}
+                                  <span className="text-zinc-500 text-[10px] ml-1">({rev.rating}/5)</span>
+                                </div>
+                                <span className="font-semibold text-zinc-200 block">{rev.title || 'Artisanal Review'}</span>
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 max-w-xs">
+                              <p className="text-zinc-300 line-clamp-2">{rev.comment}</p>
+
+                              {/* Cloudinary Photos preview */}
+                              {(rev.images?.length > 0 || rev.photos?.length > 0) && (
+                                <div className="flex gap-1.5 mt-2">
+                                  {(rev.images || rev.photos).map((imgUrl: string, idx: number) => (
+                                    <img key={idx} src={imgUrl} alt="" className="w-8 h-8 rounded object-cover border border-zinc-700 bg-zinc-950" />
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Admin Response Badge */}
+                              {rev.adminReply && (
+                                <div className="mt-2 p-2 bg-amber-950/40 border border-amber-500/30 rounded-lg text-[10px] text-amber-300">
+                                  <span className="font-bold block uppercase">Curator Response:</span>
+                                  <span>{rev.adminReply}</span>
+                                </div>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-4">
+                              {rev.isVerifiedPurchase ? (
+                                <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded text-[9px] font-bold uppercase">
+                                  Verified Buyer ✅
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 bg-zinc-800 text-zinc-400 border border-zinc-700 rounded text-[9px] font-bold uppercase">
+                                  Guest Submission
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-4">
+                              {rev.status === 'APPROVED' ? (
+                                <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded text-[9px] font-bold uppercase">Approved</span>
+                              ) : rev.status === 'REJECTED' ? (
+                                <span className="px-2 py-0.5 bg-rose-950 text-rose-400 border border-rose-800 rounded text-[9px] font-bold uppercase">Rejected</span>
+                              ) : (
+                                <span className="px-2 py-0.5 bg-amber-950 text-amber-400 border border-amber-800 rounded text-[9px] font-bold uppercase animate-pulse">Pending Review</span>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-4 text-right space-x-1">
+                              {rev.status !== 'APPROVED' && (
+                                <button
+                                  onClick={() => handleModerateReview(rev.id, 'APPROVED')}
+                                  className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[10px] font-bold uppercase"
+                                >
+                                  Approve
+                                </button>
+                              )}
+                              {rev.status !== 'REJECTED' && (
+                                <button
+                                  onClick={() => handleModerateReview(rev.id, 'REJECTED')}
+                                  className="px-2 py-1 bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded text-[10px] font-bold uppercase"
+                                >
+                                  Reject
+                                </button>
+                              )}
+                              <button
+                                onClick={() => {
+                                  setReplyingReview(rev);
+                                  setReplyText(rev.adminReply || '');
+                                }}
+                                className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-amber-500/30 rounded text-[10px] font-bold uppercase"
+                              >
+                                Reply
+                              </button>
+                              <button
+                                onClick={() => handleDeleteReview(rev.id)}
+                                className="p-1 hover:bg-rose-950 text-zinc-400 hover:text-rose-400 rounded"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         )}
 
@@ -1581,6 +1798,62 @@ export const AdminDashboardView: React.FC = () => {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* CURATOR OFFICIAL REPLY MODAL */}
+      {replyingReview && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative">
+            
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-amber-400">Official Guild Curator Response</span>
+                <h3 className="font-serif text-lg font-bold text-white">Reply to Review — #{replyingReview.id}</h3>
+              </div>
+              <button 
+                onClick={() => setReplyingReview(null)}
+                className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 bg-zinc-950 rounded-2xl border border-zinc-800 text-xs space-y-1">
+              <span className="font-bold text-white block">{replyingReview.userName || replyingReview.patronName} wrote:</span>
+              <p className="text-zinc-400 italic">"{replyingReview.comment}"</p>
+            </div>
+
+            <form onSubmit={handleSaveAdminReply} className="space-y-4 text-xs">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Curator Official Store Response</label>
+                <textarea 
+                  rows={4}
+                  required
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder="Thank you for appreciating master craft traditions..."
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setReplyingReview(null)}
+                  className="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-xl font-bold uppercase text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl uppercase text-xs shadow-lg shadow-amber-600/20"
+                >
+                  Publish Curator Reply
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
