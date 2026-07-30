@@ -128,13 +128,65 @@ const initialProducts = [
   }
 ];
 
-let memoryProducts = [...initialProducts];
+const initialArtisans = [
+  {
+    id: 'artisan-1',
+    name: 'Master B. Ramappa',
+    story: 'Pioneer of GI-tagged Channapatna woodturning craft with over 32 years of experience creating non-toxic ivory wood artifacts.',
+    yearsExperience: 32,
+    region: 'Channapatna, Karnataka',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+    craftSpecialty: 'Channapatna Wood Lathe',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'artisan-2',
+    name: 'Rameshwar Ji',
+    story: 'National Awardee metal artisan specializing in Mughal lost-wax brass casting and hand-chiselling.',
+    yearsExperience: 28,
+    region: 'Varanasi, Uttar Pradesh',
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+    craftSpecialty: 'Lost-Wax Brass Chiselling',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'artisan-3',
+    name: 'Devika Devi',
+    story: 'UNESCO Heritage recognized studio potter crafting Jaipur quartz terracotta with mineral glazes.',
+    yearsExperience: 24,
+    region: 'Jaipur, Rajasthan',
+    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+    craftSpecialty: 'Studio Quartz Terracotta',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'artisan-4',
+    name: 'Master Abdul Khan',
+    story: 'Master Saharanpur woodcarver dedicated to preserving intricate floral jaali fretwork and hand-carved teakwood artifacts.',
+    yearsExperience: 35,
+    region: 'Saharanpur, Uttar Pradesh',
+    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
+    craftSpecialty: 'Teakwood Relief Jaali',
+    createdAt: new Date().toISOString()
+  }
+];
+
+let memoryProducts = [...initialProducts].map(p => ({
+  ...p,
+  isSilkMarkCertified: true,
+  giTagRegion: p.originRegion.split(',')[0] || 'Kashmir',
+  craftType: p.craftTechnique.includes('Wood') ? 'Hand-carved' : p.craftTechnique.includes('Brass') ? 'Hand-carved' : 'Hand-loom',
+  craftingHours: 120,
+  artisan: initialArtisans.find(a => a.name.includes(p.artisanName.split(' ')[0])) || initialArtisans[0]
+}));
 let memoryOrders = [];
+let memoryArtisans = [...initialArtisans];
 
 const isDbReady = () => mongoose.connection && mongoose.connection.readyState === 1;
 
 module.exports = {
   isDbReady,
   memoryProducts,
-  memoryOrders
+  memoryOrders,
+  memoryArtisans
 };

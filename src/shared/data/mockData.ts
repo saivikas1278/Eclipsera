@@ -1,3 +1,13 @@
+export interface Artisan {
+  id: string;
+  name: string;
+  story: string;
+  yearsExperience: number;
+  region: string;
+  avatarUrl: string;
+  craftSpecialty?: string;
+}
+
 export interface ProductVariant {
   id: string;
   sku: string;
@@ -27,6 +37,12 @@ export interface Product {
   isFeatured: boolean;
   isBestSeller: boolean;
   silkMarkCertified: boolean; // Craft certified badge
+  isSilkMarkCertified?: boolean;
+  giTagRegion?: string;
+  craftType?: 'Hand-loom' | 'Hand-carved' | 'Hand-spun' | 'Hand-painted' | 'Embroidery' | string;
+  craftingHours?: number;
+  artisan?: Artisan;
+  artisanId?: string;
   category: string;
   images: string[];
   variants: ProductVariant[];

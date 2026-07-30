@@ -228,3 +228,61 @@ export async function loginAdminInAPI(password: string) {
     return null;
   }
 }
+
+export async function fetchArtisansFromAPI() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/artisans`);
+    if (!res.ok) throw new Error('Failed to fetch artisans');
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function createArtisanInAPI(artisanData: any) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/artisans`, {
+      method: 'POST',
+      headers: getAdminHeaders(),
+      body: JSON.stringify(artisanData)
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function updateArtisanInAPI(id: string, artisanData: any) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/artisans/${id}`, {
+      method: 'PUT',
+      headers: getAdminHeaders(),
+      body: JSON.stringify(artisanData)
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function deleteArtisanInAPI(id: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/artisans/${id}`, {
+      method: 'DELETE',
+      headers: getAdminHeaders()
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function fetchProductCertificateFromAPI(productId: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/products/${productId}/certificate`);
+    if (!res.ok) throw new Error('Failed to fetch certificate');
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}

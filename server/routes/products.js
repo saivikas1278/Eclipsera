@@ -5,6 +5,8 @@ const { verifyAdminToken } = require('../middleware');
 const { isDbReady, memoryProducts } = require('../store');
 const { deleteFromCloudinary } = require('../cloudinary');
 
+const crypto = require('crypto');
+
 // GET all products
 router.get('/', async (req, res) => {
   try {
@@ -19,6 +21,54 @@ router.get('/', async (req, res) => {
     res.json(memoryProducts);
   } catch (err) {
     res.json(memoryProducts);
+  }
+});
+
+// GET Digital Certificate of Authenticity for Product
+router.get('/:id/certificate', async (req, res) => {
+  try {
+    const { id } = req.params;
+    let prod = memoryProducts.find(p => p.id === id || p.slug === id);
+
+    if (!prod && isDbReady()) {
+      try {
+        prod = await Product.findOne({ $or: [{ id }, { slug: id }] });
+      } catch (e) {}
+    }
+
+    if (!prod) {
+      return res.status(404).json({ error: 'Product not found for certificate generation' });
+    }
+
+    const sku = prod.variants?.[0]?.sku || `ECL-${prod.id.toUpperCase()}`;
+    const rawPayload = `${prod.id}-${sku}-${prod.giTagRegion || prod.originRegion}-${Date.now()}`;
+    const verificationHash = `ECL-CERT-${crypto.createHash('sha256').update(rawPayload).digest('hex').substring(0, 16).toUpperCase()}`;
+
+    const certificate = {
+      certificateId: `GI-ECL-2026-${Math.floor(10000 + Math.random() * 90000)}`,
+      productSku: sku,
+      productId: prod.id,
+      title: prod.title,
+      giTagRegion: prod.giTagRegion || prod.originRegion || 'Kashmir',
+      craftType: prod.craftType || 'Hand-loom',
+      craftingHours: prod.craftingHours || 120,
+      isSilkMarkCertified: prod.isSilkMarkCertified ?? prod.silkMarkCertified ?? true,
+      material: prod.material || 'Natural Organic Material',
+      artisan: prod.artisan || {
+        name: prod.artisanName || 'Master Craftsman Guild',
+        story: prod.artisanBio || 'Heritage master guild member.',
+        yearsExperience: 25,
+        region: prod.originRegion || 'India',
+        avatarUrl: prod.artisanAvatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+      },
+      verificationHash,
+      issuedAt: new Date().toISOString(),
+      registrar: 'Eclipsera National GI Heritage Board'
+    };
+
+    res.json(certificate);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -53,8 +103,8 @@ router.post('/', verifyAdminToken, async (req, res) => {
     compareAtPrice: compareAtPriceNum,
     craftTechnique: p.craftTechnique || 'Handcrafted Technique',
     originRegion: p.originRegion || 'India',
-    artisanName: p.artisanName || 'Master Guild',
-    artisanBio: p.artisanBio || '',
+    artisanName: p.artisanName || p.artisan?.name || 'Master Guild',
+    artisanBio: p.artisanBio || p.artisan?.story || '',
     category: p.category || 'handcrafted-toys',
     material: p.material || 'Natural Organic Material',
     careInstructions: p.careInstructions || 'Keep dry, clean with soft cloth.',
@@ -62,7 +112,13 @@ router.post('/', verifyAdminToken, async (req, res) => {
     reviewsCount: 1,
     isFeatured: true,
     isBestSeller: false,
-    silkMarkCertified: true,
+    silkMarkCertified: p.isSilkMarkCertified ?? true,
+    isSilkMarkCertified: p.isSilkMarkCertified ?? true,
+    giTagRegion: p.giTagRegion || p.originRegion || 'Kashmir',
+    craftType: p.craftType || 'Hand-loom',
+    craftingHours: Number(p.craftingHours) || 120,
+    artisanId: p.artisanId || p.artisan?.id || '',
+    artisan: p.artisan || null,
     imageUrl,
     cloudinaryPublicId,
     createdBy: p.createdBy || 'Admin',
@@ -79,7 +135,6 @@ router.post('/', verifyAdminToken, async (req, res) => {
       try {
         await Product.create(newProductObj);
       } catch (dbErr) {
-        // Rollback Cloudinary asset if DB write throws unrecoverable exception
         if (cloudinaryPublicId) {
           await deleteFromCloudinary(cloudinaryPublicId);
         }
@@ -113,6 +168,15 @@ router.put('/:id', verifyAdminToken, async (req, res) => {
       if (p.images && p.images.length) memoryProducts[idx].images = p.images;
       if (p.craftTechnique) memoryProducts[idx].craftTechnique = p.craftTechnique;
       if (p.artisanName) memoryProducts[idx].artisanName = p.artisanName;
+      if (p.giTagRegion) memoryProducts[idx].giTagRegion = p.giTagRegion;
+      if (p.craftType) memoryProducts[idx].craftType = p.craftType;
+      if (p.craftingHours) memoryProducts[idx].craftingHours = Number(p.craftingHours);
+      if (p.isSilkMarkCertified !== undefined) {
+        memoryProducts[idx].isSilkMarkCertified = Boolean(p.isSilkMarkCertified);
+        memoryProducts[idx].silkMarkCertified = Boolean(p.isSilkMarkCertified);
+      }
+      if (p.artisan) memoryProducts[idx].artisan = p.artisan;
+      if (p.artisanId) memoryProducts[idx].artisanId = p.artisanId;
       memoryProducts[idx].updatedAt = new Date().toISOString();
     }
 

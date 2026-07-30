@@ -1,9 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, Order, Coupon } from '../../shared/data/mockData';
+import { Product, Order, Coupon, Artisan } from '../../shared/data/mockData';
 import { 
   fetchProductsFromAPI, 
   fetchOrdersFromAPI, 
   fetchCouponsFromAPI,
+  fetchArtisansFromAPI,
+  createArtisanInAPI,
+  updateArtisanInAPI,
+  deleteArtisanInAPI,
   updateOrderStatusInAPI,
   createProductInAPI,
   updateStockInAPI,
@@ -20,6 +24,7 @@ interface AdminContextType {
   products: Product[];
   orders: Order[];
   coupons: Coupon[];
+  artisans: Artisan[];
   isAdminLoggedIn: boolean;
   adminLogin: (password: string) => Promise<boolean> | boolean;
   adminLogout: () => void;
@@ -27,6 +32,9 @@ interface AdminContextType {
   deleteProduct: (id: string) => void;
   updateStock: (productId: string, variantId: string, newStock: number) => void;
   addCoupon: (coupon: Coupon) => void;
+  addArtisan: (artisan: Partial<Artisan>) => Promise<void>;
+  updateArtisan: (id: string, artisan: Partial<Artisan>) => Promise<void>;
+  deleteArtisan: (id: string) => Promise<void>;
   updateOrderStatus: (orderId: string, newStatus: Order['status'], courierName?: string, trackingNumber?: string) => void;
   toasts: Toast[];
   showToast: (message: string, type?: Toast['type']) => void;
@@ -39,6 +47,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [artisans, setArtisans] = useState<Artisan[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
     try {
@@ -60,6 +69,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         const apiCoupons = await fetchCouponsFromAPI();
         if (apiCoupons) setCoupons(apiCoupons);
+
+        const apiArtisans = await fetchArtisansFromAPI();
+        if (apiArtisans) setArtisans(apiArtisans);
       } catch (e) {
         // Safe fallback
       }
@@ -170,6 +182,42 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const addArtisan = async (artisanData: Partial<Artisan>) => {
+    try {
+      const res = await createArtisanInAPI(artisanData);
+      if (res && res.success && res.artisan) {
+        setArtisans(prev => [res.artisan, ...prev]);
+        showToast(`Artisan Profile "${res.artisan.name}" published!`, 'success');
+      } else {
+        const newArtisan = { id: `artisan-${Date.now()}`, ...artisanData } as Artisan;
+        setArtisans(prev => [newArtisan, ...prev]);
+        showToast(`Artisan Profile "${newArtisan.name}" saved.`, 'success');
+      }
+    } catch (e) {
+      // Fallback
+    }
+  };
+
+  const updateArtisan = async (id: string, artisanData: Partial<Artisan>) => {
+    try {
+      await updateArtisanInAPI(id, artisanData);
+      setArtisans(prev => prev.map(a => a.id === id ? { ...a, ...artisanData } : a));
+      showToast('Artisan profile updated.', 'success');
+    } catch (e) {
+      // Fallback
+    }
+  };
+
+  const deleteArtisan = async (id: string) => {
+    try {
+      await deleteArtisanInAPI(id);
+      setArtisans(prev => prev.filter(a => a.id !== id));
+      showToast('Artisan profile removed.', 'info');
+    } catch (e) {
+      // Fallback
+    }
+  };
+
   const updateOrderStatus = async (orderId: string, newStatus: Order['status'], courierName?: string, trackingNumber?: string) => {
     try {
       await updateOrderStatusInAPI(orderId, newStatus, courierName, trackingNumber);
@@ -195,6 +243,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       products,
       orders,
       coupons,
+      artisans,
       isAdminLoggedIn,
       adminLogin,
       adminLogout,
@@ -202,6 +251,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       deleteProduct,
       updateStock,
       addCoupon,
+      addArtisan,
+      updateArtisan,
+      deleteArtisan,
       updateOrderStatus,
       toasts,
       showToast,

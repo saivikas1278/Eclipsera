@@ -1,27 +1,31 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
-import { Product, Order } from '../../shared/data/mockData';
+import { Product, Order, Artisan } from '../../shared/data/mockData';
 import { uploadImageToAPI } from '../../shared/services/apiService';
 import { 
   LayoutDashboard, Package, ShoppingBag, Layers, 
   Plus, Edit3, Trash2, LogOut, Search, CheckCircle2, 
-  X, AlertTriangle, Upload, Eye, Check, RefreshCw
+  X, AlertTriangle, Upload, Eye, Check, RefreshCw, UserCheck, ShieldCheck, Award
 } from 'lucide-react';
 
 export const AdminDashboardView: React.FC = () => {
   const { 
     products, 
     orders, 
+    artisans,
     updateOrderStatus, 
     addProduct, 
     deleteProduct, 
     updateStock, 
+    addArtisan,
+    updateArtisan,
+    deleteArtisan,
     adminLogout,
     showToast 
   } = useAdmin();
 
   // Active Navigation Tab
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'inventory'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'inventory' | 'artisans'>('dashboard');
 
   // --- PRODUCT MANAGEMENT STATES ---
   const [prodSearch, setProdSearch] = useState('');
@@ -35,7 +39,22 @@ export const AdminDashboardView: React.FC = () => {
   const [formCategory, setFormCategory] = useState('handcrafted-toys');
   const [formStock, setFormStock] = useState('10');
   const [formImageUrl, setFormImageUrl] = useState('https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=600&q=80');
+  const [formGiTagRegion, setFormGiTagRegion] = useState('Kashmir');
+  const [formCraftType, setFormCraftType] = useState<string>('Hand-loom');
+  const [formCraftingHours, setFormCraftingHours] = useState('120');
+  const [formSilkMark, setFormSilkMark] = useState(true);
+  const [formArtisanId, setFormArtisanId] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+
+  // --- ARTISAN MANAGEMENT STATES ---
+  const [isArtisanModalOpen, setIsArtisanModalOpen] = useState(false);
+  const [editingArtisan, setEditingArtisan] = useState<Artisan | null>(null);
+  const [artisanName, setArtisanName] = useState('');
+  const [artisanStory, setArtisanStory] = useState('');
+  const [artisanExp, setArtisanExp] = useState('15');
+  const [artisanRegion, setArtisanRegion] = useState('Kashmir, Jammu & Kashmir');
+  const [artisanAvatar, setArtisanAvatar] = useState('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80');
+  const [artisanSpecialty, setArtisanSpecialty] = useState('Pashmina Weaving');
 
   // --- ORDER MANAGEMENT STATES ---
   const [orderSearch, setOrderSearch] = useState('');
@@ -114,6 +133,11 @@ export const AdminDashboardView: React.FC = () => {
     setFormCategory('handcrafted-toys');
     setFormStock('10');
     setFormImageUrl('https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=600&q=80');
+    setFormGiTagRegion('Kashmir');
+    setFormCraftType('Hand-loom');
+    setFormCraftingHours('120');
+    setFormSilkMark(true);
+    setFormArtisanId(artisans[0]?.id || '');
     setIsProductModalOpen(true);
   };
 
@@ -125,6 +149,11 @@ export const AdminDashboardView: React.FC = () => {
     setFormCategory(p.category);
     setFormStock((p.variants[0]?.stockQuantity || 0).toString());
     setFormImageUrl(p.images[0] || '');
+    setFormGiTagRegion(p.giTagRegion || p.originRegion || 'Kashmir');
+    setFormCraftType(p.craftType || 'Hand-loom');
+    setFormCraftingHours((p.craftingHours || 120).toString());
+    setFormSilkMark(p.isSilkMarkCertified ?? p.silkMarkCertified ?? true);
+    setFormArtisanId(p.artisanId || p.artisan?.id || artisans[0]?.id || '');
     setIsProductModalOpen(true);
   };
 
@@ -135,6 +164,7 @@ export const AdminDashboardView: React.FC = () => {
 
     const basePriceNum = Number(formPrice) || 0;
     const stockNum = Number(formStock) || 0;
+    const selectedArtisanObj = artisans.find(a => a.id === formArtisanId) || artisans[0] || null;
 
     const newVariant = {
       id: `v-${Date.now()}`,
@@ -151,6 +181,18 @@ export const AdminDashboardView: React.FC = () => {
       editingProduct.description = formDescription;
       editingProduct.basePrice = basePriceNum;
       editingProduct.category = formCategory;
+      editingProduct.giTagRegion = formGiTagRegion;
+      editingProduct.craftType = formCraftType;
+      editingProduct.craftingHours = Number(formCraftingHours) || 120;
+      editingProduct.isSilkMarkCertified = formSilkMark;
+      editingProduct.silkMarkCertified = formSilkMark;
+      if (selectedArtisanObj) {
+        editingProduct.artisan = selectedArtisanObj;
+        editingProduct.artisanId = selectedArtisanObj.id;
+        editingProduct.artisanName = selectedArtisanObj.name;
+        editingProduct.artisanBio = selectedArtisanObj.story;
+        editingProduct.artisanAvatar = selectedArtisanObj.avatarUrl;
+      }
       if (editingProduct.variants[0]) {
         editingProduct.variants[0].stockQuantity = stockNum;
       }
@@ -166,9 +208,18 @@ export const AdminDashboardView: React.FC = () => {
         description: formDescription,
         basePrice: basePriceNum,
         compareAtPrice: Math.round(basePriceNum * 1.2),
-        craftTechnique: 'Handcrafted Technique',
-        originRegion: 'India',
-        artisanName: 'Master Artisan Guild',
+        craftTechnique: `${formCraftType} Technique`,
+        originRegion: formGiTagRegion,
+        artisanName: selectedArtisanObj?.name || 'Master Artisan Guild',
+        artisanBio: selectedArtisanObj?.story || '',
+        artisanAvatar: selectedArtisanObj?.avatarUrl || '',
+        giTagRegion: formGiTagRegion,
+        craftType: formCraftType,
+        craftingHours: Number(formCraftingHours) || 120,
+        isSilkMarkCertified: formSilkMark,
+        silkMarkCertified: formSilkMark,
+        artisan: selectedArtisanObj || undefined,
+        artisanId: selectedArtisanObj?.id || '',
         category: formCategory,
         material: 'Natural Organic Material',
         careInstructions: 'Keep dry, clean with soft cloth.',
@@ -182,6 +233,51 @@ export const AdminDashboardView: React.FC = () => {
     }
 
     setIsProductModalOpen(false);
+  };
+
+  // --- ARTISAN HANDLERS ---
+  const handleOpenAddArtisanModal = () => {
+    setEditingArtisan(null);
+    setArtisanName('');
+    setArtisanStory('');
+    setArtisanExp('15');
+    setArtisanRegion('Kashmir, Jammu & Kashmir');
+    setArtisanAvatar('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80');
+    setArtisanSpecialty('Pashmina Weaving');
+    setIsArtisanModalOpen(true);
+  };
+
+  const handleOpenEditArtisanModal = (a: Artisan) => {
+    setEditingArtisan(a);
+    setArtisanName(a.name);
+    setArtisanStory(a.story);
+    setArtisanExp(a.yearsExperience.toString());
+    setArtisanRegion(a.region);
+    setArtisanAvatar(a.avatarUrl);
+    setArtisanSpecialty(a.craftSpecialty || 'Heritage Craft');
+    setIsArtisanModalOpen(true);
+  };
+
+  const handleSaveArtisan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!artisanName.trim()) return;
+
+    const data: Partial<Artisan> = {
+      name: artisanName,
+      story: artisanStory,
+      yearsExperience: Number(artisanExp) || 10,
+      region: artisanRegion,
+      avatarUrl: artisanAvatar,
+      craftSpecialty: artisanSpecialty
+    };
+
+    if (editingArtisan) {
+      await updateArtisan(editingArtisan.id, data);
+    } else {
+      await addArtisan(data);
+    }
+
+    setIsArtisanModalOpen(false);
   };
 
   // Metrics Calculations
@@ -267,6 +363,18 @@ export const AdminDashboardView: React.FC = () => {
                   {lowStockCount}
                 </span>
               )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('artisans')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                activeTab === 'artisans'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+              }`}
+            >
+              <UserCheck className="w-4 h-4 text-emerald-400" />
+              <span>Artisans & Guilds</span>
             </button>
           </nav>
         </div>
@@ -644,6 +752,70 @@ export const AdminDashboardView: React.FC = () => {
           </div>
         )}
 
+        {/* 5. ARTISANS MANAGEMENT VIEW */}
+        {activeTab === 'artisans' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-white tracking-tight">Artisans & Master Guilds</h2>
+                <p className="text-zinc-400 text-xs mt-1">Manage master craftspersons, heritage bios, and regional GI certifications.</p>
+              </div>
+
+              <button
+                onClick={handleOpenAddArtisanModal}
+                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Artisan Profile</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {artisans.map(artisan => (
+                <div key={artisan.id} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 space-y-4 shadow-lg hover:border-zinc-700 transition-all flex items-start gap-4">
+                  <img 
+                    src={artisan.avatarUrl} 
+                    alt={artisan.name} 
+                    className="w-16 h-16 rounded-2xl object-cover border-2 border-amber-500/50 shrink-0 bg-zinc-950"
+                  />
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-serif font-bold text-base text-white truncate">{artisan.name}</h3>
+                      <div className="flex items-center gap-1">
+                        <button 
+                          onClick={() => handleOpenEditArtisanModal(artisan)}
+                          className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg transition-all"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => deleteArtisan(artisan.id)}
+                          className="p-1.5 hover:bg-rose-950/50 text-zinc-400 hover:text-rose-400 rounded-lg transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                      <Award className="w-3.5 h-3.5 shrink-0" />
+                      <span>{artisan.craftSpecialty || 'Master Craft'} • {artisan.yearsExperience} Years Exp</span>
+                    </div>
+
+                    <p className="text-zinc-400 text-xs line-clamp-2 leading-relaxed pt-1">
+                      {artisan.story}
+                    </p>
+
+                    <div className="pt-2 text-[10px] text-zinc-500 font-mono">
+                      Region: <span className="text-zinc-300 font-semibold">{artisan.region}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </main>
 
       {/* PRODUCT ADD / EDIT MODAL WITH CLOUDINARY UPLOAD */}
@@ -730,6 +902,81 @@ export const AdminDashboardView: React.FC = () => {
                     onChange={(e) => setFormStock(e.target.value)}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
+                </div>
+              </div>
+
+              {/* HERITAGE & AUTHENTICITY METADATA GRID */}
+              <div className="p-3.5 bg-zinc-950/80 border border-amber-500/20 rounded-2xl space-y-3">
+                <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                  <Award className="w-4 h-4 text-amber-400" />
+                  <span>Heritage & GI Authenticity Parameters</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">GI Tag Region</label>
+                    <input 
+                      type="text" 
+                      value={formGiTagRegion}
+                      onChange={(e) => setFormGiTagRegion(e.target.value)}
+                      placeholder="e.g. Kashmir, Varanasi, Chanderi"
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Craft Type</label>
+                    <select
+                      value={formCraftType}
+                      onChange={(e) => setFormCraftType(e.target.value)}
+                      className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    >
+                      <option value="Hand-loom">Hand-loom</option>
+                      <option value="Hand-carved">Hand-carved</option>
+                      <option value="Hand-spun">Hand-spun</option>
+                      <option value="Hand-painted">Hand-painted</option>
+                      <option value="Embroidery">Embroidery</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 items-end">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Crafting Hours</label>
+                    <input 
+                      type="number" 
+                      min={1}
+                      value={formCraftingHours}
+                      onChange={(e) => setFormCraftingHours(e.target.value)}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white font-mono font-bold text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Assigned Artisan</label>
+                    <select
+                      value={formArtisanId}
+                      onChange={(e) => setFormArtisanId(e.target.value)}
+                      className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 truncate"
+                    >
+                      {artisans.map(a => (
+                        <option key={a.id} value={a.id}>{a.name} ({a.region.split(',')[0]})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-2 pb-1.5">
+                    <input 
+                      type="checkbox"
+                      id="silkMarkCheck"
+                      checked={formSilkMark}
+                      onChange={(e) => setFormSilkMark(e.target.checked)}
+                      className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                    />
+                    <label htmlFor="silkMarkCheck" className="text-[11px] font-bold text-amber-300 cursor-pointer select-none">
+                      Silk Mark Certified
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -858,6 +1105,114 @@ export const AdminDashboardView: React.FC = () => {
             >
               Close Window
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ARTISAN ADD / EDIT MODAL */}
+      {isArtisanModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <h3 className="font-serif text-lg font-bold text-white">
+                {editingArtisan ? 'Edit Artisan Profile' : 'Create Master Artisan Profile'}
+              </h3>
+              <button 
+                onClick={() => setIsArtisanModalOpen(false)}
+                className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveArtisan} className="space-y-3.5 text-xs">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Artisan Full Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={artisanName}
+                  onChange={(e) => setArtisanName(e.target.value)}
+                  placeholder="Master Abdul Gani"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Years Experience</label>
+                  <input 
+                    type="number" 
+                    required
+                    min={1}
+                    value={artisanExp}
+                    onChange={(e) => setArtisanExp(e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2 text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Craft Specialty</label>
+                  <input 
+                    type="text" 
+                    value={artisanSpecialty}
+                    onChange={(e) => setArtisanSpecialty(e.target.value)}
+                    placeholder="Pashmina Weaving"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Origin Region & State</label>
+                <input 
+                  type="text" 
+                  value={artisanRegion}
+                  onChange={(e) => setArtisanRegion(e.target.value)}
+                  placeholder="Srinagar, Kashmir"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Avatar Image URL</label>
+                <input 
+                  type="text" 
+                  value={artisanAvatar}
+                  onChange={(e) => setArtisanAvatar(e.target.value)}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2 text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Craft Heritage Story & Bio</label>
+                <textarea 
+                  rows={3}
+                  value={artisanStory}
+                  onChange={(e) => setArtisanStory(e.target.value)}
+                  placeholder="Pioneer of GI-certified weaving with 30+ years preserving traditional looms..."
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsArtisanModalOpen(false)}
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl font-bold uppercase text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold uppercase text-xs shadow-lg shadow-emerald-600/20"
+                >
+                  {editingArtisan ? 'Update Profile' : 'Save Artisan Profile'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -10,6 +10,18 @@ const variantSchema = new mongoose.Schema({
   stockQuantity: { type: Number, default: 5 }
 });
 
+// Artisan Schema
+const artisanSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  story: String,
+  yearsExperience: { type: Number, default: 10 },
+  region: String,
+  avatarUrl: String,
+  craftSpecialty: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
 // Product Schema
 const productSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
@@ -30,6 +42,20 @@ const productSchema = new mongoose.Schema({
   isFeatured: { type: Boolean, default: false },
   isBestSeller: { type: Boolean, default: false },
   silkMarkCertified: { type: Boolean, default: true },
+  isSilkMarkCertified: { type: Boolean, default: true },
+  giTagRegion: { type: String, default: 'Kashmir' },
+  craftType: { type: String, default: 'Hand-loom' },
+  craftingHours: { type: Number, default: 120 },
+  artisanId: String,
+  artisan: {
+    id: String,
+    name: String,
+    story: String,
+    yearsExperience: Number,
+    region: String,
+    avatarUrl: String,
+    craftSpecialty: String
+  },
   imageUrl: String,
   cloudinaryPublicId: String,
   createdBy: { type: String, default: 'Admin' },
@@ -111,6 +137,7 @@ const auditLogSchema = new mongoose.Schema({
 });
 
 const Product = mongoose.model('Product', productSchema);
+const Artisan = mongoose.model('Artisan', artisanSchema);
 const Order = mongoose.model('Order', orderSchema);
 const Profile = mongoose.model('Profile', profileSchema);
 const Coupon = mongoose.model('Coupon', couponSchema);
@@ -119,6 +146,7 @@ const AuditLog = mongoose.model('AuditLog', auditLogSchema);
 
 module.exports = {
   Product,
+  Artisan,
   Order,
   Profile,
   Coupon,
