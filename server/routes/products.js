@@ -24,6 +24,28 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET single product by ID or slug
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    let prod = memoryProducts.find(p => p.id === id || p.slug === id);
+
+    if (!prod && isDbReady()) {
+      try {
+        prod = await Product.findOne({ $or: [{ id }, { slug: id }] });
+      } catch (e) {}
+    }
+
+    if (!prod) {
+      return res.status(404).json({ error: `Product with ID or slug "${id}" not found.` });
+    }
+
+    res.json(prod);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET Digital Certificate of Authenticity for Product
 router.get('/:id/certificate', async (req, res) => {
   try {
@@ -75,8 +97,8 @@ router.get('/:id/certificate', async (req, res) => {
 // POST Create Product
 router.post('/', verifyAdminToken, async (req, res) => {
   const p = req.body;
-  const newId = `prod-${Date.now()}`;
-  const slug = (p.title || 'untitled').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const newId = p.id || `prod-${Date.now()}`;
+  const slug = p.slug || (p.title || 'untitled').toLowerCase().replace(/[^a-z0-9]+/g, '-');
   
   const imageUrl = p.imageUrl || p.images?.[0] || 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1000&q=85';
   const cloudinaryPublicId = p.cloudinaryPublicId || p.public_id || '';
