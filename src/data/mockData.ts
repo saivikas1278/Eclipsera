@@ -79,6 +79,13 @@ export interface OrderItem {
   image: string;
 }
 
+export interface TrackingLog {
+  status: string;
+  location: string;
+  timestamp: string;
+  note?: string;
+}
+
 export interface Order {
   id: string;
   orderNumber: string;
@@ -98,11 +105,18 @@ export interface Order {
   shippingFee: number;
   taxTotal: number;
   grandTotal: number;
-  status: 'PENDING' | 'PAYMENT_CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  status: 'PENDING_FULFILLMENT' | 'QUALITY_CHECK' | 'PACKED' | 'DISPATCHED' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'RETURN_REQUESTED' | 'RETURNED' | 'PENDING' | 'PAYMENT_CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'CANCELLED';
   paymentMethod: string;
   paymentId: string;
   courierName?: string;
   trackingNumber?: string;
+  awbTrackingNumber?: string;
+  estimatedDeliveryDate?: string;
+  packingVideoUrl?: string;
+  trackingHistory?: TrackingLog[];
+  returnReason?: string;
+  returnPhotos?: string[];
+  returnRequestedAt?: string;
   createdAt: string;
 }
 

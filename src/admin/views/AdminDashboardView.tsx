@@ -56,44 +56,84 @@ export const AdminDashboardView: React.FC = () => {
   const [artisanAvatar, setArtisanAvatar] = useState('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80');
   const [artisanSpecialty, setArtisanSpecialty] = useState('Pashmina Weaving');
 
-  // --- ORDER MANAGEMENT STATES ---
+  // --- ORDER MANAGEMENT & FULFILLMENT STATES ---
   const [orderSearch, setOrderSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderFilterTab, setOrderFilterTab] = useState<'ALL' | 'PENDING' | 'QUALITY' | 'TRANSIT' | 'DELIVERED' | 'RETURNS'>('ALL');
+  
+  // Fulfillment Modal State
+  const [fulfillmentOrder, setFulfillmentOrder] = useState<Order | null>(null);
+  const [fulStatus, setFulStatus] = useState<string>('PENDING_FULFILLMENT');
+  const [fulCourier, setFulCourier] = useState('BlueDart Luxury Express');
+  const [fulAwb, setFulAwb] = useState('');
+  const [fulEstDate, setFulEstDate] = useState('');
+  const [fulVideoUrl, setFulVideoUrl] = useState('');
+  const [fulLocation, setFulLocation] = useState('Bengaluru Fulfillment Center');
+  const [fulNote, setFulNote] = useState('');
+
+  // Packing Slip Modal State
+  const [packingSlipOrder, setPackingSlipOrder] = useState<Order | null>(null);
 
   // --- INVENTORY STATES ---
   const [stockEdits, setStockEdits] = useState<{ [key: string]: number }>({});
 
-  // Helper for Status Badge Styling
+  // Helper for High-Contrast Status Badge Styling
   const renderStatusBadge = (status: string) => {
     switch (status) {
       case 'DELIVERED':
-      case 'SHIPPED':
         return (
           <span className="px-2.5 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800/80 rounded-full font-bold uppercase text-[10px] tracking-wider inline-flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            {status}
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            DELIVERED
           </span>
         );
-      case 'PROCESSING':
+      case 'DISPATCHED':
+      case 'IN_TRANSIT':
+      case 'OUT_FOR_DELIVERY':
+      case 'SHIPPED':
         return (
-          <span className="px-2.5 py-1 bg-blue-950 text-blue-400 border border-blue-800/80 rounded-full font-bold uppercase text-[10px] tracking-wider inline-flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-            PROCESSING
+          <span className="px-2.5 py-1 bg-sky-950 text-sky-400 border border-sky-800/80 rounded-full font-bold uppercase text-[10px] tracking-wider inline-flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
+            {status.replace(/_/g, ' ')}
           </span>
         );
+      case 'PACKED':
+        return (
+          <span className="px-2.5 py-1 bg-indigo-950 text-indigo-400 border border-indigo-800/80 rounded-full font-bold uppercase text-[10px] tracking-wider inline-flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+            PACKED
+          </span>
+        );
+      case 'QUALITY_CHECK':
+        return (
+          <span className="px-2.5 py-1 bg-purple-950 text-purple-400 border border-purple-800/80 rounded-full font-bold uppercase text-[10px] tracking-wider inline-flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+            QUALITY CHECK
+          </span>
+        );
+      case 'PENDING_FULFILLMENT':
       case 'PENDING':
       case 'PAYMENT_CONFIRMED':
+      case 'PROCESSING':
         return (
           <span className="px-2.5 py-1 bg-amber-950 text-amber-400 border border-amber-800/80 rounded-full font-bold uppercase text-[10px] tracking-wider inline-flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-            PENDING
+            PENDING FULFILLMENT
           </span>
         );
+      case 'RETURN_REQUESTED':
+        return (
+          <span className="px-2.5 py-1 bg-orange-950 text-orange-400 border border-orange-800/80 rounded-full font-bold uppercase text-[10px] tracking-wider inline-flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-bounce"></span>
+            RETURN REQUESTED
+          </span>
+        );
+      case 'RETURNED':
       case 'CANCELLED':
         return (
           <span className="px-2.5 py-1 bg-rose-950 text-rose-400 border border-rose-800/80 rounded-full font-bold uppercase text-[10px] tracking-wider inline-flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-            CANCELLED
+            {status}
           </span>
         );
       default:
@@ -278,6 +318,55 @@ export const AdminDashboardView: React.FC = () => {
     }
 
     setIsArtisanModalOpen(false);
+  };
+
+  // --- FULFILLMENT HANDLERS ---
+  const handleOpenFulfillmentModal = (o: Order) => {
+    setFulfillmentOrder(o);
+    setFulStatus(o.status);
+    setFulCourier(o.courierName || 'BlueDart Luxury Express');
+    setFulAwb(o.awbTrackingNumber || o.trackingNumber || `ECL-AWB-${Math.floor(100000 + Math.random() * 900000)}`);
+    setFulEstDate(o.estimatedDeliveryDate || new Date(Date.now() + 86400000 * 4).toISOString().split('T')[0]);
+    setFulVideoUrl(o.packingVideoUrl || '');
+    setFulLocation(o.shippingAddress?.city ? `${o.shippingAddress.city} Regional Hub` : 'Central Fulfillment Vault');
+    setFulNote(`Status updated to ${o.status}`);
+  };
+
+  const handleSaveFulfillment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fulfillmentOrder) return;
+
+    const { updateOrderFulfillmentInAPI } = await import('../../shared/services/apiService');
+    
+    const payload = {
+      status: fulStatus,
+      courierName: fulCourier,
+      awbTrackingNumber: fulAwb,
+      estimatedDeliveryDate: fulEstDate,
+      packingVideoUrl: fulVideoUrl,
+      location: fulLocation,
+      note: fulNote || `Status updated to ${fulStatus}`
+    };
+
+    const res = await updateOrderFulfillmentInAPI(fulfillmentOrder.id, payload);
+    
+    // Update local state in order
+    fulfillmentOrder.status = fulStatus as any;
+    fulfillmentOrder.courierName = fulCourier;
+    fulfillmentOrder.awbTrackingNumber = fulAwb;
+    fulfillmentOrder.trackingNumber = fulAwb;
+    fulfillmentOrder.estimatedDeliveryDate = fulEstDate;
+    fulfillmentOrder.packingVideoUrl = fulVideoUrl;
+    if (!fulfillmentOrder.trackingHistory) fulfillmentOrder.trackingHistory = [];
+    fulfillmentOrder.trackingHistory.push({
+      status: fulStatus,
+      location: fulLocation,
+      timestamp: new Date().toISOString(),
+      note: fulNote || `Status updated to ${fulStatus}`
+    });
+
+    showToast(`Order #${fulfillmentOrder.orderNumber} updated to ${fulStatus}!`, 'success');
+    setFulfillmentOrder(null);
   };
 
   // Metrics Calculations
@@ -584,70 +673,137 @@ export const AdminDashboardView: React.FC = () => {
           </div>
         )}
 
-        {/* TAB 3: ORDER MANAGEMENT */}
+        {/* TAB 3: ORDER MANAGEMENT & FULFILLMENT STATE MACHINE */}
         {activeTab === 'orders' && (
           <div className="space-y-6 animate-fade-in">
             
             {/* Header */}
-            <div>
-              <h2 className="font-serif text-2xl font-bold text-white">Order Management & Fulfillment</h2>
-              <p className="text-xs text-zinc-400 mt-1">Review orders, toggle fulfillment status, and inspect shipping addresses.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="font-serif text-2xl font-bold text-white">Order Fulfillment & Logistics Engine</h2>
+                <p className="text-xs text-zinc-400 mt-1">Manage 9-stage fulfillment pipeline, assign AWB numbers, and generate packing slips.</p>
+              </div>
+
+              {/* Search Filter */}
+              <div className="relative w-full sm:w-72">
+                <input 
+                  type="text"
+                  value={orderSearch}
+                  onChange={(e) => setOrderSearch(e.target.value)}
+                  placeholder="Search Order ID, Customer, AWB..."
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+              </div>
             </div>
 
-            {/* Search Filter */}
-            <div className="relative max-w-md">
-              <input 
-                type="text"
-                value={orderSearch}
-                onChange={(e) => setOrderSearch(e.target.value)}
-                placeholder="Search orders by customer or order number..."
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-3" />
+            {/* Status Filter Tabs */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold border-b border-zinc-800">
+              <button
+                onClick={() => setOrderFilterTab('ALL')}
+                className={`px-3 py-2 rounded-xl transition-all ${orderFilterTab === 'ALL' ? 'bg-indigo-600 text-white' : 'bg-zinc-900 text-zinc-400 hover:text-white'}`}
+              >
+                All Orders ({orders.length})
+              </button>
+              <button
+                onClick={() => setOrderFilterTab('PENDING')}
+                className={`px-3 py-2 rounded-xl transition-all ${orderFilterTab === 'PENDING' ? 'bg-amber-600 text-white' : 'bg-zinc-900 text-zinc-400 hover:text-white'}`}
+              >
+                Pending Fulfillment ({orders.filter(o => ['PENDING_FULFILLMENT', 'PENDING', 'PAYMENT_CONFIRMED'].includes(o.status)).length})
+              </button>
+              <button
+                onClick={() => setOrderFilterTab('QUALITY')}
+                className={`px-3 py-2 rounded-xl transition-all ${orderFilterTab === 'QUALITY' ? 'bg-purple-600 text-white' : 'bg-zinc-900 text-zinc-400 hover:text-white'}`}
+              >
+                Quality Check ({orders.filter(o => o.status === 'QUALITY_CHECK').length})
+              </button>
+              <button
+                onClick={() => setOrderFilterTab('TRANSIT')}
+                className={`px-3 py-2 rounded-xl transition-all ${orderFilterTab === 'TRANSIT' ? 'bg-sky-600 text-white' : 'bg-zinc-900 text-zinc-400 hover:text-white'}`}
+              >
+                In Transit ({orders.filter(o => ['PACKED', 'DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'SHIPPED'].includes(o.status)).length})
+              </button>
+              <button
+                onClick={() => setOrderFilterTab('DELIVERED')}
+                className={`px-3 py-2 rounded-xl transition-all ${orderFilterTab === 'DELIVERED' ? 'bg-emerald-600 text-white' : 'bg-zinc-900 text-zinc-400 hover:text-white'}`}
+              >
+                Delivered ({orders.filter(o => o.status === 'DELIVERED').length})
+              </button>
+              <button
+                onClick={() => setOrderFilterTab('RETURNS')}
+                className={`px-3 py-2 rounded-xl transition-all ${orderFilterTab === 'RETURNS' ? 'bg-orange-600 text-white' : 'bg-zinc-900 text-zinc-400 hover:text-white'}`}
+              >
+                Return Requests ({orders.filter(o => ['RETURN_REQUESTED', 'RETURNED'].includes(o.status)).length})
+              </button>
             </div>
 
             {/* Orders Table */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="border-b border-zinc-800 bg-zinc-950/40 text-zinc-400 font-bold uppercase text-[10px] tracking-wider">
-                      <th className="py-3.5 px-4">Order ID</th>
-                      <th className="py-3.5 px-4">Customer Name</th>
+                      <th className="py-3.5 px-4">Order ID & AWB</th>
+                      <th className="py-3.5 px-4">Customer</th>
                       <th className="py-3.5 px-4">Date</th>
-                      <th className="py-3.5 px-4">Total Amount</th>
-                      <th className="py-3.5 px-4">Status Updater</th>
-                      <th className="py-3.5 px-4 text-right">Details</th>
+                      <th className="py-3.5 px-4">Courier</th>
+                      <th className="py-3.5 px-4">Fulfillment Status</th>
+                      <th className="py-3.5 px-4 text-right">Fulfillment Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800/60">
                     {orders
-                      .filter(o => o.customerName.toLowerCase().includes(orderSearch.toLowerCase()) || o.orderNumber.toLowerCase().includes(orderSearch.toLowerCase()))
+                      .filter(o => {
+                        const matchesSearch = o.customerName.toLowerCase().includes(orderSearch.toLowerCase()) || 
+                          o.orderNumber.toLowerCase().includes(orderSearch.toLowerCase()) ||
+                          (o.awbTrackingNumber && o.awbTrackingNumber.toLowerCase().includes(orderSearch.toLowerCase()));
+
+                        if (!matchesSearch) return false;
+
+                        if (orderFilterTab === 'PENDING') return ['PENDING_FULFILLMENT', 'PENDING', 'PAYMENT_CONFIRMED', 'PROCESSING'].includes(o.status);
+                        if (orderFilterTab === 'QUALITY') return o.status === 'QUALITY_CHECK';
+                        if (orderFilterTab === 'TRANSIT') return ['PACKED', 'DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'SHIPPED'].includes(o.status);
+                        if (orderFilterTab === 'DELIVERED') return o.status === 'DELIVERED';
+                        if (orderFilterTab === 'RETURNS') return ['RETURN_REQUESTED', 'RETURNED'].includes(o.status);
+                        return true;
+                      })
                       .map(o => (
                         <tr key={o.id} className="hover:bg-zinc-800/40 transition-colors">
-                          <td className="py-3.5 px-4 font-mono font-bold text-indigo-400">{o.orderNumber}</td>
-                          <td className="py-3.5 px-4 font-semibold text-zinc-200">{o.customerName}</td>
-                          <td className="py-3.5 px-4 text-zinc-400">{new Date(o.createdAt).toLocaleDateString()}</td>
-                          <td className="py-3.5 px-4 font-mono font-bold text-white">₹{o.grandTotal.toLocaleString()}</td>
-                          <td className="py-3.5 px-4">
-                            <select
-                              value={o.status}
-                              onChange={(e) => updateOrderStatus(o.id, e.target.value as Order['status'])}
-                              className="bg-zinc-800 border border-zinc-700 text-white rounded-lg px-2.5 py-1 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                            >
-                              <option value="PENDING">Pending</option>
-                              <option value="PROCESSING">Processing</option>
-                              <option value="SHIPPED">Shipped</option>
-                              <option value="DELIVERED">Delivered</option>
-                              <option value="CANCELLED">Cancelled</option>
-                            </select>
+                          <td className="py-3.5 px-4 font-mono">
+                            <span className="font-bold text-indigo-400 block">{o.orderNumber}</span>
+                            <span className="text-[10px] text-zinc-500 font-bold">
+                              AWB: {o.awbTrackingNumber || o.trackingNumber || 'Pending'}
+                            </span>
                           </td>
-                          <td className="py-3.5 px-4 text-right">
+                          <td className="py-3.5 px-4">
+                            <span className="font-semibold text-zinc-200 block">{o.customerName}</span>
+                            <span className="text-[10px] text-zinc-500">{o.shippingAddress?.city || 'India'}</span>
+                          </td>
+                          <td className="py-3.5 px-4 text-zinc-400">{new Date(o.createdAt).toLocaleDateString()}</td>
+                          <td className="py-3.5 px-4 font-semibold text-zinc-300">
+                            {o.courierName || 'BlueDart Luxury Express'}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            {renderStatusBadge(o.status)}
+                          </td>
+                          <td className="py-3.5 px-4 text-right space-x-1.5">
+                            <button
+                              onClick={() => handleOpenFulfillmentModal(o)}
+                              className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-[10px] uppercase shadow transition-all"
+                            >
+                              Update Status
+                            </button>
+                            <button
+                              onClick={() => setPackingSlipOrder(o)}
+                              className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-amber-500/30 rounded-lg font-bold text-[10px] uppercase transition-all"
+                            >
+                              Packing Slip
+                            </button>
                             <button
                               onClick={() => setSelectedOrder(o)}
-                              className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-lg font-bold text-[11px] uppercase transition-colors"
+                              className="px-2 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg font-bold text-[10px] uppercase"
                             >
-                              View Items
+                              Items
                             </button>
                           </td>
                         </tr>
@@ -1213,6 +1369,218 @@ export const AdminDashboardView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* FULFILLMENT STATE MACHINE MODAL */}
+      {fulfillmentOrder && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-indigo-400">Order Logistics Engine</span>
+                <h3 className="font-serif text-lg font-bold text-white">Fulfillment Update — #{fulfillmentOrder.orderNumber}</h3>
+              </div>
+              <button 
+                onClick={() => setFulfillmentOrder(null)}
+                className="p-1 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveFulfillment} className="space-y-4 text-xs">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Select Fulfillment Pipeline Stage</label>
+                <select
+                  value={fulStatus}
+                  onChange={(e) => setFulStatus(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-3.5 py-2.5 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="PENDING_FULFILLMENT">1. PENDING FULFILLMENT (Assigned to Guild)</option>
+                  <option value="QUALITY_CHECK">2. QUALITY CHECK (Inspector & GI Seal Verification)</option>
+                  <option value="PACKED">3. PACKED (Velvet Padded Gift Box Sealed)</option>
+                  <option value="DISPATCHED">4. DISPATCHED (Handed to Air Courier)</option>
+                  <option value="IN_TRANSIT">5. IN TRANSIT (En Route Regional Hub)</option>
+                  <option value="OUT_FOR_DELIVERY">6. OUT FOR DELIVERY (Last Mile Delivery Agent)</option>
+                  <option value="DELIVERED">7. DELIVERED (Customer Signature Verified)</option>
+                  <option value="RETURN_REQUESTED">8. RETURN REQUESTED (Customer Review)</option>
+                  <option value="RETURNED">9. RETURNED (Restocked to Vault)</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Courier Partner</label>
+                  <input 
+                    type="text" 
+                    value={fulCourier}
+                    onChange={(e) => setFulCourier(e.target.value)}
+                    placeholder="BlueDart Luxury Express"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">AWB Tracking Number</label>
+                  <input 
+                    type="text" 
+                    value={fulAwb}
+                    onChange={(e) => setFulAwb(e.target.value)}
+                    placeholder="ECL-AWB-984210"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Est. Delivery Date</label>
+                  <input 
+                    type="date" 
+                    value={fulEstDate}
+                    onChange={(e) => setFulEstDate(e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider block mb-1 text-zinc-400">Packing QC Video Link (Optional)</label>
+                  <input 
+                    type="text" 
+                    value={fulVideoUrl}
+                    onChange={(e) => setFulVideoUrl(e.target.value)}
+                    placeholder="https://cloudinary.com/video..."
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-zinc-950 border border-zinc-800 rounded-2xl space-y-2">
+                <span className="text-[10px] font-bold uppercase text-indigo-400 block">Add Tracking History Milestone Entry</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <input 
+                    type="text" 
+                    value={fulLocation}
+                    onChange={(e) => setFulLocation(e.target.value)}
+                    placeholder="Milestone Location (e.g. Bengaluru Central Hub)"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-white text-xs"
+                  />
+                  <input 
+                    type="text" 
+                    value={fulNote}
+                    onChange={(e) => setFulNote(e.target.value)}
+                    placeholder="Milestone Note (e.g. Quality Passed)"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-white text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFulfillmentOrder(null)}
+                  className="px-4 py-2 bg-zinc-800 text-zinc-300 rounded-xl font-bold uppercase text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold uppercase text-xs shadow-lg shadow-indigo-600/30"
+                >
+                  Save & Dispatch Update
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* PRINTABLE PACKING SLIP MODAL */}
+      {packingSlipOrder && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in text-zinc-900">
+          <div className="bg-white max-w-xl w-full rounded-3xl p-8 shadow-2xl relative space-y-6 border-4 border-amber-500 max-h-[90vh] overflow-y-auto">
+            
+            <button 
+              onClick={() => setPackingSlipOrder(null)}
+              className="absolute top-4 right-4 p-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-xl transition-all print:hidden"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Slip Header */}
+            <div className="flex items-center justify-between border-b-2 border-amber-500 pb-4">
+              <div>
+                <h2 className="font-serif font-bold text-2xl tracking-tight text-zinc-900">eclipsera_premium</h2>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-700">Heritage Artisan Packing Manifest</span>
+              </div>
+              <div className="text-right">
+                <span className="font-mono font-bold text-base text-zinc-900 block">#{packingSlipOrder.orderNumber}</span>
+                <span className="text-[10px] font-mono text-zinc-500">AWB: {packingSlipOrder.awbTrackingNumber || 'ECL-AWB-PENDING'}</span>
+              </div>
+            </div>
+
+            {/* Address & Dispatch Specs */}
+            <div className="grid grid-cols-2 gap-4 text-xs bg-zinc-50 p-4 rounded-2xl border border-zinc-200">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-zinc-400 block mb-0.5">SHIP TO PATRON</span>
+                <p className="font-bold text-zinc-900">{packingSlipOrder.customerName}</p>
+                <p className="text-zinc-600">{packingSlipOrder.shippingAddress?.street}</p>
+                <p className="text-zinc-600">{packingSlipOrder.shippingAddress?.city}, {packingSlipOrder.shippingAddress?.state} - {packingSlipOrder.shippingAddress?.pincode}</p>
+                <p className="text-zinc-500 font-mono mt-1">{packingSlipOrder.customerPhone}</p>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold uppercase text-zinc-400 block mb-0.5">FULFILLMENT DETAILS</span>
+                <p className="text-zinc-700">Courier: <strong>{packingSlipOrder.courierName || 'BlueDart Luxury'}</strong></p>
+                <p className="text-zinc-700">Est Delivery: <strong>{packingSlipOrder.estimatedDeliveryDate || '3 - 5 Days'}</strong></p>
+                <p className="text-zinc-700">Quality Cert: <strong className="text-emerald-700">Silk Mark Certified ✅</strong></p>
+              </div>
+            </div>
+
+            {/* Item Manifest Table */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">PACKING ITEM MANIFEST</span>
+              <table className="w-full text-left text-xs border border-zinc-200 rounded-xl overflow-hidden">
+                <thead className="bg-zinc-100 text-[10px] font-bold uppercase text-zinc-600">
+                  <tr>
+                    <th className="p-2.5">Item Description</th>
+                    <th className="p-2.5 text-center">Qty</th>
+                    <th className="p-2.5 text-right">Unit Price</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200 font-sans">
+                  {packingSlipOrder.items.map((item, idx) => (
+                    <tr key={idx}>
+                      <td className="p-2.5 font-semibold text-zinc-900">{item.title} ({item.colorName})</td>
+                      <td className="p-2.5 text-center font-bold text-zinc-800">{item.quantity}</td>
+                      <td className="p-2.5 text-right font-mono font-bold text-zinc-900">₹{item.unitPrice.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* QR Code & Signatures */}
+            <div className="pt-4 border-t border-zinc-200 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-16 h-16 bg-zinc-900 text-white rounded-xl flex items-center justify-center font-mono text-[9px] text-center p-1 font-bold border-2 border-amber-500">
+                  QR AWB VERIFIED
+                </div>
+                <div className="text-[10px] text-zinc-500 font-mono">
+                  <span>Scan QR for digital manifest & verification hash</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => window.print()}
+                className="px-5 py-2.5 bg-zinc-900 hover:bg-amber-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider print:hidden shadow-lg transition-all"
+              >
+                Print Packing Slip
+              </button>
+            </div>
+
           </div>
         </div>
       )}

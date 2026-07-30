@@ -77,14 +77,27 @@ const orderSchema = new mongoose.Schema({
   shippingFee: { type: Number, default: 0 },
   taxTotal: { type: Number, default: 0 },
   grandTotal: Number,
-  status: { type: String, default: 'PAYMENT_CONFIRMED' },
+  status: { type: String, default: 'PENDING_FULFILLMENT' },
   paymentMethod: String,
   paymentId: String,
   courierName: String,
   trackingNumber: String,
+  awbTrackingNumber: String,
+  estimatedDeliveryDate: String,
+  packingVideoUrl: String,
+  trackingHistory: [{
+    status: String,
+    location: String,
+    timestamp: { type: Date, default: Date.now },
+    note: String
+  }],
+  returnReason: String,
+  returnPhotos: [String],
+  returnRequestedAt: Date,
   shippingAddress: Object,
   items: Array,
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 // User Profile Schema

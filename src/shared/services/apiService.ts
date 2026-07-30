@@ -286,3 +286,39 @@ export async function fetchProductCertificateFromAPI(productId: string) {
     return null;
   }
 }
+
+export async function updateOrderFulfillmentInAPI(id: string, fulfillmentData: any) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/${id}/fulfillment`, {
+      method: 'PUT',
+      headers: getAdminHeaders(),
+      body: JSON.stringify(fulfillmentData)
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function trackOrderPublicAPI(query: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/track/${encodeURIComponent(query)}`);
+    if (!res.ok) throw new Error('Shipment not found');
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function requestOrderReturnAPI(id: string, returnData: any) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/${id}/return`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(returnData)
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}

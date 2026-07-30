@@ -170,6 +170,100 @@ const initialArtisans = [
     createdAt: new Date().toISOString()
   }
 ];
+const initialOrders = [
+  {
+    id: 'ord-1001',
+    orderNumber: 'EP-10482',
+    customerName: 'Siddharth Verma',
+    customerEmail: 'siddharth@example.com',
+    customerPhone: '+91 98765 43210',
+    subtotal: 1450,
+    discountTotal: 100,
+    shippingFee: 0,
+    taxTotal: 67.5,
+    grandTotal: 1417.5,
+    status: 'IN_TRANSIT',
+    paymentMethod: 'RAZORPAY_UPI',
+    paymentId: 'pay_982103948',
+    courierName: 'BlueDart Luxury Express',
+    trackingNumber: 'ECL-AWB-984210',
+    awbTrackingNumber: 'ECL-AWB-984210',
+    estimatedDeliveryDate: '2026-08-03',
+    packingVideoUrl: 'https://res.cloudinary.com/demo/video/upload/sample.mp4',
+    shippingAddress: {
+      street: '42 Lavelle Road',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      pincode: '560001',
+      country: 'India'
+    },
+    items: [
+      {
+        id: 'item-1',
+        productId: 'prod-1',
+        variantId: 'v-prod-1',
+        title: 'Channapatna Lacquered Toy Train & Engine',
+        colorName: 'Natural Gold Finish',
+        unitPrice: 1450,
+        quantity: 1,
+        image: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1000&q=85'
+      }
+    ],
+    trackingHistory: [
+      { status: 'PENDING_FULFILLMENT', location: 'Channapatna Guild Hub', timestamp: new Date(Date.now() - 86400000 * 3).toISOString(), note: 'Order confirmed & assigned to Master B. Ramappa' },
+      { status: 'QUALITY_CHECK', location: 'Bengaluru Heritage Vault', timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), note: 'Silk Mark & GI Tag verification passed cleanly' },
+      { status: 'PACKED', location: 'Bengaluru Fulfillment Center', timestamp: new Date(Date.now() - 86400000 * 1.5).toISOString(), note: 'Sealed in velvet padded gift box with certificate' },
+      { status: 'DISPATCHED', location: 'BlueDart Air Hub', timestamp: new Date(Date.now() - 86400000 * 1).toISOString(), note: 'Handed to courier team' },
+      { status: 'IN_TRANSIT', location: 'Bengaluru Central Sorting Facility', timestamp: new Date().toISOString(), note: 'Out for regional transit' }
+    ],
+    createdAt: new Date(Date.now() - 86400000 * 3).toISOString()
+  },
+  {
+    id: 'ord-1002',
+    orderNumber: 'EP-10483',
+    customerName: 'Ananya Roy',
+    customerEmail: 'ananya@example.com',
+    customerPhone: '+91 99887 76655',
+    subtotal: 2400,
+    discountTotal: 0,
+    shippingFee: 0,
+    taxTotal: 120,
+    grandTotal: 2520,
+    status: 'DELIVERED',
+    paymentMethod: 'CREDIT_CARD',
+    paymentId: 'pay_982103949',
+    courierName: 'Delhivery Direct',
+    trackingNumber: 'ECL-AWB-984211',
+    awbTrackingNumber: 'ECL-AWB-984211',
+    estimatedDeliveryDate: '2026-07-28',
+    shippingAddress: {
+      street: '18 Park Street',
+      city: 'Kolkata',
+      state: 'West Bengal',
+      pincode: '700016',
+      country: 'India'
+    },
+    items: [
+      {
+        id: 'item-2',
+        productId: 'prod-3',
+        variantId: 'v-prod-3',
+        title: 'Jaipur Blue Quartz Studio Terracotta Pot',
+        colorName: 'Natural Gold Finish',
+        unitPrice: 2400,
+        quantity: 1,
+        image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=1000&q=85'
+      }
+    ],
+    trackingHistory: [
+      { status: 'PENDING_FULFILLMENT', location: 'Jaipur Pottery Guild', timestamp: new Date(Date.now() - 86400000 * 5).toISOString(), note: 'Order assigned to Devika Devi' },
+      { status: 'QUALITY_CHECK', location: 'Jaipur QC Lab', timestamp: new Date(Date.now() - 86400000 * 4).toISOString(), note: 'Glaze inspection passed' },
+      { status: 'DISPATCHED', location: 'Delhivery Air Hub', timestamp: new Date(Date.now() - 86400000 * 3).toISOString(), note: 'In transit to Kolkata' },
+      { status: 'DELIVERED', location: 'Kolkata Customer Residence', timestamp: new Date(Date.now() - 86400000 * 1).toISOString(), note: 'Delivered & signed by Ananya Roy' }
+    ],
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
+  }
+];
 
 let memoryProducts = [...initialProducts].map(p => ({
   ...p,
@@ -179,7 +273,7 @@ let memoryProducts = [...initialProducts].map(p => ({
   craftingHours: 120,
   artisan: initialArtisans.find(a => a.name.includes(p.artisanName.split(' ')[0])) || initialArtisans[0]
 }));
-let memoryOrders = [];
+let memoryOrders = [...initialOrders];
 let memoryArtisans = [...initialArtisans];
 
 const isDbReady = () => mongoose.connection && mongoose.connection.readyState === 1;

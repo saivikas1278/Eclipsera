@@ -876,6 +876,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Offline Local Fallback
+    const awbNum = `ECL-AWB-${Math.floor(100000 + Math.random() * 900000)}`;
     const newOrder: Order = {
       id: `ord-${Date.now()}`,
       orderNumber: `EP-${Math.floor(10000 + Math.random() * 90000)}`,
@@ -889,9 +890,21 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       shippingFee,
       taxTotal,
       grandTotal,
-      status: 'PAYMENT_CONFIRMED',
+      status: 'PENDING_FULFILLMENT',
       paymentMethod,
       paymentId: `pay_RZP${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
+      courierName: 'BlueDart Luxury Express',
+      trackingNumber: awbNum,
+      awbTrackingNumber: awbNum,
+      estimatedDeliveryDate: new Date(Date.now() + 86400000 * 4).toISOString().split('T')[0],
+      trackingHistory: [
+        {
+          status: 'PENDING_FULFILLMENT',
+          location: 'Eclipsera Central Vault',
+          timestamp: new Date().toISOString(),
+          note: 'Order confirmed & queued for Master Guild Quality Inspector'
+        }
+      ],
       createdAt: new Date().toISOString()
     };
     setOrders(prev => [newOrder, ...prev]);
