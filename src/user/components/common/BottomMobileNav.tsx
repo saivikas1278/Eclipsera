@@ -8,7 +8,7 @@ export const BottomMobileNav: React.FC = () => {
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <div className="fixed bottom-0 inset-x-0 bg-cream-100/95 backdrop-blur-md border-t border-cream-300 flex items-center justify-around py-1.5 z-50 md:hidden shadow-lg text-obsidian-900">
+    <div className="fixed bottom-0 inset-x-0 bg-cream-100/95 backdrop-blur-mobile border-t border-cream-300 flex items-center justify-around py-1.5 z-50 md:hidden shadow-2xl text-obsidian-900 pb-safe">
       
       {/* Home Tab */}
       <button 

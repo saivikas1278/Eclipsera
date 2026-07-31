@@ -23,6 +23,34 @@ function getAdminHeaders(): Record<string, string> {
   return headers;
 }
 
+function getUserHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
+  try {
+    const user = localStorage.getItem('eclipsera_user');
+    if (user) {
+      const parsed = JSON.parse(user);
+      if (parsed && parsed.id) {
+        headers['x-user-token'] = `usr_session_${parsed.id}`;
+      }
+    }
+  } catch (e) {}
+  return headers;
+}
+
+export async function fetchCustomerOrdersFromAPI() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/customer`, {
+      headers: getUserHeaders()
+    });
+    if (!res.ok) throw new Error('Failed to fetch customer orders');
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function fetchOrdersFromAPI() {
   try {
     const res = await fetch(`${API_BASE_URL}/orders`, {

@@ -254,7 +254,7 @@ export const ShopView: React.FC = () => {
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-                className="lg:hidden bg-obsidian-900 text-cream-100 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 min-h-[38px]"
+                className="lg:hidden bg-obsidian-900 text-cream-100 px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 min-h-[44px] touch-target-min"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5 text-gold-400" />
                 Filter
@@ -355,7 +355,7 @@ export const ShopView: React.FC = () => {
 
           {/* Mobile Filter Drawer */}
           {isMobileFilterOpen && (
-            <div className="lg:hidden bg-cream-100 p-4 rounded-2xl border border-gold-500/30 space-y-3 animate-fade-in text-obsidian-900 shadow-md">
+            <div className="lg:hidden bg-cream-100/95 backdrop-blur-mobile p-4 rounded-2xl border border-gold-500/30 space-y-3 animate-fade-in text-obsidian-900 shadow-2xl shadow-black/20">
               <div className="flex justify-between items-center border-b border-cream-300 pb-2">
                 <span className="font-serif font-bold text-sm">Filters</span>
                 <button onClick={() => setIsMobileFilterOpen(false)} className="text-xs text-gold-700 font-bold">Done</button>
@@ -484,7 +484,7 @@ export const ShopView: React.FC = () => {
               <button 
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1.5 rounded-lg border border-cream-300 text-xs font-bold hover:border-gold-500 disabled:opacity-40 text-obsidian-900"
+                className="px-4 py-2 rounded-lg border border-cream-300 text-xs font-bold hover:border-gold-500 disabled:opacity-40 text-obsidian-900 min-h-[44px] touch-target-min"
               >
                 Prev
               </button>
@@ -492,7 +492,7 @@ export const ShopView: React.FC = () => {
                 <button
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`w-8 h-8 rounded-lg text-xs font-bold transition-all border ${
+                  className={`w-10 h-10 rounded-lg text-xs font-bold transition-all border touch-target-min ${
                     currentPage === i + 1 
                       ? 'bg-gold-500 border-gold-500 text-obsidian-900 font-extrabold shadow-sm' 
                       : 'bg-white border-cream-300 text-obsidian-900/70 hover:border-gold-500'
@@ -504,7 +504,7 @@ export const ShopView: React.FC = () => {
               <button 
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1.5 rounded-lg border border-cream-300 text-xs font-bold hover:border-gold-500 disabled:opacity-40 text-obsidian-900"
+                className="px-4 py-2 rounded-lg border border-cream-300 text-xs font-bold hover:border-gold-500 disabled:opacity-40 text-obsidian-900 min-h-[44px] touch-target-min"
               >
                 Next
               </button>

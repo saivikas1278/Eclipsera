@@ -97,7 +97,7 @@ export const CartView: React.FC = () => {
                       </h3>
                       <button 
                         onClick={() => removeFromCart(item.variantId)}
-                        className="p-1.5 text-obsidian-900/40 hover:text-terracotta-500 rounded-lg hover:bg-cream-100 transition-all shrink-0"
+                        className="p-2 text-obsidian-900/40 hover:text-terracotta-500 rounded-lg hover:bg-cream-100 transition-all shrink-0 touch-target-min min-h-[44px] min-w-[44px] flex items-center justify-center"
                         title="Remove item"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -119,17 +119,17 @@ export const CartView: React.FC = () => {
 
                   {/* Quantity Stepper and Price Footer */}
                   <div className="flex items-center justify-between pt-2 border-t border-cream-200">
-                    <div className="flex items-center border border-cream-300 rounded-lg bg-cream-100 px-2.5">
+                    <div className="flex items-center border border-cream-300 rounded-xl bg-cream-100">
                       <button 
                         onClick={() => updateCartQuantity(item.variantId, item.quantity - 1)} 
-                        className="p-1 font-bold text-obsidian-900/60 hover:text-gold-600"
+                        className="px-3 py-2 font-bold text-obsidian-900/60 hover:text-gold-600 min-h-[44px] min-w-[44px] flex items-center justify-center touch-target-min"
                       >
                         -
                       </button>
-                      <span className="px-2.5 font-bold text-obsidian-900">{item.quantity}</span>
+                      <span className="px-3 font-bold text-obsidian-900 text-sm">{item.quantity}</span>
                       <button 
                         onClick={() => updateCartQuantity(item.variantId, item.quantity + 1)} 
-                        className="p-1 font-bold text-obsidian-900/60 hover:text-gold-600"
+                        className="px-3 py-2 font-bold text-obsidian-900/60 hover:text-gold-600 min-h-[44px] min-w-[44px] flex items-center justify-center touch-target-min"
                       >
                         +
                       </button>
@@ -167,7 +167,7 @@ export const CartView: React.FC = () => {
 
         {/* Right Column: Checkout Breakdown & Coupon Codes */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-cream-200/60 p-6 rounded-3xl border border-cream-300 space-y-4 shadow-sm">
+          <div className="bg-cream-100/95 backdrop-blur-mobile p-6 rounded-3xl border border-cream-300 space-y-4 shadow-xl shadow-black/10">
             <h3 className="font-serif text-base font-bold border-b border-cream-300 pb-3">Cost Breakdown</h3>
 
             {/* Total savings callout */}
@@ -241,7 +241,7 @@ export const CartView: React.FC = () => {
             {/* Checkout forward triggers */}
             <button
               onClick={() => setCurrentView('checkout')}
-              className="w-full bg-obsidian-900 text-cream-100 hover:bg-gold-500 hover:text-obsidian-900 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg transition-all"
+              className="w-full bg-obsidian-900 text-cream-100 hover:bg-gold-500 hover:text-obsidian-900 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg transition-all min-h-[52px] touch-target-min"
             >
               <span>Proceed to Checkout</span>
               <ArrowRight className="w-4 h-4" />

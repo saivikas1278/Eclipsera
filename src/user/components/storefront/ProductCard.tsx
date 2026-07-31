@@ -61,7 +61,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
             e.stopPropagation();
             toggleWishlist(product.id);
           }}
-          className={`absolute top-2 right-2 p-1 rounded-full transition-all duration-200 z-10 backdrop-blur-md min-w-[32px] min-h-[32px] flex items-center justify-center ${
+          className={`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 z-10 backdrop-blur-md min-w-[44px] min-h-[44px] flex items-center justify-center touch-target-min ${
             inWishlist 
               ? 'bg-terracotta-500 text-white shadow-md' 
               : 'bg-white/90 text-obsidian-900 hover:bg-white hover:text-terracotta-500 shadow-sm border border-cream-300'
@@ -141,7 +141,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           {/* Fast Quick Add-to-Cart Button */}
           <button 
             onClick={() => addToCart(product, primaryVariant?.id || 'v1')}
-            className="bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 p-2 rounded-xl transition-all shadow-sm flex items-center justify-center min-w-[34px] min-h-[34px] shrink-0"
+            className="bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 p-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center min-w-[44px] min-h-[44px] shrink-0 touch-target-min"
             title="Fast Add to Cart"
             aria-label="Add to cart"
           >

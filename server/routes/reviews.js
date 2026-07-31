@@ -86,12 +86,13 @@ router.post('/', async (req, res) => {
 
     // 1. Check memoryOrders first
     hasDeliveredOrder = memoryOrders.some(o => {
+      if (!o) return false;
       const isDelivered = o.status === 'DELIVERED';
-      const matchesUser = (o.customerEmail && o.customerEmail.toLowerCase() === effectiveEmail) ||
-        (o.customerName && o.customerName.toLowerCase() === effectiveName.toLowerCase()) ||
-        (o.id && o.id === effectiveUserId);
-      const containsProduct = o.items && o.items.some(i => i.productId === productId || i.id === productId);
-      return isDelivered && containsProduct;
+      const matchesUser = (effectiveEmail && o.customerEmail && o.customerEmail.toLowerCase() === effectiveEmail) ||
+        (effectiveName && o.customerName && o.customerName.toLowerCase() === effectiveName.toLowerCase()) ||
+        (effectiveUserId && o.id && o.id === effectiveUserId);
+      const containsProduct = Array.isArray(o.items) && o.items.some(i => i && (i.productId === productId || i.id === productId));
+      return !!(isDelivered && matchesUser && containsProduct);
     });
 
     // 2. Check DB orders if not found in memory

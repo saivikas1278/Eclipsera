@@ -96,11 +96,24 @@ const createRateLimiter = (type, windowMs, maxRequests) => {
   };
 };
 
+const verifyCustomerToken = (req, res, next) => {
+  const cookies = parseCookies(req);
+  const token = req.headers['x-user-token'] || cookies['eclipsera_token'];
+  
+  if (token && token.startsWith('usr_session_')) {
+    req.userId = token.replace('usr_session_', '');
+    next();
+  } else {
+    res.status(401).json({ error: 'Access Denied: Please authenticate as a customer.' });
+  }
+};
+
 const authRateLimiter = createRateLimiter('auth', 15 * 60 * 1000, 10); // 10 requests per 15 min
 const generalRateLimiter = createRateLimiter('general', 15 * 60 * 1000, 100); // 100 requests per 15 min
 
 module.exports = {
   verifyAdminToken,
+  verifyCustomerToken,
   cookieParserMiddleware,
   securityHeadersMiddleware,
   mongoSanitizeMiddleware,

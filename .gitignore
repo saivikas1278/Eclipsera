@@ -25,3 +25,8 @@ npm-debug.log*
 
 # Cache
 .cache/
+
+# Test output
+test-results/
+playwright-report/
+

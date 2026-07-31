@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const { Profile } = require('../models');
+const { verifyCustomerToken } = require('../middleware');
 
 // Password Hash Helper
 const hashPassword = (password) => {
@@ -94,7 +95,7 @@ router.post('/register', async (req, res) => {
 // Customer Login
 router.post('/login', async (req, res) => {
   try {
-    const { emailOrPhone, password } = req.body;
+    const { emailOrPhone, password, isOtp } = req.body;
     const formatted = emailOrPhone.trim().toLowerCase();
 
     let user = memoryProfiles.find(u => u.email === formatted || u.phone === formatted);
@@ -108,18 +109,28 @@ router.post('/login', async (req, res) => {
     }
 
     if (!user) {
-      // Auto-create local user fallback for quick testing
-      const newUserObj = {
-        id: `usr-${Date.now()}`,
-        fullName: formatted.includes('@') ? formatted.split('@')[0].toUpperCase() : 'Artisan Patron',
-        email: formatted.includes('@') ? formatted : `${formatted}@example.com`,
-        phone: formatted.includes('@') ? '9876543210' : formatted,
-        passwordHash: hashPassword(password || 'patron123'),
-        role: 'customer',
-        address: { street: '42 Lavelle Road', city: 'Bengaluru', state: 'Karnataka', pincode: '560001' }
-      };
-      memoryProfiles.push(newUserObj);
-      user = newUserObj;
+      if (isOtp) {
+        // Auto-create local user fallback for quick testing
+        const newUserObj = {
+          id: `usr-${Date.now()}`,
+          fullName: formatted.includes('@') ? formatted.split('@')[0].toUpperCase() : 'Artisan Patron',
+          email: formatted.includes('@') ? formatted : `${formatted}@example.com`,
+          phone: formatted.includes('@') ? '9876543210' : formatted,
+          passwordHash: hashPassword(password || 'patron123'),
+          role: 'customer',
+          address: { street: '42 Lavelle Road', city: 'Bengaluru', state: 'Karnataka', pincode: '560001' }
+        };
+        memoryProfiles.push(newUserObj);
+        user = newUserObj;
+
+        if (isDbReady()) {
+          try {
+            await Profile.create(newUserObj);
+          } catch (dbCreateErr) {}
+        }
+      } else {
+        return res.status(401).json({ error: 'No account found matching this email or phone number. Please register first.' });
+      }
     }
 
     // Verify password if provided
@@ -229,10 +240,14 @@ router.post('/google', async (req, res) => {
 });
 
 // Update Customer Profile & Address
-router.put('/profile/:id', async (req, res) => {
+router.put('/profile/:id', verifyCustomerToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, email, phone, address } = req.body;
+
+    if (req.userId !== id) {
+      return res.status(403).json({ error: 'Access Denied: You cannot modify another user\'s profile details.' });
+    }
 
     const user = await Profile.findOne({ id });
     if (!user) {
@@ -278,4 +293,5 @@ router.post('/admin-login', (req, res) => {
   res.status(401).json({ success: false, error: 'Invalid admin credentials.' });
 });
 
+router.memoryProfiles = memoryProfiles;
 module.exports = router;

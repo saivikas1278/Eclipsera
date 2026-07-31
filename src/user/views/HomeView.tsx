@@ -63,7 +63,7 @@ export const HomeView: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5" />
             <span>100% HANDCRAFTED NON-APPAREL</span>
           </div>
-          <h1 className="font-serif text-lg sm:text-3xl lg:text-4xl font-bold leading-snug">
+          <h1 className="font-serif text-xl sm:text-3xl lg:text-4xl font-bold leading-tight tracking-wide">
             Artisan Handcrafted Showcase
           </h1>
           <p className="text-xs sm:text-sm text-cream-300/80 font-sans leading-relaxed hidden sm:block">
@@ -132,7 +132,7 @@ export const HomeView: React.FC = () => {
         <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar px-1 py-1">
           <button 
             onClick={() => setSelectedCategory('all')}
-            className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all shrink-0 min-h-[40px] flex items-center ${
+            className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all shrink-0 min-h-[44px] flex items-center touch-target-min ${
               selectedCategory === 'all' 
                 ? 'bg-gold-500 text-obsidian-900 shadow-sm' 
                 : 'bg-white text-obsidian-900/70 hover:bg-cream-200 border border-cream-300'
@@ -144,7 +144,7 @@ export const HomeView: React.FC = () => {
             <button 
               key={cat.id}
               onClick={() => setSelectedCategory(cat.slug)}
-              className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all shrink-0 min-h-[40px] flex items-center ${
+              className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all shrink-0 min-h-[44px] flex items-center touch-target-min ${
                 selectedCategory === cat.slug 
                   ? 'bg-gold-500 text-obsidian-900 shadow-sm' 
                   : 'bg-white text-obsidian-900/70 hover:bg-cream-200 border border-cream-300'
@@ -246,7 +246,7 @@ export const HomeView: React.FC = () => {
       </div>
 
       {/* Trust Badges Footer Strip */}
-      <div className="bg-cream-200/60 p-4 rounded-2xl border border-cream-300 flex flex-wrap items-center justify-around gap-4 text-center text-xs font-bold text-obsidian-900">
+      <div className="bg-cream-200/60 p-4 rounded-2xl border border-cream-300 flex flex-col sm:flex-row sm:flex-wrap items-center justify-around gap-3 sm:gap-4 text-center text-xs font-bold text-obsidian-900">
         <span>🔒 100% Encrypted Payments</span>
         <span className="text-cream-300 hidden sm:inline">•</span>
         <span>🚚 Free Insured Shipping &gt; ₹1,000</span>

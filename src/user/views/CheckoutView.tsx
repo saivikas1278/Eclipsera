@@ -240,7 +240,7 @@ export const CheckoutView: React.FC = () => {
   const activeAddressObj = savedAddresses.find(a => a.id === selectedAddressId) || savedAddresses[0];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-obsidian-900">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 animate-fade-in text-obsidian-900 pb-28 md:pb-12">
       
       {/* Header & Secure Shield */}
       <div className="border-b border-cream-300 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -264,7 +264,7 @@ export const CheckoutView: React.FC = () => {
             { id: 4, label: 'Review' }
           ].map(s => (
             <div key={s.id} className="flex items-center gap-2">
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] border transition-all ${
+              <span className={`w-7 h-7 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[11px] border transition-all ${
                 step === s.id 
                   ? 'bg-gold-500 border-gold-500 text-obsidian-900 font-extrabold shadow-sm' 
                   : step > s.id 
@@ -433,7 +433,7 @@ export const CheckoutView: React.FC = () => {
               {/* Forward trigger */}
               <button 
                 onClick={handleNextStep}
-                className="w-full bg-obsidian-900 text-cream-100 hover:bg-gold-500 hover:text-obsidian-900 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md mt-4"
+                className="w-full bg-obsidian-900 text-cream-100 hover:bg-gold-500 hover:text-obsidian-900 py-4 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md mt-4 min-h-[52px] touch-target-min"
               >
                 <span>Proceed to Shipping Method</span>
                 <ArrowRight className="w-4 h-4" />
@@ -504,13 +504,13 @@ export const CheckoutView: React.FC = () => {
               <div className="flex gap-3 pt-3">
                 <button 
                   onClick={() => setStep(1)}
-                  className="px-5 py-3 border border-cream-300 rounded-xl text-xs font-bold flex items-center gap-1 hover:bg-cream-200"
+                  className="px-5 py-3 border border-cream-300 rounded-xl text-xs font-bold flex items-center gap-1 hover:bg-cream-200 min-h-[48px] touch-target-min"
                 >
                   <ArrowLeft className="w-4 h-4" /> Back
                 </button>
                 <button 
                   onClick={handleNextStep}
-                  className="flex-1 bg-obsidian-900 text-cream-100 hover:bg-gold-500 hover:text-obsidian-900 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md"
+                  className="flex-1 bg-obsidian-900 text-cream-100 hover:bg-gold-500 hover:text-obsidian-900 py-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md min-h-[52px] touch-target-min"
                 >
                   <span>Proceed to Payment Mode</span>
                   <ArrowRight className="w-4 h-4" />
@@ -693,13 +693,13 @@ export const CheckoutView: React.FC = () => {
               <div className="flex gap-3 pt-3">
                 <button 
                   onClick={() => setStep(2)}
-                  className="px-5 py-3 border border-cream-300 rounded-xl text-xs font-bold flex items-center gap-1 hover:bg-cream-200"
+                  className="px-5 py-3 border border-cream-300 rounded-xl text-xs font-bold flex items-center gap-1 hover:bg-cream-200 min-h-[48px] touch-target-min"
                 >
                   <ArrowLeft className="w-4 h-4" /> Back
                 </button>
                 <button 
                   onClick={handleNextStep}
-                  className="flex-1 bg-obsidian-900 text-cream-100 hover:bg-gold-500 hover:text-obsidian-900 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md"
+                  className="flex-1 bg-obsidian-900 text-cream-100 hover:bg-gold-500 hover:text-obsidian-900 py-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md min-h-[52px] touch-target-min"
                 >
                   <span>Review Final Order</span>
                   <ArrowRight className="w-4 h-4" />
@@ -779,7 +779,7 @@ export const CheckoutView: React.FC = () => {
               <div className="flex gap-3 pt-3">
                 <button 
                   onClick={() => setStep(3)}
-                  className="px-5 py-3 border border-cream-300 rounded-xl text-xs font-bold flex items-center gap-1 hover:bg-cream-200"
+                  className="px-5 py-3 border border-cream-300 rounded-xl text-xs font-bold flex items-center gap-1 hover:bg-cream-200 min-h-[48px] touch-target-min"
                 >
                   <ArrowLeft className="w-4 h-4" /> Back
                 </button>
@@ -787,7 +787,7 @@ export const CheckoutView: React.FC = () => {
                 <button 
                   onClick={handlePlaceOrderSubmit}
                   disabled={isProcessing}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all min-h-[52px] touch-target-min"
                 >
                   {isProcessing ? (
                     <span>Processing HMAC secure handshake...</span>

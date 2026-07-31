@@ -172,7 +172,7 @@ export const Header: React.FC = () => {
 
                 {/* Popover Dropdown */}
                 {isNotifOpen && (
-                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-cream-100 border border-gold-500/40 rounded-2xl shadow-2xl z-50 p-4 space-y-3 animate-fade-in text-obsidian-900">
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-cream-100/95 backdrop-blur-mobile border border-gold-500/40 rounded-2xl shadow-2xl shadow-black/80 z-50 p-4 space-y-3 animate-fade-in text-obsidian-900">
                     <div className="flex items-center justify-between border-b border-cream-300 pb-2">
                       <div className="flex items-center gap-1.5 font-bold text-xs">
                         <Bell className="w-4 h-4 text-gold-600" />

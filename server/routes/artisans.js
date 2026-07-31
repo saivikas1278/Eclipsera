@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { Artisan } = require('../models');
+const { Artisan, Product } = require('../models');
 const { verifyAdminToken } = require('../middleware');
-const { isDbReady, memoryArtisans } = require('../store');
+const { isDbReady, memoryArtisans, memoryProducts } = require('../store');
 
 // GET all artisans
 router.get('/', async (req, res) => {
@@ -55,7 +55,7 @@ router.post('/', verifyAdminToken, async (req, res) => {
 router.put('/:id', verifyAdminToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const body = req.body;
+    const body = req.body || {};
 
     const idx = memoryArtisans.findIndex(a => a.id === id);
     if (idx !== -1) {
@@ -67,9 +67,68 @@ router.put('/:id', verifyAdminToken, async (req, res) => {
       if (body.craftSpecialty) memoryArtisans[idx].craftSpecialty = body.craftSpecialty;
     }
 
+    // Sync nested artisan properties inside memoryProducts with null safety
+    if (Array.isArray(memoryProducts)) {
+      memoryProducts.forEach(p => {
+        if (p && p.artisan && p.artisan.id === id) {
+          if (body.name) {
+            p.artisanName = body.name;
+            p.artisan.name = body.name;
+          }
+          if (body.story) {
+            p.artisanBio = body.story;
+            p.artisan.story = body.story;
+          }
+          if (body.yearsExperience) {
+            p.artisan.yearsExperience = Number(body.yearsExperience);
+          }
+          if (body.region) {
+            p.originRegion = body.region;
+            p.artisan.region = body.region;
+          }
+          if (body.avatarUrl) {
+            p.artisan.avatarUrl = body.avatarUrl;
+            p.artisanAvatar = body.avatarUrl;
+          }
+          if (body.craftSpecialty) {
+            p.artisan.craftSpecialty = body.craftSpecialty;
+          }
+        }
+      });
+    }
+
     if (isDbReady()) {
       try {
         await Artisan.findOneAndUpdate({ id }, { $set: body });
+
+        // Build product update payload dynamically
+        const updateFields = {};
+        if (body.name) {
+          updateFields['artisanName'] = body.name;
+          updateFields['artisan.name'] = body.name;
+        }
+        if (body.story) {
+          updateFields['artisanBio'] = body.story;
+          updateFields['artisan.story'] = body.story;
+        }
+        if (body.yearsExperience) {
+          updateFields['artisan.yearsExperience'] = Number(body.yearsExperience);
+        }
+        if (body.region) {
+          updateFields['originRegion'] = body.region;
+          updateFields['artisan.region'] = body.region;
+        }
+        if (body.avatarUrl) {
+          updateFields['artisan.avatarUrl'] = body.avatarUrl;
+          updateFields['artisanAvatar'] = body.avatarUrl;
+        }
+        if (body.craftSpecialty) {
+          updateFields['artisan.craftSpecialty'] = body.craftSpecialty;
+        }
+
+        if (Object.keys(updateFields).length > 0) {
+          await Product.updateMany({ 'artisan.id': id }, { $set: updateFields });
+        }
       } catch (e) {}
     }
 

@@ -69,13 +69,14 @@ export const ProductDetailView: React.FC = () => {
 
   // Check if current user is a verified purchaser with a DELIVERED order for this product
   const isVerifiedBuyer = orders.some(o => {
+    if (!o) return false;
     const isDelivered = o.status === 'DELIVERED';
-    const matchesUser = currentUser && (
-      (o.customerEmail && o.customerEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
-      (o.customerName && o.customerName.toLowerCase() === currentUser.name.toLowerCase())
-    );
-    const containsProduct = o.items && o.items.some((i: any) => i.productId === product?.id || i.id === product?.id);
-    return isDelivered && (matchesUser || containsProduct);
+    const matchesUser = !!(currentUser && (
+      (o.customerEmail && currentUser.email && o.customerEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+      (o.customerName && currentUser.name && o.customerName.toLowerCase() === currentUser.name.toLowerCase())
+    ));
+    const containsProduct = Array.isArray(o.items) && o.items.some((i: any) => i && (i.productId === product?.id || i.id === product?.id));
+    return !!(isDelivered && matchesUser && containsProduct);
   });
 
   // Load Reviews from API
@@ -1039,6 +1040,33 @@ export const ProductDetailView: React.FC = () => {
           onClose={() => setIsCertModalOpen(false)} 
         />
       )}
+
+      {/* Sticky Bottom Mobile Action Bar (Thumb-Accessible for 360px - 430px) */}
+      <div className="fixed bottom-0 inset-x-0 bg-cream-100/95 backdrop-blur-mobile border-t border-cream-300 p-3 z-40 md:hidden shadow-2xl pb-safe flex items-center gap-2">
+        <button 
+          onClick={() => {
+            const customMessage = customNote.trim() ? ` [Engraving: ${customNote}]` : '';
+            const customProduct = customMessage ? { ...product, title: `${product.title}${customMessage}` } : product;
+            addToCart(customProduct, activeVariant?.id || product.variants[0].id, quantity);
+          }}
+          className="flex-1 bg-white text-obsidian-900 border-2 border-obsidian-900 py-3 rounded-xl text-xs font-bold uppercase flex items-center justify-center gap-1.5 min-h-[44px]"
+        >
+          <ShoppingBag className="w-4 h-4" />
+          <span>Cart</span>
+        </button>
+
+        <button 
+          onClick={() => {
+            const customMessage = customNote.trim() ? ` [Engraving: ${customNote}]` : '';
+            const customProduct = customMessage ? { ...product, title: `${product.title}${customMessage}` } : product;
+            buyNow(customProduct, activeVariant?.id || product.variants[0].id, quantity);
+          }}
+          className="flex-1 bg-gold-500 text-obsidian-900 hover:bg-gold-400 py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-gold-glow min-h-[44px]"
+        >
+          <Zap className="w-4 h-4" />
+          <span>BUY NOW</span>
+        </button>
+      </div>
 
     </div>
   );

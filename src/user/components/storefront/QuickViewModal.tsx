@@ -20,19 +20,19 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
   const inWishlist = isInWishlist(product.id);
 
   return (
-    <div className="fixed inset-0 z-50 bg-obsidian-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in overflow-y-auto">
-      <div className="bg-cream-100 w-full max-w-full sm:max-w-4xl rounded-2xl shadow-2xl overflow-hidden border border-gold-500/30 relative max-h-[90vh] flex flex-col md:flex-row box-border text-obsidian-900">
+    <div className="fixed inset-0 z-50 bg-obsidian-900/70 backdrop-blur-mobile flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="bg-cream-100 w-full max-w-full sm:max-w-4xl rounded-t-2xl sm:rounded-2xl shadow-2xl shadow-black/40 overflow-y-auto border border-gold-500/30 relative max-h-[92vh] flex flex-col md:flex-row box-border text-obsidian-900">
         
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 bg-cream-200/80 hover:bg-gold-500 hover:text-white rounded-full transition-colors text-obsidian-900"
+          className="absolute top-3 right-3 z-20 p-2.5 bg-cream-200/80 hover:bg-gold-500 hover:text-white rounded-full transition-colors text-obsidian-900 min-w-[44px] min-h-[44px] flex items-center justify-center touch-target-min"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Left: Gallery */}
-        <div className="md:w-1/2 p-6 bg-cream-200/50 flex flex-col justify-between">
+        <div className="md:w-1/2 p-4 sm:p-6 bg-cream-200/50 flex flex-col justify-between">
           <div className="aspect-[4/5] rounded-xl overflow-hidden border border-cream-300 relative shadow-inner">
             <img 
               src={product.images[activeImageIndex] || product.images[0]} 
@@ -140,7 +140,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                   addToCart(product, activeVariant?.id || product.variants[0].id);
                   onClose();
                 }}
-                className="flex-1 bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 py-3.5 rounded-xl text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md"
+                className="flex-1 bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 py-3.5 rounded-xl text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md min-h-[48px] touch-target-min"
               >
                 <ShoppingBag className="w-4 h-4" />
                 Add to Craft Bag
@@ -148,7 +148,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
 
               <button 
                 onClick={() => toggleWishlist(product.id)}
-                className={`p-3.5 rounded-xl border transition-all ${inWishlist ? 'bg-terracotta-500 text-white border-terracotta-500' : 'bg-white border-cream-300 text-obsidian-900 hover:border-gold-500'}`}
+                className={`p-3.5 rounded-xl border transition-all min-w-[48px] min-h-[48px] flex items-center justify-center touch-target-min ${inWishlist ? 'bg-terracotta-500 text-white border-terracotta-500' : 'bg-white border-cream-300 text-obsidian-900 hover:border-gold-500'}`}
               >
                 <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
               </button>

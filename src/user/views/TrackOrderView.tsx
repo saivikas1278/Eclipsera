@@ -179,21 +179,23 @@ export const TrackOrderView: React.FC = () => {
           </div>
 
           {/* Vertical Tracking History Timeline */}
-          <div className="space-y-3 pl-2">
+          <div className="space-y-3 pl-1 sm:pl-2">
             {trackingLogs.map((log: any, idx: number) => (
-              <div key={idx} className="flex gap-3 text-xs relative">
+              <div key={idx} className="flex gap-2.5 sm:gap-3 text-xs relative">
                 <div className="flex flex-col items-center">
-                  <div className="w-3 h-3 rounded-full bg-gold-600 border-2 border-white ring-2 ring-gold-500/20"></div>
-                  {idx < trackingLogs.length - 1 && <div className="w-0.5 h-full bg-gold-300 my-1"></div>}
+                  <div className="w-3.5 h-3.5 rounded-full bg-gold-600 border-2 border-white ring-2 ring-gold-500/30 shrink-0"></div>
+                  {idx < trackingLogs.length - 1 && <div className="w-0.5 h-full bg-gold-400/60 my-1"></div>}
                 </div>
-                <div className="space-y-0.5 min-w-0 pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-obsidian-900">{log.status.replace(/_/g, ' ')}</span>
-                    <span className="text-[10px] font-mono text-obsidian-900/50">
+                <div className="space-y-0.5 min-w-0 pb-3 flex-1">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+                    <span className="font-bold text-obsidian-900 text-xs">{log.status.replace(/_/g, ' ')}</span>
+                    <span className="text-[10px] font-mono font-bold text-gold-700">
                       {new Date(log.timestamp).toLocaleString()}
                     </span>
                   </div>
-                  <p className="text-obsidian-900/70 font-semibold">{log.location} — {log.note || 'Milestone verified'}</p>
+                  <p className="text-obsidian-900/80 font-medium text-[11px] leading-relaxed">
+                    {log.location} — {log.note || 'Milestone verified'}
+                  </p>
                 </div>
               </div>
             ))}

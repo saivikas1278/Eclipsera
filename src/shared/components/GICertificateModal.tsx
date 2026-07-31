@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Product } from '../data/mockData';
-import { X, Award, ShieldCheck, Printer, CheckCircle2, Sparkles } from 'lucide-react';
+import { X, Award, ShieldCheck, Printer, CheckCircle2, Sparkles, Download } from 'lucide-react';
+import { fetchProductCertificateFromAPI } from '../services/apiService';
 
 interface GICertificateModalProps {
   product: Product;
@@ -10,19 +11,64 @@ interface GICertificateModalProps {
 
 export const GICertificateModal: React.FC<GICertificateModalProps> = ({ product, patronName = 'Honored Artisan Patron', onClose }) => {
   const certificateSerial = `GI-ECL-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handlePrint = () => {
     window.print();
   };
 
+  const handleDownloadJSON = async () => {
+    setIsDownloading(true);
+    try {
+      let data = await fetchProductCertificateFromAPI(product.id);
+      
+      // Local client-side fallback if backend API is not running/unreachable
+      if (!data) {
+        data = {
+          certificateId: certificateSerial,
+          productSku: (product.variants && product.variants[0]) ? product.variants[0].sku : `ECL-${product.id.toUpperCase()}`,
+          productId: product.id,
+          title: product.title,
+          giTagRegion: product.giTagRegion || product.originRegion || 'Kashmir',
+          craftType: product.craftType || 'Hand-loom',
+          craftingHours: product.craftingHours || 120,
+          isSilkMarkCertified: product.isSilkMarkCertified ?? product.silkMarkCertified ?? true,
+          material: product.material || 'Natural Organic Material',
+          artisan: {
+            name: product.artisanName || 'Master Craftsman Guild',
+            story: product.artisanBio || 'Heritage master guild member.',
+            yearsExperience: product.artisanYearsCrafting || 25,
+            region: product.originRegion || 'India',
+            avatarUrl: product.artisanAvatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+          },
+          issuedAt: new Date().toISOString(),
+          registrar: 'Eclipsera National GI Heritage Board'
+        };
+      }
+
+      // Trigger browser file download
+      const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data, null, 2))}`;
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute('href', jsonString);
+      downloadAnchor.setAttribute('download', `eclipsera_authenticity_certificate_${product.id}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    } catch (err) {
+      console.error('Error downloading certificate:', err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-obsidian-900/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in text-obsidian-900 font-sans">
-      <div className="bg-cream-100 max-w-2xl w-full rounded-3xl p-6 sm:p-10 shadow-2xl relative border-4 border-gold-500 space-y-6">
+    <div className="fixed inset-0 z-50 bg-obsidian-900/85 backdrop-blur-mobile flex items-end sm:items-center justify-center p-0 sm:p-6 overflow-y-auto animate-fade-in text-obsidian-900 font-sans" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="bg-cream-100 max-w-2xl w-full rounded-t-3xl sm:rounded-3xl p-5 sm:p-10 shadow-2xl shadow-black/40 relative border-t-4 sm:border-4 border-gold-500 space-y-6 max-h-[92vh] overflow-y-auto">
         
         {/* Close Button */}
         <button 
           onClick={onClose} 
-          className="absolute top-4 right-4 p-2 bg-obsidian-900/10 hover:bg-obsidian-900 text-obsidian-900 hover:text-white rounded-xl transition-all print:hidden"
+          className="absolute top-3 right-3 p-2.5 bg-obsidian-900/10 hover:bg-obsidian-900 text-obsidian-900 hover:text-white rounded-xl transition-all print:hidden min-w-[44px] min-h-[44px] flex items-center justify-center touch-target-min"
         >
           <X className="w-5 h-5" />
         </button>
@@ -73,9 +119,9 @@ export const GICertificateModal: React.FC<GICertificateModalProps> = ({ product,
               Is 100% authentic, handcrafted using traditional vegetable dyes and heritage artisan techniques by master craftsperson <span className="font-bold text-obsidian-900">{product.artisan?.name || product.artisanName}</span> ({product.artisan?.yearsExperience || 25}+ years exp, {product.artisan?.region || product.originRegion}), and conforms strictly to official GI heritage preservation standards.
             </p>
 
-            <div className="p-2.5 bg-obsidian-900/5 rounded-xl border border-gold-500/20 text-center font-mono text-[10px]">
+            <div className="p-2.5 bg-obsidian-900/5 rounded-xl border border-gold-500/20 text-center font-mono text-[10px] space-y-0.5">
               <span className="text-obsidian-900/50 block uppercase font-sans font-semibold text-[9px]">Authenticity Verification Hash</span>
-              <span className="font-bold text-gold-800 tracking-wider">
+              <span className="font-bold text-gold-800 tracking-wider break-all block">
                 ECL-CERT-{product.id.toUpperCase()}-SHA256-{Math.floor(100000 + Math.random() * 900000)}
               </span>
             </div>
@@ -111,17 +157,26 @@ export const GICertificateModal: React.FC<GICertificateModalProps> = ({ product,
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 print:hidden">
+        <div className="flex items-center justify-end gap-3 print:hidden flex-wrap">
           <button 
             onClick={onClose} 
-            className="px-4 py-2.5 bg-cream-200 hover:bg-cream-300 text-obsidian-900 rounded-xl text-xs font-bold uppercase transition-all"
+            className="px-4 py-2.5 bg-cream-200 hover:bg-cream-300 text-obsidian-900 rounded-xl text-xs font-bold uppercase transition-all min-h-[44px] touch-target-min"
           >
             Close
           </button>
 
           <button 
+            onClick={handleDownloadJSON}
+            disabled={isDownloading}
+            className="px-4 py-2.5 bg-white border border-cream-300 hover:border-gold-500 text-obsidian-900 rounded-xl text-xs font-bold uppercase transition-all flex items-center gap-2 min-h-[44px] touch-target-min"
+          >
+            <Download className="w-4 h-4 text-gold-600" />
+            {isDownloading ? 'Fetching...' : 'Download JSON Provenance'}
+          </button>
+
+          <button 
             onClick={handlePrint} 
-            className="px-5 py-2.5 bg-obsidian-900 hover:bg-gold-600 text-cream-100 hover:text-obsidian-900 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg transition-all"
+            className="px-5 py-2.5 bg-obsidian-900 hover:bg-gold-600 text-cream-100 hover:text-obsidian-900 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg transition-all min-h-[44px] touch-target-min"
           >
             <Printer className="w-4 h-4" />
             Print / Download PDF Certificate

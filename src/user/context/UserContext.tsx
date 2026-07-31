@@ -7,7 +7,8 @@ import {
   loginWithGoogleInAPI,
   registerUserInAPI,
   updateUserProfileInAPI,
-  createOrderInAPI
+  createOrderInAPI,
+  fetchCustomerOrdersFromAPI
 } from '../../shared/services/apiService';
 import confetti from 'canvas-confetti';
 
@@ -526,6 +527,27 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadStorefrontData();
   }, []);
 
+  const loadUserOrders = async () => {
+    try {
+      const apiOrders = await fetchCustomerOrdersFromAPI();
+      if (apiOrders && Array.isArray(apiOrders)) {
+        setOrders(apiOrders);
+      } else {
+        setOrders(INITIAL_ORDERS);
+      }
+    } catch (e) {
+      setOrders(INITIAL_ORDERS);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      loadUserOrders();
+    } else {
+      setOrders([]);
+    }
+  }, [currentUser]);
+
   const showToast = (message: string, type: Toast['type'] = 'success') => {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts(prev => [...prev, { id, message, type }]);
@@ -667,7 +689,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyOTP = async (phone: string, otp: string) => {
     if (otp === '4821' || otp === '1234' || otp.length === 4) {
       try {
-        const res = await loginUserInAPI({ emailOrPhone: phone, password: 'patron123' });
+        const res = await loginUserInAPI({ emailOrPhone: phone, password: 'patron123', isOtp: true });
         if (res && res.success && res.user) {
           const user = res.user;
           setCurrentUser(user);

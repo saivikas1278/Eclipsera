@@ -126,4 +126,5 @@ router.post('/validate', async (req, res) => {
   }
 });
 
+router.memoryCoupons = memoryCoupons;
 module.exports = router;

@@ -5,7 +5,7 @@ import { uploadImageToAPI, fetchNotificationsAPI, markNotificationReadAPI, markA
 import { 
   LayoutDashboard, Package, ShoppingBag, Layers, 
   Plus, Edit3, Trash2, LogOut, Search, CheckCircle2, 
-  X, AlertTriangle, Upload, Eye, Check, RefreshCw, UserCheck, ShieldCheck, Award, Star, Bell, CheckCheck, TrendingUp, Download, BarChart2, FileText
+  X, AlertTriangle, Upload, Eye, Check, RefreshCw, UserCheck, ShieldCheck, Award, Star, Bell, CheckCheck, TrendingUp, Download, BarChart2, FileText, Menu
 } from 'lucide-react';
 
 export const AdminDashboardView: React.FC = () => {
@@ -24,8 +24,9 @@ export const AdminDashboardView: React.FC = () => {
     showToast 
   } = useAdmin();
 
-  // Active Navigation Tab
+  // Active Navigation Tab & Mobile Drawer
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'inventory' | 'artisans' | 'reviews' | 'alerts' | 'analytics'>('dashboard');
+  const [isMobileAdminSidebarOpen, setIsMobileAdminSidebarOpen] = useState(false);
 
   // --- PRODUCT MANAGEMENT STATES ---
   const [prodSearch, setProdSearch] = useState('');
@@ -448,30 +449,47 @@ export const AdminDashboardView: React.FC = () => {
   const lowStockProducts = products.filter(p => p.variants.some(v => v.stockQuantity < 5));
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans flex items-stretch">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans flex flex-col md:flex-row items-stretch">
       
+      {/* MOBILE BACKDROP OVERLAY */}
+      {isMobileAdminSidebarOpen && (
+        <div 
+          onClick={() => setIsMobileAdminSidebarOpen(false)} 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-40 md:hidden animate-fade-in"
+        />
+      )}
+
       {/* 1. DARK SIDEBAR NAVIGATION */}
-      <aside className="w-64 bg-zinc-900/90 border-r border-zinc-800 shrink-0 flex flex-col justify-between p-4 select-none">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-zinc-900/95 backdrop-blur-mobile border-r border-zinc-800 flex-col justify-between p-4 select-none transition-transform duration-300 md:static md:translate-x-0 ${isMobileAdminSidebarOpen ? 'translate-x-0 flex shadow-2xl shadow-black/90' : '-translate-x-full hidden md:flex'}`}>
         <div className="space-y-6">
           
-          {/* Logo & Admin Badge */}
-          <div className="flex items-center gap-3 px-2 py-1">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-600/30">
-              E
+          {/* Logo & Admin Badge + Mobile Close */}
+          <div className="flex items-center justify-between px-2 py-1">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-600/30">
+                E
+              </div>
+              <div>
+                <h1 className="font-serif font-bold text-base tracking-tight text-white leading-none">eclipsera</h1>
+                <span className="inline-block mt-1 px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded text-[9px] font-bold tracking-widest uppercase">
+                  Admin Panel
+                </span>
+              </div>
             </div>
-            <div>
-              <h1 className="font-serif font-bold text-base tracking-tight text-white leading-none">eclipsera</h1>
-              <span className="inline-block mt-1 px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded text-[9px] font-bold tracking-widest uppercase">
-                Admin Panel
-              </span>
-            </div>
+
+            <button 
+              onClick={() => setIsMobileAdminSidebarOpen(false)}
+              className="p-1.5 text-zinc-400 hover:text-white rounded-lg md:hidden touch-target-min"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Navigation Items */}
           <nav className="space-y-1">
             <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+              onClick={() => { setActiveTab('dashboard'); setIsMobileAdminSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all touch-target-min ${
                 activeTab === 'dashboard'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
@@ -482,8 +500,8 @@ export const AdminDashboardView: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('products')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+              onClick={() => { setActiveTab('products'); setIsMobileAdminSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all touch-target-min ${
                 activeTab === 'products'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
@@ -494,8 +512,8 @@ export const AdminDashboardView: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('orders')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+              onClick={() => { setActiveTab('orders'); setIsMobileAdminSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all touch-target-min ${
                 activeTab === 'orders'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
@@ -506,8 +524,8 @@ export const AdminDashboardView: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('inventory')}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+              onClick={() => { setActiveTab('inventory'); setIsMobileAdminSidebarOpen(false); }}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all touch-target-min ${
                 activeTab === 'inventory'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
@@ -525,8 +543,8 @@ export const AdminDashboardView: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('artisans')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+              onClick={() => { setActiveTab('artisans'); setIsMobileAdminSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all touch-target-min ${
                 activeTab === 'artisans'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
@@ -537,8 +555,8 @@ export const AdminDashboardView: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('reviews')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+              onClick={() => { setActiveTab('reviews'); setIsMobileAdminSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all touch-target-min ${
                 activeTab === 'reviews'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
@@ -549,8 +567,8 @@ export const AdminDashboardView: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('alerts')}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+              onClick={() => { setActiveTab('alerts'); setIsMobileAdminSidebarOpen(false); }}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all touch-target-min ${
                 activeTab === 'alerts'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
@@ -568,8 +586,8 @@ export const AdminDashboardView: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('analytics')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+              onClick={() => { setActiveTab('analytics'); setIsMobileAdminSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all touch-target-min ${
                 activeTab === 'analytics'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
@@ -602,10 +620,19 @@ export const AdminDashboardView: React.FC = () => {
       <main className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
         
         {/* ADMIN TOP HEADER BAR */}
-        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
-          <div>
-            <h1 className="font-serif text-xl font-bold text-white tracking-tight">eclipsera_premium Admin Portal</h1>
-            <span className="text-[10px] font-mono text-zinc-400">Authenticated Session • Live Cloud Inventory Sync</span>
+        <div className="flex items-center justify-between pb-4 border-b border-zinc-800 gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsMobileAdminSidebarOpen(true)}
+              className="p-2 bg-zinc-900 border border-zinc-800 text-zinc-300 rounded-xl md:hidden touch-target-min"
+              title="Open Navigation Menu"
+            >
+              <Menu className="w-5 h-5 text-gold-400" />
+            </button>
+            <div>
+              <h1 className="font-serif text-lg sm:text-xl font-bold text-white tracking-tight">eclipsera_premium Admin Portal</h1>
+              <span className="text-[10px] font-mono text-zinc-400 block sm:inline">Authenticated Session • Cloud Sync</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -790,9 +817,11 @@ export const AdminDashboardView: React.FC = () => {
               <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-3" />
             </div>
 
-            {/* Products Table */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-              <div className="overflow-x-auto">
+            {/* Products Table & Mobile Cards */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
+              
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="border-b border-zinc-800 bg-zinc-950/40 text-zinc-400 font-bold uppercase text-[10px] tracking-wider">
@@ -838,14 +867,14 @@ export const AdminDashboardView: React.FC = () => {
                               <div className="flex items-center justify-end gap-2">
                                 <button 
                                   onClick={() => handleOpenEditModal(p)}
-                                  className="p-1.5 bg-zinc-800 hover:bg-indigo-600 hover:text-white text-zinc-300 rounded-lg transition-all"
+                                  className="p-1.5 bg-zinc-800 hover:bg-indigo-600 hover:text-white text-zinc-300 rounded-lg transition-all touch-target-min"
                                   title="Edit Product"
                                 >
                                   <Edit3 className="w-3.5 h-3.5" />
                                 </button>
                                 <button 
                                   onClick={() => deleteProduct(p.id)}
-                                  className="p-1.5 bg-zinc-800 hover:bg-rose-900 hover:text-rose-300 text-zinc-300 rounded-lg transition-all"
+                                  className="p-1.5 bg-zinc-800 hover:bg-rose-900 hover:text-rose-300 text-zinc-300 rounded-lg transition-all touch-target-min"
                                   title="Delete Product"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -858,6 +887,59 @@ export const AdminDashboardView: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Mobile Stacked Glass Cards View */}
+              <div className="block md:hidden divide-y divide-zinc-800/60 p-4 space-y-4">
+                {products
+                  .filter(p => p.title.toLowerCase().includes(prodSearch.toLowerCase()) || p.category.toLowerCase().includes(prodSearch.toLowerCase()))
+                  .map(p => {
+                    const stock = p.variants[0]?.stockQuantity || 0;
+                    return (
+                      <div key={p.id} className="pt-4 first:pt-0 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <img 
+                            src={p.images[0]} 
+                            alt={p.title} 
+                            className="w-14 h-14 rounded-xl object-cover bg-zinc-800 border border-zinc-700 shrink-0" 
+                          />
+                          <div className="min-w-0 flex-1 space-y-0.5">
+                            <h4 className="font-bold text-sm text-white line-clamp-2">{p.title}</h4>
+                            <p className="text-[10px] text-zinc-400 font-mono capitalize">{p.category.replace('-', ' ')} • SKU: {p.variants[0]?.sku || 'NONE'}</p>
+                            <span className="font-mono font-bold text-emerald-400 text-sm block">₹{p.basePrice.toLocaleString()}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1">
+                          {stock === 0 ? (
+                            <span className="px-2 py-0.5 bg-rose-950 text-rose-400 border border-rose-800 rounded text-[9px] font-bold uppercase">Out of Stock</span>
+                          ) : stock < 5 ? (
+                            <span className="px-2 py-0.5 bg-amber-950 text-amber-400 border border-amber-800 rounded text-[9px] font-bold uppercase">Low Stock ({stock})</span>
+                          ) : (
+                            <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded text-[9px] font-bold uppercase">In Stock ({stock})</span>
+                          )}
+
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={() => handleOpenEditModal(p)}
+                              className="px-3 py-1.5 bg-zinc-800 text-zinc-200 rounded-lg text-xs font-bold flex items-center gap-1 touch-target-min"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>Edit</span>
+                            </button>
+                            <button 
+                              onClick={() => deleteProduct(p.id)}
+                              className="px-3 py-1.5 bg-rose-950/60 text-rose-400 border border-rose-800/60 rounded-lg text-xs font-bold flex items-center gap-1 touch-target-min"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+
             </div>
 
           </div>
@@ -927,9 +1009,11 @@ export const AdminDashboardView: React.FC = () => {
               </button>
             </div>
 
-            {/* Orders Table */}
+            {/* Orders Table & Mobile Cards */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
-              <div className="overflow-x-auto">
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="border-b border-zinc-800 bg-zinc-950/40 text-zinc-400 font-bold uppercase text-[10px] tracking-wider">
@@ -979,19 +1063,19 @@ export const AdminDashboardView: React.FC = () => {
                           <td className="py-3.5 px-4 text-right space-x-1.5">
                             <button
                               onClick={() => handleOpenFulfillmentModal(o)}
-                              className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-[10px] uppercase shadow transition-all"
+                              className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-[10px] uppercase shadow transition-all touch-target-min"
                             >
                               Update Status
                             </button>
                             <button
                               onClick={() => setPackingSlipOrder(o)}
-                              className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-amber-500/30 rounded-lg font-bold text-[10px] uppercase transition-all"
+                              className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-amber-500/30 rounded-lg font-bold text-[10px] uppercase transition-all touch-target-min"
                             >
                               Packing Slip
                             </button>
                             <button
                               onClick={() => setSelectedOrder(o)}
-                              className="px-2 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg font-bold text-[10px] uppercase"
+                              className="px-2 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg font-bold text-[10px] uppercase touch-target-min"
                             >
                               Items
                             </button>
@@ -1001,6 +1085,58 @@ export const AdminDashboardView: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Mobile Stacked Glass Cards View */}
+              <div className="block md:hidden divide-y divide-zinc-800/60 p-4 space-y-4">
+                {orders
+                  .filter(o => {
+                    const matchesSearch = o.customerName.toLowerCase().includes(orderSearch.toLowerCase()) || 
+                      o.orderNumber.toLowerCase().includes(orderSearch.toLowerCase()) ||
+                      (o.awbTrackingNumber && o.awbTrackingNumber.toLowerCase().includes(orderSearch.toLowerCase()));
+                    if (!matchesSearch) return false;
+                    if (orderFilterTab === 'PENDING') return ['PENDING_FULFILLMENT', 'PENDING', 'PAYMENT_CONFIRMED', 'PROCESSING'].includes(o.status);
+                    if (orderFilterTab === 'QUALITY') return o.status === 'QUALITY_CHECK';
+                    if (orderFilterTab === 'TRANSIT') return ['PACKED', 'DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'SHIPPED'].includes(o.status);
+                    if (orderFilterTab === 'DELIVERED') return o.status === 'DELIVERED';
+                    if (orderFilterTab === 'RETURNS') return ['RETURN_REQUESTED', 'RETURNED'].includes(o.status);
+                    return true;
+                  })
+                  .map(o => (
+                    <div key={o.id} className="pt-4 first:pt-0 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <span className="font-mono font-bold text-indigo-400 text-sm block">{o.orderNumber}</span>
+                          <span className="text-[10px] text-zinc-500 font-bold block">AWB: {o.awbTrackingNumber || o.trackingNumber || 'Pending'}</span>
+                          <span className="text-xs text-zinc-200 font-semibold block mt-1">{o.customerName}</span>
+                          <span className="text-[10px] text-zinc-500">{o.shippingAddress?.city || 'India'} • {new Date(o.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div className="shrink-0 pt-0.5">{renderStatusBadge(o.status)}</div>
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          onClick={() => handleOpenFulfillmentModal(o)}
+                          className="flex-1 min-w-[100px] px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-[10px] uppercase shadow text-center touch-target-min"
+                        >
+                          Update Status
+                        </button>
+                        <button
+                          onClick={() => setPackingSlipOrder(o)}
+                          className="px-3 py-2 bg-zinc-800 text-amber-400 border border-amber-500/30 rounded-lg font-bold text-[10px] uppercase touch-target-min"
+                        >
+                          Slip
+                        </button>
+                        <button
+                          onClick={() => setSelectedOrder(o)}
+                          className="px-3 py-2 bg-zinc-800 text-zinc-300 rounded-lg font-bold text-[10px] uppercase touch-target-min"
+                        >
+                          Items
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
             </div>
 
           </div>
@@ -1023,7 +1159,8 @@ export const AdminDashboardView: React.FC = () => {
                 <span>Low Stock & Out of Stock Items</span>
               </h3>
 
-              <div className="overflow-x-auto">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="border-b border-zinc-800 text-zinc-400 font-bold uppercase text-[10px] tracking-wider">
@@ -1071,7 +1208,7 @@ export const AdminDashboardView: React.FC = () => {
                                     updateStock(p.id, variant.id, currentQty);
                                   }
                                 }}
-                                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold uppercase transition-colors"
+                                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold uppercase transition-colors touch-target-min"
                               >
                                 Save Qty
                               </button>
@@ -1092,6 +1229,55 @@ export const AdminDashboardView: React.FC = () => {
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Stacked Glass Cards View */}
+              <div className="block md:hidden divide-y divide-zinc-800/60 p-4 space-y-4">
+                {lowStockProducts.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                    <p className="font-bold text-white text-sm">All Stock Levels Healthy!</p>
+                    <p className="text-[11px] text-zinc-400">No products are currently under low inventory thresholds.</p>
+                  </div>
+                ) : (
+                  lowStockProducts.map(p => {
+                    const variant = p.variants[0];
+                    const currentQty = stockEdits[p.id] !== undefined ? stockEdits[p.id] : (variant?.stockQuantity || 0);
+
+                    return (
+                      <div key={p.id} className="pt-4 first:pt-0 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <img src={p.images[0]} alt={p.title} className="w-12 h-12 rounded-xl object-cover bg-zinc-800 border border-zinc-700 shrink-0" />
+                          <div className="min-w-0 flex-1 space-y-0.5">
+                            <h4 className="font-bold text-sm text-white line-clamp-2">{p.title}</h4>
+                            <p className="text-[10px] text-zinc-400 font-mono">SKU: {variant?.sku || 'N/A'} • Stock: {variant?.stockQuantity || 0}</p>
+                            {(variant?.stockQuantity || 0) === 0 ? (
+                              <span className="inline-block px-2 py-0.5 bg-rose-950 text-rose-400 border border-rose-800 rounded text-[9px] font-bold uppercase">Critical</span>
+                            ) : (
+                              <span className="inline-block px-2 py-0.5 bg-amber-950 text-amber-400 border border-amber-800 rounded text-[9px] font-bold uppercase">Warning</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="number" 
+                            min={0}
+                            value={currentQty}
+                            onChange={(e) => setStockEdits({ ...stockEdits, [p.id]: Number(e.target.value) })}
+                            className="w-20 bg-zinc-800 border border-zinc-700 text-white rounded-lg px-2.5 py-2 text-xs font-mono font-bold text-center focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          />
+                          <button
+                            onClick={() => { if (variant) updateStock(p.id, variant.id, currentQty); }}
+                            className="flex-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold uppercase transition-colors touch-target-min text-center"
+                          >
+                            Save Qty
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 
