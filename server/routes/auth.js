@@ -40,7 +40,7 @@ router.post('/register', async (req, res) => {
       try {
         checkUser = await Profile.findOne({
           $or: [{ email: formattedEmail }, { phone: formattedPhone }]
-        });
+        }).lean().maxTimeMS(1500);
       } catch (dbErr) {}
     }
 
@@ -63,9 +63,7 @@ router.post('/register', async (req, res) => {
     memoryProfiles.push(newUserObj);
 
     if (isDbReady()) {
-      try {
-        await Profile.create(newUserObj);
-      } catch (e) {}
+      Profile.create(newUserObj).catch(() => {});
     }
 
     // Set HTTP-Only auth cookie
@@ -111,7 +109,7 @@ router.post('/login', async (req, res) => {
             { email: new RegExp(`^${formatted}$`, 'i') }, 
             { phone: formatted }
           ]
-        });
+        }).lean().maxTimeMS(1500);
       } catch (dbErr) {}
     }
 
@@ -131,9 +129,7 @@ router.post('/login', async (req, res) => {
         user = newUserObj;
 
         if (isDbReady()) {
-          try {
-            await Profile.create(newUserObj);
-          } catch (dbCreateErr) {}
+          Profile.create(newUserObj).catch(() => {});
         }
       } else {
         return res.status(401).json({ error: 'No account found matching this email or phone number. Please register first.' });
@@ -213,10 +209,10 @@ router.post('/google', async (req, res) => {
     const displayName = name || formattedEmail.split('@')[0];
 
     // Check if user already exists
-    let user = await Profile.findOne({ email: formattedEmail });
+    let user = isDbReady() ? await Profile.findOne({ email: formattedEmail }).lean().maxTimeMS(1500) : null;
     if (!user) {
       // Create new patron profile for Google user
-      user = await Profile.create({
+      user = {
         id: `usr-${Date.now()}`,
         fullName: displayName,
         email: formattedEmail,
@@ -224,7 +220,11 @@ router.post('/google', async (req, res) => {
         passwordHash: hashPassword('google-oauth-authenticated'),
         role: 'customer',
         address: { street: '', city: '', state: '', pincode: '' }
-      });
+      };
+      memoryProfiles.push(user);
+      if (isDbReady()) {
+        Profile.create(user).catch(() => {});
+      }
     }
 
     // Set HTTP-Only auth cookie
