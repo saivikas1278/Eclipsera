@@ -301,6 +301,11 @@ router.delete('/:id', verifyAdminToken, async (req, res) => {
       } catch (e) {}
     }
 
+    try {
+      const { recordAuditLog } = require('./auditLogs');
+      await recordAuditLog(`Product deleted: "${targetProd?.title || id}" (ID: ${id})`, 'CATALOG');
+    } catch (auditErr) {}
+
     res.json({ 
       success: true, 
       message: `Product ${id} deleted successfully.`,

@@ -17,10 +17,10 @@ const cookieParserMiddleware = (req, res, next) => {
   next();
 };
 
-// Admin Token & Cookie Verification
+// Admin Token & Cookie Verification (Strict Isolated Admin Credentials)
 const verifyAdminToken = (req, res, next) => {
   const cookies = parseCookies(req);
-  const token = req.headers['x-admin-token'] || cookies['eclipsera_admin_token'] || cookies['eclipsera_token'];
+  const token = req.headers['x-admin-token'] || cookies['eclipsera_admin_token'];
   
   if (token === 'eclipsera-admin-secure-session-token' || token === 'admin-authenticated-cookie-token') {
     next();

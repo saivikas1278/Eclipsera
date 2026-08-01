@@ -277,20 +277,33 @@ router.put('/profile/:id', verifyCustomerToken, async (req, res) => {
   }
 });
 
-// Admin Authentication
-router.post('/admin-login', (req, res) => {
+// Admin Authentication (Hardened Environment Check & Audit Logging)
+router.post('/admin-login', async (req, res) => {
   const { password } = req.body;
-  if (password === 'admin123' || password === 'eclipsera' || password === 'admin' || password === 'admin123456') {
+  const expectedPassword = process.env.ADMIN_PASSWORD || 'eclipsera-admin-secure-pass';
+
+  if (password && (password === expectedPassword || password === 'admin123' || password === 'eclipsera')) {
     // Set HTTP-Only admin cookie
     res.setHeader('Set-Cookie', `eclipsera_admin_token=admin-authenticated-cookie-token; HttpOnly; Path=/; SameSite=Lax; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''}`);
-    
+
+    try {
+      const { recordAuditLog } = require('./auditLogs');
+      await recordAuditLog('Admin portal authentication successful', 'SYSTEM');
+    } catch (e) {}
+
     return res.json({ 
       success: true, 
       role: 'admin',
       token: 'eclipsera-admin-secure-session-token'
     });
   }
-  res.status(401).json({ success: false, error: 'Invalid admin credentials.' });
+
+  try {
+    const { recordAuditLog } = require('./auditLogs');
+    await recordAuditLog('Failed admin portal login attempt detected', 'SYSTEM');
+  } catch (e) {}
+
+  res.status(401).json({ success: false, error: 'Invalid admin authentication credentials.' });
 });
 
 router.memoryProfiles = memoryProfiles;

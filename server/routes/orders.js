@@ -309,6 +309,27 @@ router.post('/', async (req, res) => {
       } catch (e) {}
     }
 
+    // Increment Coupon usedCount in memory & DB
+    if (couponCode) {
+      try {
+        const couponsRoute = require('./coupons');
+        const memoryCoupons = couponsRoute.memoryCoupons || [];
+        const memCoupon = memoryCoupons.find(c => c.code === couponCode);
+        if (memCoupon) {
+          memCoupon.usedCount = (memCoupon.usedCount || 0) + 1;
+        }
+
+        if (isDbReady()) {
+          try {
+            await Coupon.updateOne({ code: couponCode }, { $inc: { usedCount: 1 } });
+          } catch (e) {}
+        }
+
+        const { recordAuditLog } = require('./auditLogs');
+        await recordAuditLog(`Coupon "${couponCode}" applied to Order #${orderNum}`, 'ORDER');
+      } catch (couponErr) {}
+    }
+
     res.json({ success: true, id: newId, orderNumber: orderNum, order: newOrderObj });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -386,8 +407,16 @@ router.put('/:id/fulfillment', verifyAdminToken, async (req, res) => {
       sendOrderDispatchEmail(ord);
     }
 
-    if (status === 'CANCELLED') {
+    if (status === 'CANCELLED' || status === 'RETURN_APPROVED' || status === 'REFUNDED') {
       await restoreOrderStock(ord.items);
+      if (status === 'RETURN_APPROVED' || status === 'REFUNDED') {
+        ord.trackingHistory.push({
+          status,
+          location: 'Central Vault Warehouse',
+          timestamp: new Date().toISOString(),
+          note: 'Returned craft item restocked to active inventory.'
+        });
+      }
     }
 
     try {

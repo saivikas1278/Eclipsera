@@ -228,6 +228,13 @@ router.delete('/admin/:id', verifyAdminToken, async (req, res) => {
   try {
     const { id } = req.params;
 
+    let targetRev = memoryReviews.find(r => r.id === id);
+    if (!targetRev && isDbReady()) {
+      try { targetRev = await Review.findOne({ id }); } catch (e) {}
+    }
+
+    const productId = targetRev?.productId;
+
     const idx = memoryReviews.findIndex(r => r.id === id);
     if (idx !== -1) memoryReviews.splice(idx, 1);
 
@@ -237,7 +244,35 @@ router.delete('/admin/:id', verifyAdminToken, async (req, res) => {
       } catch (e) {}
     }
 
-    res.json({ success: true });
+    // Recalculate rating metrics if productId exists
+    if (productId) {
+      const remainingApproved = memoryReviews.filter(r => r.productId === productId && r.status === 'APPROVED');
+      const count = remainingApproved.length;
+      const avg = count > 0 
+        ? parseFloat((remainingApproved.reduce((sum, r) => sum + r.rating, 0) / count).toFixed(1))
+        : 5.0;
+
+      const memProd = memoryProducts.find(p => p.id === productId);
+      if (memProd) {
+        memProd.rating = avg;
+        memProd.reviewsCount = count;
+      }
+
+      if (isDbReady()) {
+        try {
+          await Product.findOneAndUpdate({ id: productId }, {
+            $set: { rating: avg, reviewsCount: count }
+          });
+        } catch (e) {}
+      }
+    }
+
+    try {
+      const { recordAuditLog } = require('./auditLogs');
+      await recordAuditLog(`Review "${id}" deleted and product rating recalculated`, 'REVIEW');
+    } catch (auditErr) {}
+
+    res.json({ success: true, message: 'Review deleted and product rating updated.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

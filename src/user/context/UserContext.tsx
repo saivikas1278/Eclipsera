@@ -165,7 +165,14 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentViewState, setCurrentViewState] = useState<string>(getViewFromUrl());
   const [selectedProductSlug, setSelectedProductSlug] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('eclipsera_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -509,6 +516,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
+    try {
+      localStorage.setItem('eclipsera_cart', JSON.stringify(cart));
+    } catch (e) {}
+  }, [cart]);
+
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentViewState, selectedProductSlug]);
 
@@ -802,7 +815,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCart(prev => prev.map(item => item.variantId === variantId ? { ...item, quantity } : item));
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    try { localStorage.removeItem('eclipsera_cart'); } catch (e) {}
+  };
 
   const applyCoupon = (code: string) => {
     const match = coupons.find(c => c.code === code.toUpperCase());
