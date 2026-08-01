@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { GoogleLogin } from '@react-oauth/google';
-import { ShieldCheck, Lock, Mail, Phone, Eye, EyeOff, ArrowRight, CheckCircle2, Zap } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, Phone, Eye, EyeOff, ArrowRight, CheckCircle2, Zap, AlertCircle, Loader2 } from 'lucide-react';
+import { validateEmail, validatePhone, validatePassword } from '../../shared/utils/authValidation';
 
 export const AuthView: React.FC = () => {
-  const { customerLogin, customerGoogleLogin, requestOTP, verifyOTP, setCurrentView } = useUser();
+  const { customerLogin, customerGoogleLogin, requestOTP, verifyOTP, setCurrentView, showToast } = useUser();
 
   const [loginMethod, setLoginMethod] = useState<'email' | 'otp'>('email');
 
@@ -16,40 +17,108 @@ export const AuthView: React.FC = () => {
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [demoOtpCode, setDemoOtpCode] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Field Errors (On Blur)
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [resetEmailError, setResetEmailError] = useState<string | null>(null);
 
   // Forgot Password Modal State
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
+  const [isResetLoading, setIsResetLoading] = useState(false);
 
   const handleFillDemo = () => {
     setEmail('ananya.sharma@example.com');
-    setPassword('patron123');
+    setPassword('Patron@123');
+    setEmailError(null);
+    setPasswordError(null);
   };
 
-  const handleEmailLogin = (e: React.FormEvent) => {
+  const handleEmailBlur = () => {
+    setEmailError(validateEmail(email));
+  };
+
+  const handlePasswordBlur = () => {
+    setPasswordError(validatePassword(password));
+  };
+
+  const handlePhoneBlur = () => {
+    setPhoneError(validatePhone(phone));
+  };
+
+  const handleResetEmailBlur = () => {
+    setResetEmailError(validateEmail(resetEmail));
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
-    customerLogin(email, password);
+    const eErr = validateEmail(email);
+    const pErr = validatePassword(password);
+    setEmailError(eErr);
+    setPasswordError(pErr);
+
+    if (eErr || pErr) return;
+
+    setIsLoading(true);
+    try {
+      const cleanEmail = email.trim().toLowerCase();
+      const res = await customerLogin(cleanEmail, password);
+      if (res && res.success) {
+        showToast("Welcome back! Redirecting to your dashboard...", "success");
+      }
+    } catch (err: any) {
+      showToast("Unable to connect to the server. Please check your internet connection and try again.", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRequestOTP = (e: React.FormEvent) => {
     e.preventDefault();
-    if (phone.length < 10) return;
-    const res = requestOTP(phone);
+    const pErr = validatePhone(phone);
+    setPhoneError(pErr);
+    if (pErr) return;
+
+    const cleanPhone = phone.replace(/\D/g, '');
+    const res = requestOTP(cleanPhone);
     setOtpSent(true);
     setDemoOtpCode(res.demoOTP);
   };
 
-  const handleVerifyOTP = (e: React.FormEvent) => {
+  const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
-    verifyOTP(phone, otp);
+    if (!otp.trim()) return;
+
+    setIsLoading(true);
+    try {
+      const cleanPhone = phone.replace(/\D/g, '');
+      const res = await verifyOTP(cleanPhone, otp);
+      if (res && res.success) {
+        showToast("Welcome back! Redirecting to your dashboard...", "success");
+      }
+    } catch (err) {
+      showToast("Unable to connect to the server. Please check your internet connection and try again.", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!resetEmail.trim()) return;
-    setResetSent(true);
+    const rErr = validateEmail(resetEmail);
+    setResetEmailError(rErr);
+    if (rErr) return;
+
+    setIsResetLoading(true);
+    setTimeout(() => {
+      setIsResetLoading(false);
+      setResetSent(true);
+      showToast("Reset link sent! Please check your email inbox.", "success");
+    }, 800);
   };
 
   return (
@@ -72,12 +141,14 @@ export const AuthView: React.FC = () => {
             {/* Method Toggle: Email vs Mobile OTP */}
             <div className="flex bg-cream-100 p-1 rounded-xl border border-cream-300 text-xs font-semibold">
               <button 
+                type="button"
                 onClick={() => setLoginMethod('email')}
                 className={`flex-1 py-1.5 rounded-lg text-center transition-all ${loginMethod === 'email' ? 'bg-obsidian-900 text-cream-100 font-bold shadow-sm' : 'text-obsidian-900/70'}`}
               >
                 Email & Password
               </button>
               <button 
+                type="button"
                 onClick={() => setLoginMethod('otp')}
                 className={`flex-1 py-1.5 rounded-lg text-center transition-all ${loginMethod === 'otp' ? 'bg-obsidian-900 text-cream-100 font-bold shadow-sm' : 'text-obsidian-900/70'}`}
               >
@@ -102,6 +173,7 @@ export const AuthView: React.FC = () => {
                   </button>
                 </div>
 
+                {/* Email Input */}
                 <div>
                   <label className="text-xs font-bold text-obsidian-900 uppercase block mb-1">Email Address</label>
                   <div className="relative">
@@ -111,12 +183,20 @@ export const AuthView: React.FC = () => {
                       placeholder="ananya.sharma@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-cream-100 border border-cream-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500"
+                      onBlur={handleEmailBlur}
+                      className={`w-full bg-cream-100 border ${emailError ? 'border-rose-500' : 'border-cream-300'} rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500`}
                     />
                     <Mail className="w-4 h-4 text-obsidian-900/40 absolute left-3 top-3" />
                   </div>
+                  {emailError && (
+                    <p className="text-[11px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3 shrink-0" />
+                      <span>{emailError}</span>
+                    </p>
+                  )}
                 </div>
 
+                {/* Password Input */}
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <label className="text-xs font-bold text-obsidian-900 uppercase">Password</label>
@@ -135,7 +215,8 @@ export const AuthView: React.FC = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-cream-100 border border-cream-300 rounded-xl pl-9 pr-9 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500"
+                      onBlur={handlePasswordBlur}
+                      className={`w-full bg-cream-100 border ${passwordError ? 'border-rose-500' : 'border-cream-300'} rounded-xl pl-9 pr-9 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500`}
                     />
                     <Lock className="w-4 h-4 text-obsidian-900/40 absolute left-3 top-3" />
                     <button 
@@ -146,14 +227,30 @@ export const AuthView: React.FC = () => {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  {passwordError && (
+                    <p className="text-[11px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3 shrink-0" />
+                      <span>{passwordError}</span>
+                    </p>
+                  )}
                 </div>
 
                 <button 
                   type="submit"
-                  className="w-full bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 py-3 rounded-xl text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2 shadow-lg transition-all"
+                  disabled={isLoading}
+                  className="w-full bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-xl text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2 shadow-lg transition-all"
                 >
-                  <span>Sign In</span>
-                  <ArrowRight className="w-4 h-4" />
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-gold-400" />
+                      <span>Authenticating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Sign In</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               </form>
             ) : (
@@ -173,12 +270,19 @@ export const AuthView: React.FC = () => {
                           maxLength={10}
                           placeholder="9876543210"
                           value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          className="w-full bg-cream-100 border border-cream-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-bold focus:outline-none focus:border-gold-500"
+                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                          onBlur={handlePhoneBlur}
+                          className={`w-full bg-cream-100 border ${phoneError ? 'border-rose-500' : 'border-cream-300'} rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-bold focus:outline-none focus:border-gold-500`}
                         />
                         <Phone className="w-4 h-4 text-obsidian-900/40 absolute left-3 top-3" />
                       </div>
                     </div>
+                    {phoneError && (
+                      <p className="text-[11px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3 shrink-0" />
+                        <span>{phoneError}</span>
+                      </p>
+                    )}
                   </div>
 
                   <button 
@@ -204,7 +308,7 @@ export const AuthView: React.FC = () => {
                       maxLength={4}
                       placeholder="4821"
                       value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                       className="w-full bg-cream-100 border border-cream-300 rounded-xl px-3 py-3 text-center text-lg font-mono tracking-[0.5em] font-bold text-obsidian-900 focus:outline-none focus:border-gold-500"
                     />
                   </div>
@@ -220,10 +324,20 @@ export const AuthView: React.FC = () => {
 
                   <button 
                     type="submit"
-                    className="w-full bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 py-3 rounded-xl text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2 shadow-lg transition-all"
+                    disabled={isLoading}
+                    className="w-full bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-xl text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2 shadow-lg transition-all"
                   >
-                    <span>Verify & Login</span>
-                    <CheckCircle2 className="w-4 h-4 text-gold-400" />
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-gold-400" />
+                        <span>Verifying...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Verify & Login</span>
+                        <CheckCircle2 className="w-4 h-4 text-gold-400" />
+                      </>
+                    )}
                   </button>
                 </form>
               )
@@ -268,6 +382,7 @@ export const AuthView: React.FC = () => {
           <div className="p-4 bg-cream-100 border-t border-cream-200 text-center text-xs">
             <span className="text-obsidian-900/70">Don't have an account? </span>
             <button 
+              type="button"
               onClick={() => setCurrentView('register')}
               className="font-bold text-gold-700 hover:underline uppercase tracking-wider ml-1"
             >
@@ -303,29 +418,47 @@ export const AuthView: React.FC = () => {
             {resetSent ? (
               <div className="p-3 bg-emerald-500/10 text-emerald-700 rounded-xl text-xs font-bold space-y-1">
                 <CheckCircle2 className="w-6 h-6 text-emerald-600 mx-auto" />
-                <p>Password reset link sent to {resetEmail}!</p>
+                <p>Reset link sent! Please check your email inbox.</p>
               </div>
             ) : (
               <form onSubmit={handleForgotPassword} className="space-y-3">
-                <input 
-                  type="email" 
-                  required
-                  placeholder="Enter your email"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  className="w-full bg-cream-100 border border-cream-300 rounded-xl px-3 py-2 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500"
-                />
+                <div>
+                  <input 
+                    type="email" 
+                    required
+                    placeholder="Enter your email"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    onBlur={handleResetEmailBlur}
+                    className={`w-full bg-cream-100 border ${resetEmailError ? 'border-rose-500' : 'border-cream-300'} rounded-xl px-3 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500`}
+                  />
+                  {resetEmailError && (
+                    <p className="text-[11px] text-rose-600 font-semibold mt-1 text-left flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3 shrink-0" />
+                      <span>{resetEmailError}</span>
+                    </p>
+                  )}
+                </div>
                 <button 
                   type="submit" 
-                  className="w-full bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 py-2.5 rounded-xl font-bold text-xs uppercase"
+                  disabled={isResetLoading}
+                  className="w-full bg-obsidian-900 text-cream-100 hover:bg-gold-600 hover:text-obsidian-900 disabled:opacity-50 disabled:cursor-not-allowed py-2.5 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-2"
                 >
-                  Send Reset Link
+                  {isResetLoading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-gold-400" />
+                      <span>Sending Link...</span>
+                    </>
+                  ) : (
+                    <span>Send Reset Link</span>
+                  )}
                 </button>
               </form>
             )}
 
             <button 
-              onClick={() => { setIsForgotModalOpen(false); setResetSent(false); }}
+              type="button"
+              onClick={() => { setIsForgotModalOpen(false); setResetSent(false); setResetEmailError(null); }}
               className="text-xs font-semibold text-obsidian-900/60 hover:underline block mx-auto"
             >
               Close Window

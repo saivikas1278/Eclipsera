@@ -1,27 +1,39 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
-import { Lock, Key, ArrowRight, ShieldCheck, Mail, AlertCircle } from 'lucide-react';
+import { Lock, Key, ArrowRight, ShieldCheck, Mail, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { validateEmail } from '../../shared/utils/authValidation';
 
 export const AdminLoginView: React.FC = () => {
   const { adminLogin } = useAdmin();
   const [email, setEmail] = useState('admin@eclipsera.com');
   const [password, setPassword] = useState('admin123');
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState('');
   
-  // Login stages
+  // Login stages & states
   const [stage, setStage] = useState<'LOGIN' | 'OTP'>('LOGIN');
   const [errorMsg, setErrorMsg] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleEmailBlur = () => {
+    setEmailError(validateEmail(email));
+  };
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
-    // Check credentials
-    if (password.length >= 3) {
-      setStage('OTP');
-    } else {
-      setErrorMsg('Please enter a valid administrative password.');
+    const eErr = validateEmail(email);
+    setEmailError(eErr);
+    if (eErr) return;
+
+    if (!password || password.length < 3) {
+      setErrorMsg('Field cannot be left blank. Please enter access password.');
+      return;
     }
+
+    setStage('OTP');
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
@@ -29,12 +41,19 @@ export const AdminLoginView: React.FC = () => {
     setErrorMsg('');
 
     if (otp === '123456' || otp.length === 6 || otp.length === 4) {
-      const ok = await adminLogin(password);
-      if (!ok) {
-        setErrorMsg('Authentication failed. Check your admin password.');
+      setIsLoading(true);
+      try {
+        const ok = await adminLogin(password);
+        if (!ok) {
+          setErrorMsg('Access denied. Invalid administrative credentials or security key.');
+        }
+      } catch (err) {
+        setErrorMsg('Unable to connect to the server. Please check your internet connection and try again.');
+      } finally {
+        setIsLoading(false);
       }
     } else {
-      setErrorMsg('Invalid 2FA OTP code. Enter 123456');
+      setErrorMsg('Invalid 2FA OTP code. Enter 123456 for demo.');
     }
   };
 
@@ -76,11 +95,18 @@ export const AdminLoginView: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={handleEmailBlur}
                   placeholder="admin@eclipsera.com"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-medium"
+                  className={`w-full bg-zinc-800 border ${emailError ? 'border-rose-500' : 'border-zinc-700'} rounded-xl px-3.5 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-medium`}
                 />
                 <Mail className="w-4 h-4 text-zinc-400 absolute right-3.5 top-3.5" />
               </div>
+              {emailError && (
+                <p className="text-[11px] text-rose-400 font-medium mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{emailError}</span>
+                </p>
+              )}
             </div>
 
             {/* Password Field */}
@@ -90,14 +116,20 @@ export const AdminLoginView: React.FC = () => {
               </label>
               <div className="relative">
                 <input 
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter admin password"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-medium"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl pl-3.5 pr-10 py-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-medium"
                 />
-                <Key className="w-4 h-4 text-zinc-400 absolute right-3.5 top-3.5" />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3.5 text-zinc-400 hover:text-white"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -143,10 +175,20 @@ export const AdminLoginView: React.FC = () => {
               </button>
               <button 
                 type="submit"
-                className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-indigo-600/25"
+                disabled={isLoading}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3.5 rounded-xl text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-indigo-600/25"
               >
-                <ShieldCheck className="w-4 h-4" />
-                Authenticate
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span>Authenticating...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Authenticate</span>
+                  </>
+                )}
               </button>
             </div>
           </form>

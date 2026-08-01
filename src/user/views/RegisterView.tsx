@@ -1,21 +1,69 @@
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { GoogleLogin } from '@react-oauth/google';
-import { ShieldCheck, Lock, Mail, Phone, ArrowRight, User } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, Phone, ArrowRight, User, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
+import { validateEmail, validatePhone, validatePassword, validateFullName } from '../../shared/utils/authValidation';
 
 export const RegisterView: React.FC = () => {
-  const { customerRegister, customerGoogleLogin, setCurrentView } = useUser();
+  const { customerRegister, customerGoogleLogin, setCurrentView, showToast } = useUser();
 
   // Register Form States
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
+  // Field Errors (On Blur)
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  const handleNameBlur = () => {
+    setNameError(validateFullName(regName));
+  };
+
+  const handleEmailBlur = () => {
+    setEmailError(validateEmail(regEmail));
+  };
+
+  const handlePhoneBlur = () => {
+    setPhoneError(validatePhone(regPhone));
+  };
+
+  const handlePasswordBlur = () => {
+    setPasswordError(validatePassword(regPassword));
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regName.trim() || !regEmail.trim()) return;
-    customerRegister(regName, regEmail, regPhone, regPassword);
+    const nErr = validateFullName(regName);
+    const eErr = validateEmail(regEmail);
+    const pErr = validatePhone(regPhone);
+    const passErr = validatePassword(regPassword);
+
+    setNameError(nErr);
+    setEmailError(eErr);
+    setPhoneError(pErr);
+    setPasswordError(passErr);
+
+    if (nErr || eErr || pErr || passErr) return;
+
+    setIsLoading(true);
+    try {
+      const cleanEmail = regEmail.trim().toLowerCase();
+      const cleanPhone = regPhone.replace(/\D/g, '');
+      const res = await customerRegister(regName.trim(), cleanEmail, cleanPhone, regPassword);
+      if (res && res.success) {
+        showToast("Account created successfully! Welcome to Eclipsera.", "success");
+      }
+    } catch (err: any) {
+      showToast("Unable to connect to the server. Please check your internet connection and try again.", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -35,6 +83,7 @@ export const RegisterView: React.FC = () => {
 
           {/* Form */}
           <form onSubmit={handleRegister} className="p-6 space-y-4 animate-fade-in text-obsidian-900">
+            {/* Full Name Field */}
             <div>
               <label className="text-xs font-bold text-obsidian-900 uppercase block mb-1">Full Name</label>
               <div className="relative">
@@ -44,12 +93,20 @@ export const RegisterView: React.FC = () => {
                   placeholder="e.g. Ananya Sharma"
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
-                  className="w-full bg-cream-100 border border-cream-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500"
+                  onBlur={handleNameBlur}
+                  className={`w-full bg-cream-100 border ${nameError ? 'border-rose-500' : 'border-cream-300'} rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500`}
                 />
                 <User className="w-4 h-4 text-obsidian-900/40 absolute left-3 top-3" />
               </div>
+              {nameError && (
+                <p className="text-[11px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{nameError}</span>
+                </p>
+              )}
             </div>
 
+            {/* Email Address Field */}
             <div>
               <label className="text-xs font-bold text-obsidian-900 uppercase block mb-1">Email Address</label>
               <div className="relative">
@@ -59,12 +116,20 @@ export const RegisterView: React.FC = () => {
                   placeholder="e.g. ananya.sharma@example.com"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
-                  className="w-full bg-cream-100 border border-cream-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500"
+                  onBlur={handleEmailBlur}
+                  className={`w-full bg-cream-100 border ${emailError ? 'border-rose-500' : 'border-cream-300'} rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500`}
                 />
                 <Mail className="w-4 h-4 text-obsidian-900/40 absolute left-3 top-3" />
               </div>
+              {emailError && (
+                <p className="text-[11px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{emailError}</span>
+                </p>
+              )}
             </div>
 
+            {/* Mobile Phone Number Field */}
             <div>
               <label className="text-xs font-bold text-obsidian-900 uppercase block mb-1">Mobile Phone Number</label>
               <div className="relative">
@@ -74,34 +139,70 @@ export const RegisterView: React.FC = () => {
                   maxLength={10}
                   placeholder="9876543210"
                   value={regPhone}
-                  onChange={(e) => setRegPhone(e.target.value)}
-                  className="w-full bg-cream-100 border border-cream-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500"
+                  onChange={(e) => setRegPhone(e.target.value.replace(/\D/g, ''))}
+                  onBlur={handlePhoneBlur}
+                  className={`w-full bg-cream-100 border ${phoneError ? 'border-rose-500' : 'border-cream-300'} rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500`}
                 />
                 <Phone className="w-4 h-4 text-obsidian-900/40 absolute left-3 top-3" />
               </div>
+              {phoneError && (
+                <p className="text-[11px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{phoneError}</span>
+                </p>
+              )}
             </div>
 
+            {/* Create Password Field */}
             <div>
               <label className="text-xs font-bold text-obsidian-900 uppercase block mb-1">Create Password</label>
               <div className="relative">
                 <input 
-                  type="password" 
+                  type={showPassword ? "text" : "password"} 
                   required
                   placeholder="••••••••"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
-                  className="w-full bg-cream-100 border border-cream-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500"
+                  onBlur={handlePasswordBlur}
+                  className={`w-full bg-cream-100 border ${passwordError ? 'border-rose-500' : 'border-cream-300'} rounded-xl pl-9 pr-9 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500`}
                 />
                 <Lock className="w-4 h-4 text-obsidian-900/40 absolute left-3 top-3" />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-obsidian-900/40 hover:text-obsidian-900"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
+              {passwordError ? (
+                <p className="text-[11px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>{passwordError}</span>
+                </p>
+              ) : (
+                <p className="text-[10px] text-obsidian-900/50 mt-1">
+                  Must be 8+ chars with uppercase, lowercase, number, and special character (@$!%*?&).
+                </p>
+              )}
             </div>
 
             <button 
               type="submit"
-              className="w-full bg-gold-500 text-obsidian-900 hover:bg-gold-400 py-3 rounded-xl text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2 shadow-md transition-all mt-2"
+              disabled={isLoading}
+              className="w-full bg-gold-500 text-obsidian-900 hover:bg-gold-400 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-xl text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2 shadow-md transition-all mt-2"
             >
-              <span>Create Account</span>
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-obsidian-900" />
+                  <span>Creating Account...</span>
+                </>
+              ) : (
+                <>
+                  <span>Create Account</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
 
             {/* Official Google OAuth 2.0 Registration */}
@@ -142,6 +243,7 @@ export const RegisterView: React.FC = () => {
           <div className="p-4 bg-cream-100 border-t border-cream-200 text-center text-xs">
             <span className="text-obsidian-900/70">Already have an account? </span>
             <button 
+              type="button"
               onClick={() => setCurrentView('auth')}
               className="font-bold text-gold-700 hover:underline uppercase tracking-wider ml-1"
             >
