@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { GoogleLogin } from '@react-oauth/google';
-import { ShieldCheck, Lock, Mail, Phone, Eye, EyeOff, ArrowRight, CheckCircle2, Zap, AlertCircle, Loader2 } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, Phone, Eye, EyeOff, ArrowRight, CheckCircle2, Zap, AlertCircle, Loader2, UserX, UserPlus } from 'lucide-react';
 import { validateEmail, validatePhone, validatePassword } from '../../shared/utils/authValidation';
 
 export const AuthView: React.FC = () => {
@@ -24,6 +24,9 @@ export const AuthView: React.FC = () => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [resetEmailError, setResetEmailError] = useState<string | null>(null);
+
+  // Non-Existent User Account Not Found Modal State
+  const [isUserNotFoundModalOpen, setIsUserNotFoundModalOpen] = useState(false);
 
   // Forgot Password Modal State
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
@@ -69,6 +72,17 @@ export const AuthView: React.FC = () => {
       const res = await customerLogin(cleanEmail, password);
       if (res && res.success) {
         showToast("Welcome back! Redirecting to your dashboard...", "success");
+      } else {
+        const errMsg = (res?.message || '').toLowerCase();
+        if (errMsg.includes('not found') || errMsg.includes('no account') || errMsg.includes('register') || errMsg.includes('invalid')) {
+          // Trigger prominent Account Not Found Modal Popup
+          setIsUserNotFoundModalOpen(true);
+          // Automatically clear input fields & error states
+          setEmail('');
+          setPassword('');
+          setEmailError(null);
+          setPasswordError(null);
+        }
       }
     } catch (err: any) {
       showToast("Unable to connect to the server. Please check your internet connection and try again.", "error");
@@ -99,6 +113,15 @@ export const AuthView: React.FC = () => {
       const res = await verifyOTP(cleanPhone, otp);
       if (res && res.success) {
         showToast("Welcome back! Redirecting to your dashboard...", "success");
+      } else {
+        const errMsg = (res?.message || '').toLowerCase();
+        if (errMsg.includes('not found') || errMsg.includes('no account') || errMsg.includes('register')) {
+          setIsUserNotFoundModalOpen(true);
+          setPhone('');
+          setOtp('');
+          setOtpSent(false);
+          setPhoneError(null);
+        }
       }
     } catch (err) {
       showToast("Unable to connect to the server. Please check your internet connection and try again.", "error");
@@ -405,6 +428,41 @@ export const AuthView: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Non-Existent User Account Not Found Popup Alert */}
+      {isUserNotFoundModalOpen && (
+        <div className="fixed inset-0 z-50 bg-obsidian-900/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white max-w-sm w-full rounded-3xl p-6 border border-gold-500/40 shadow-2xl space-y-4 text-center relative animate-scale-up">
+            <div className="w-12 h-12 bg-rose-500/10 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+              <UserX className="w-6 h-6" />
+            </div>
+            <h3 className="font-serif font-bold text-lg text-obsidian-900">Account Not Found</h3>
+            <p className="text-xs text-obsidian-900/70 font-sans leading-relaxed">
+              Account not found. An account with this email does not exist. Please create an account to get started!
+            </p>
+            <div className="space-y-2 pt-2">
+              <button 
+                type="button"
+                onClick={() => {
+                  setIsUserNotFoundModalOpen(false);
+                  setCurrentView('register');
+                }}
+                className="w-full bg-gold-500 hover:bg-gold-400 text-obsidian-900 py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Create an Account</span>
+              </button>
+              <button 
+                type="button"
+                onClick={() => setIsUserNotFoundModalOpen(false)}
+                className="text-xs font-semibold text-obsidian-900/60 hover:underline block mx-auto py-1"
+              >
+                Try Different Email
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Forgot Password Modal Simulator */}
       {isForgotModalOpen && (
