@@ -636,10 +636,13 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res && res.success && res.user) {
         const user = res.user;
         setCurrentUser(user);
-        try { localStorage.setItem('eclipsera_user', JSON.stringify(user)); } catch(e) {}
+        try { 
+          localStorage.setItem('eclipsera_user', JSON.stringify(user)); 
+          localStorage.setItem('eclipsera_token', `usr_session_${user.id}`);
+        } catch(e) {}
         showToast(`Account created! Welcome to eclipsera_premium, ${user.name}.`, 'success');
         setCurrentView('home');
-        return { success: true, message: 'Registration successful' };
+        return { success: true, message: 'Registration successful', user };
       } else if (res && res.error) {
         showToast(res.error, 'error');
         return { success: false, message: res.error };

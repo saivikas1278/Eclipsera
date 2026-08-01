@@ -58,6 +58,15 @@ export const RegisterView: React.FC = () => {
       const res = await customerRegister(regName.trim(), cleanEmail, cleanPhone, regPassword);
       if (res && res.success) {
         showToast("Account created successfully! Welcome to Eclipsera.", "success");
+        setRegName('');
+        setRegEmail('');
+        setRegPhone('');
+        setRegPassword('');
+        setNameError(null);
+        setEmailError(null);
+        setPhoneError(null);
+        setPasswordError(null);
+        setCurrentView('home');
       }
     } catch (err: any) {
       showToast("Unable to connect to the server. Please check your internet connection and try again.", "error");
