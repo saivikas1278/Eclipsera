@@ -10,6 +10,39 @@ const {
   triggerNewOrderAdminNotification 
 } = require('../services/notificationService');
 
+const restoreOrderStock = async (items) => {
+  if (!items || !Array.isArray(items)) return;
+  for (const item of items) {
+    const productId = item.productId || item.id;
+    const qty = Number(item.quantity) || 1;
+
+    // Memory restore
+    const prod = memoryProducts.find(p => p.id === productId);
+    if (prod && Array.isArray(prod.variants)) {
+      prod.variants.forEach(v => {
+        if (v.id === item.variantId || !item.variantId) {
+          v.stockQuantity = (v.stockQuantity || 0) + qty;
+        }
+      });
+    }
+
+    // DB restore
+    if (isDbReady()) {
+      try {
+        const dbProd = await Product.findOne({ id: productId });
+        if (dbProd && Array.isArray(dbProd.variants)) {
+          dbProd.variants.forEach(v => {
+            if (v.id === item.variantId || !item.variantId) {
+              v.stockQuantity = (v.stockQuantity || 0) + qty;
+            }
+          });
+          await dbProd.save();
+        }
+      } catch (e) {}
+    }
+  }
+};
+
 // GET all orders
 router.get('/', verifyAdminToken, async (req, res) => {
   try {
@@ -353,6 +386,10 @@ router.put('/:id/fulfillment', verifyAdminToken, async (req, res) => {
       sendOrderDispatchEmail(ord);
     }
 
+    if (status === 'CANCELLED') {
+      await restoreOrderStock(ord.items);
+    }
+
     try {
       const { recordAuditLog } = require('./auditLogs');
       await recordAuditLog(`Order #${ord.orderNumber || ord.id} status updated to ${ord.status}`, 'ORDER');
@@ -380,6 +417,85 @@ router.put('/:id/fulfillment', verifyAdminToken, async (req, res) => {
   }
 });
 
+// POST Customer / Admin Order Cancellation
+router.post('/:id/cancel', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body || {};
+
+    let ord = memoryOrders.find(o => o.id === id || o.orderNumber === id);
+    if (!ord && isDbReady()) {
+      try {
+        ord = await Order.findOne({ $or: [{ id }, { orderNumber: id }] });
+      } catch (e) {}
+    }
+
+    if (!ord) {
+      return res.status(404).json({ error: 'Order not found for cancellation.' });
+    }
+
+    const nonCancellable = ['DISPATCHED', 'IN_TRANSIT', 'DELIVERED', 'RETURN_REQUESTED', 'RETURN_APPROVED', 'REFUNDED', 'CANCELLED'];
+    if (nonCancellable.includes(ord.status)) {
+      return res.status(400).json({ error: `Cannot cancel order #${ord.orderNumber || id} because it is currently in "${ord.status}" status.` });
+    }
+
+    ord.status = 'CANCELLED';
+    ord.cancelReason = reason || 'Customer requested cancellation prior to dispatch';
+    ord.cancelledAt = new Date().toISOString();
+
+    if (!ord.trackingHistory) ord.trackingHistory = [];
+    ord.trackingHistory.push({
+      status: 'CANCELLED',
+      location: 'System Portal',
+      timestamp: new Date().toISOString(),
+      note: `Order cancelled. Reason: ${reason || 'User/Admin Cancellation'}. Stock restored.`
+    });
+
+    await restoreOrderStock(ord.items);
+
+    if (isDbReady()) {
+      try {
+        await Order.findOneAndUpdate({ $or: [{ id }, { orderNumber: id }] }, {
+          $set: {
+            status: 'CANCELLED',
+            cancelReason: ord.cancelReason,
+            cancelledAt: ord.cancelledAt,
+            trackingHistory: ord.trackingHistory
+          }
+        });
+      } catch (e) {}
+    }
+
+    // Trigger Admin Notification & Audit Log
+    try {
+      const { memoryNotifications } = require('../store');
+      const { Notification } = require('../models');
+      const newNotif = {
+        id: `notif-${Date.now()}`,
+        recipientType: 'ADMIN',
+        recipientId: 'admin',
+        title: `Order Cancelled #${ord.orderNumber || id}`,
+        message: `Order #${ord.orderNumber || id} was cancelled and item stock was restored to available inventory.`,
+        type: 'ORDER_STATUS',
+        isRead: false,
+        link: '/admin/dashboard',
+        createdAt: new Date().toISOString()
+      };
+      memoryNotifications.unshift(newNotif);
+      if (isDbReady()) {
+        try { await Notification.create(newNotif); } catch(e) {}
+      }
+
+      const { recordAuditLog } = require('./auditLogs');
+      await recordAuditLog(`Order #${ord.orderNumber || id} cancelled and stock restored`, 'ORDER');
+    } catch (auditErr) {}
+
+    res.json({ success: true, message: 'Order cancelled successfully and stock restored.', order: ord });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST Customer Return Request
 router.post('/:id/return', async (req, res) => {
   try {
@@ -387,35 +503,68 @@ router.post('/:id/return', async (req, res) => {
     const { reason, photos, comments } = req.body;
 
     let ord = memoryOrders.find(o => o.id === id || o.orderNumber === id);
-    if (ord) {
-      ord.status = 'RETURN_REQUESTED';
-      ord.returnReason = reason || 'Damaged or defective craft item';
-      ord.returnPhotos = photos || [];
-      ord.returnRequestedAt = new Date().toISOString();
-
-      if (!ord.trackingHistory) ord.trackingHistory = [];
-      ord.trackingHistory.push({
-        status: 'RETURN_REQUESTED',
-        location: 'Customer Portal Request',
-        timestamp: new Date().toISOString(),
-        note: `Return/Exchange Requested: ${reason}. Comments: ${comments || 'None'}`
-      });
+    if (!ord && isDbReady()) {
+      try {
+        ord = await Order.findOne({ $or: [{ id }, { orderNumber: id }] });
+      } catch (e) {}
     }
+
+    if (!ord) {
+      return res.status(404).json({ error: 'Order not found for return request.' });
+    }
+
+    ord.status = 'RETURN_REQUESTED';
+    ord.returnReason = reason || 'Damaged or defective craft item';
+    ord.returnPhotos = photos || [];
+    ord.returnRequestedAt = new Date().toISOString();
+
+    if (!ord.trackingHistory) ord.trackingHistory = [];
+    ord.trackingHistory.push({
+      status: 'RETURN_REQUESTED',
+      location: 'Customer Portal Request',
+      timestamp: new Date().toISOString(),
+      note: `Return/Exchange Requested: ${reason || 'Defective/Damaged'}. Comments: ${comments || 'None'}`
+    });
 
     if (isDbReady()) {
       try {
         await Order.findOneAndUpdate({ $or: [{ id }, { orderNumber: id }] }, {
           $set: {
             status: 'RETURN_REQUESTED',
-            returnReason: reason,
-            returnPhotos: photos || [],
-            returnRequestedAt: new Date()
+            returnReason: ord.returnReason,
+            returnPhotos: ord.returnPhotos,
+            returnRequestedAt: ord.returnRequestedAt,
+            trackingHistory: ord.trackingHistory
           }
         });
       } catch (e) {}
     }
 
-    res.json({ success: true, message: 'Return request registered successfully' });
+    // Trigger Admin System Notification & Audit Log
+    try {
+      const { memoryNotifications } = require('../store');
+      const { Notification } = require('../models');
+      const newNotif = {
+        id: `notif-${Date.now()}`,
+        recipientType: 'ADMIN',
+        recipientId: 'admin',
+        title: `Return Requested for Order #${ord.orderNumber || id}`,
+        message: `Reason: ${reason || 'Damaged/defective craft item'}. Comments: ${comments || 'None'}`,
+        type: 'ORDER_STATUS',
+        isRead: false,
+        link: '/admin/dashboard',
+        createdAt: new Date().toISOString()
+      };
+      memoryNotifications.unshift(newNotif);
+      if (isDbReady()) {
+        try { await Notification.create(newNotif); } catch(e) {}
+      }
+
+      const { recordAuditLog } = require('./auditLogs');
+      await recordAuditLog(`Return requested for Order #${ord.orderNumber || id}: ${reason || 'Customer Request'}`, 'ORDER');
+    } catch (auditErr) {}
+
+    res.json({ success: true, message: 'Return request registered successfully', order: ord });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

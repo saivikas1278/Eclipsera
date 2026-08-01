@@ -7,12 +7,13 @@ const { isDbReady, memoryNotifications } = require('../store');
 router.get('/', async (req, res) => {
   try {
     const { recipientType = 'USER', recipientId = '' } = req.query;
-    const effId = (recipientId || '').toLowerCase();
+    const effId = (recipientId || '').trim().toLowerCase();
     const effType = (recipientType || 'USER').toUpperCase();
 
     let list = memoryNotifications.filter(n => {
       const matchType = n.recipientType === effType;
-      const matchId = effType === 'ADMIN' || !n.recipientId || n.recipientId === effId || n.recipientId === '' || n.recipientId === 'admin';
+      const notifRecipId = (n.recipientId || '').toLowerCase();
+      const matchId = effType === 'ADMIN' || !notifRecipId || notifRecipId === effId || notifRecipId === 'admin';
       return matchType && matchId;
     });
 
@@ -20,7 +21,11 @@ router.get('/', async (req, res) => {
       try {
         const query = { recipientType: effType };
         if (effType === 'USER' && effId) {
-          query.$or = [{ recipientId: effId }, { recipientId: '' }, { recipientId: null }];
+          query.$or = [
+            { recipientId: new RegExp(`^${effId}$`, 'i') }, 
+            { recipientId: '' }, 
+            { recipientId: null }
+          ];
         }
         const dbList = await Notification.find(query).sort({ createdAt: -1 });
         if (dbList && dbList.length) list = dbList;
