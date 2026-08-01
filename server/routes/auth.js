@@ -96,25 +96,32 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { emailOrPhone, password, isOtp } = req.body;
-    const formatted = emailOrPhone.trim().toLowerCase();
+    const formatted = (emailOrPhone || '').trim().toLowerCase();
+    const cleanPhone = formatted.replace(/\D/g, '');
 
-    let user = memoryProfiles.find(u => u.email === formatted || u.phone === formatted);
+    let user = memoryProfiles.find(u => 
+      (u.email && u.email.toLowerCase() === formatted) || 
+      (u.phone && u.phone.replace(/\D/g, '') === cleanPhone && cleanPhone.length >= 10)
+    );
 
     if (!user && isDbReady()) {
       try {
         user = await Profile.findOne({
-          $or: [{ email: formatted }, { phone: formatted }]
+          $or: [
+            { email: new RegExp(`^${formatted}$`, 'i') }, 
+            { phone: formatted }
+          ]
         });
       } catch (dbErr) {}
     }
 
     if (!user) {
       if (isOtp) {
-        // Auto-create local user fallback for quick testing
+        // Auto-create user for instant OTP sign-in
         const newUserObj = {
           id: `usr-${Date.now()}`,
-          fullName: formatted.includes('@') ? formatted.split('@')[0].toUpperCase() : 'Artisan Patron',
-          email: formatted.includes('@') ? formatted : `${formatted}@example.com`,
+          fullName: formatted.includes('@') ? formatted.split('@')[0].toUpperCase() : `Patron (+91 ${formatted.slice(-4)})`,
+          email: formatted.includes('@') ? formatted : `patron_${formatted.slice(-4)}@example.com`,
           phone: formatted.includes('@') ? '9876543210' : formatted,
           passwordHash: hashPassword(password || 'patron123'),
           role: 'customer',
@@ -133,10 +140,10 @@ router.post('/login', async (req, res) => {
       }
     }
 
-    // Verify password if provided
-    if (password && user.passwordHash) {
-      const hashedInput = hashPassword(password);
-      const isMatch = user.passwordHash === hashedInput || user.passwordHash === password || password === 'patron123';
+    // Verify password if not OTP login
+    if (!isOtp) {
+      const hashedInput = hashPassword(password || '');
+      const isMatch = user.passwordHash === hashedInput;
       if (!isMatch) {
         return res.status(401).json({ error: 'Incorrect password. Please try again.' });
       }
@@ -149,12 +156,12 @@ router.post('/login', async (req, res) => {
     res.json({
       success: true,
       user: {
-        id: userId,
-        name: user.fullName || user.name,
+        id: user.id,
+        name: user.fullName,
         email: user.email,
-        phone: user.phone || '',
-        address: user.address || { street: '', city: '', state: '', pincode: '' },
-        role: user.role || 'customer'
+        phone: user.phone,
+        address: user.address,
+        role: user.role
       }
     });
   } catch (err) {

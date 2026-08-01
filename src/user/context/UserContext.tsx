@@ -586,29 +586,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, message: res.error };
       }
     } catch (e) {
-      // safe fallback
+      showToast('Connection error during sign-in. Please try again.', 'error');
+      return { success: false, message: 'Connection error' };
     }
 
-    // Offline Local Fallback
-    const formatted = emailOrPhone.trim().toLowerCase();
-    const newUser: UserProfile = {
-      id: `usr-${Date.now()}`,
-      name: formatted.includes('@') ? formatted.split('@')[0].toUpperCase() : 'Artisan Patron',
-      email: formatted.includes('@') ? formatted : `${formatted}@example.com`,
-      phone: formatted.includes('@') ? '9876543210' : formatted,
-      address: {
-        street: '42 Lavelle Road, Indiranagar',
-        city: 'Bengaluru',
-        state: 'Karnataka',
-        pincode: '560001'
-      },
-      role: 'customer'
-    };
-    setCurrentUser(newUser);
-    try { localStorage.setItem('eclipsera_user', JSON.stringify(newUser)); } catch(e) {}
-    showToast(`Welcome back, ${newUser.name}! Signed in successfully.`, 'success');
-    setCurrentView('home');
-    return { success: true, message: 'Login successful' };
+    showToast('Invalid login credentials. Please check your email/phone and password.', 'error');
+    return { success: false, message: 'Login failed' };
   };
 
   const customerGoogleLogin = async (googleTokenOrUser: string | { email: string; name: string }) => {
@@ -662,28 +645,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, message: res.error };
       }
     } catch (e) {
-      // safe fallback
+      showToast('Connection error during registration. Please try again.', 'error');
+      return { success: false, message: 'Connection error' };
     }
 
-    // Offline Local Fallback
-    const newUser: UserProfile = {
-      id: `usr-${Date.now()}`,
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone.trim(),
-      address: {
-        street: '42 Lavelle Road, Indiranagar',
-        city: 'Bengaluru',
-        state: 'Karnataka',
-        pincode: '560001'
-      },
-      role: 'customer'
-    };
-    setCurrentUser(newUser);
-    try { localStorage.setItem('eclipsera_user', JSON.stringify(newUser)); } catch(e) {}
-    showToast(`Account created! Welcome to eclipsera_premium, ${newUser.name}.`, 'success');
-    setCurrentView('home');
-    return { success: true, message: 'Registration successful' };
+    showToast('Registration failed. Please check your details.', 'error');
+    return { success: false, message: 'Registration failed' };
   };
 
   const customerLogout = () => {
