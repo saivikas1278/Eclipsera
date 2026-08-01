@@ -229,7 +229,7 @@ export const CartDrawer: React.FC = () => {
                 <div className="flex items-center justify-between p-2.5 bg-gold-500/10 border border-gold-500/40 rounded-xl text-xs w-full">
                   <div className="flex items-center gap-1.5 text-gold-700 font-semibold min-w-0">
                     <Tag className="w-4 h-4 shrink-0" />
-                    <span className="truncate">{appliedCoupon.code} ({appliedCoupon.discountType === 'PERCENT' ? `${appliedCoupon.discountValue}% OFF` : `₹${appliedCoupon.discountValue} OFF`})</span>
+                    <span className="truncate">{appliedCoupon.code} ({(appliedCoupon.discountType || '').toUpperCase().includes('PERCENT') || appliedCoupon.discountPercentage ? `${appliedCoupon.discountPercentage || appliedCoupon.discountValue}% OFF` : `₹${appliedCoupon.discountValue} OFF`})</span>
                   </div>
                   <button onClick={removeCoupon} className="text-terracotta-500 hover:underline text-[11px] font-bold shrink-0 ml-2">
                     Remove

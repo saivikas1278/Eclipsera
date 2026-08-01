@@ -353,6 +353,11 @@ router.put('/:id/fulfillment', verifyAdminToken, async (req, res) => {
       sendOrderDispatchEmail(ord);
     }
 
+    try {
+      const { recordAuditLog } = require('./auditLogs');
+      await recordAuditLog(`Order #${ord.orderNumber || ord.id} status updated to ${ord.status}`, 'ORDER');
+    } catch (auditErr) {}
+
     if (isDbReady()) {
       try {
         await Order.findOneAndUpdate({ id }, {

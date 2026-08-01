@@ -132,6 +132,22 @@ export const AdminDashboardView: React.FC = () => {
     loadAdminNotifs();
   }, []);
 
+  // --- SYSTEM AUDIT LOG STATES ---
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function loadAuditLogs() {
+      try {
+        const { fetchAuditLogsFromAPI } = await import('../../shared/services/apiService');
+        const logs = await fetchAuditLogsFromAPI();
+        if (logs && Array.isArray(logs)) {
+          setAuditLogs(logs);
+        }
+      } catch (e) {}
+    }
+    loadAuditLogs();
+  }, []);
+
   const handleMarkAdminNotifRead = async (id: string) => {
     await markNotificationReadAPI(id);
     setAdminNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
@@ -1615,6 +1631,54 @@ export const AdminDashboardView: React.FC = () => {
                       ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+
+            {/* Real-Time Security Audit Logs Section */}
+            <div className="mt-8 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-serif text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-gold-400" />
+                  Security & Operations Audit Trail
+                </h3>
+                <span className="text-xs text-zinc-500 font-mono">{auditLogs.length} Records Logged</span>
+              </div>
+
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-zinc-800 bg-zinc-950/40 text-zinc-400 font-bold uppercase text-[10px] tracking-wider">
+                        <th className="py-3.5 px-4">Log ID</th>
+                        <th className="py-3.5 px-4">Timestamp</th>
+                        <th className="py-3.5 px-4">Category</th>
+                        <th className="py-3.5 px-4">Action Summary</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-800/60">
+                      {auditLogs.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="py-6 text-center text-zinc-500 font-mono">
+                            No audit log entries recorded yet.
+                          </td>
+                        </tr>
+                      ) : (
+                        auditLogs.map((log: any) => (
+                          <tr key={log.id} className="hover:bg-zinc-800/40 transition-colors">
+                            <td className="py-3.5 px-4 font-mono text-zinc-500 text-[11px]">{log.id}</td>
+                            <td className="py-3.5 px-4 font-mono text-zinc-400 text-[11px]">{log.timestamp || 'Just now'}</td>
+                            <td className="py-3.5 px-4">
+                              <span className="px-2 py-0.5 bg-zinc-800 text-gold-400 border border-gold-500/20 rounded text-[9px] font-bold uppercase">
+                                {log.category || 'SYSTEM'}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 font-medium text-zinc-200">{log.action}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 

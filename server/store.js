@@ -350,6 +350,14 @@ let memoryOrders = [...initialOrders];
 let memoryArtisans = [...initialArtisans];
 let memoryReviews = [...initialReviews];
 let memoryNotifications = [...initialNotifications];
+let memoryAuditLogs = [
+  {
+    id: 'log-1',
+    action: 'System Initialized & Security Engine Active',
+    category: 'SYSTEM',
+    createdAt: new Date().toISOString()
+  }
+];
 
 const isDbReady = () => mongoose.connection && mongoose.connection.readyState === 1;
 
@@ -359,5 +367,6 @@ module.exports = {
   memoryOrders,
   memoryArtisans,
   memoryReviews,
-  memoryNotifications
+  memoryNotifications,
+  memoryAuditLogs
 };

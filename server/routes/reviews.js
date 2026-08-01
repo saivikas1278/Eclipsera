@@ -212,6 +212,11 @@ router.patch('/admin/:id/moderate', verifyAdminToken, async (req, res) => {
       }
     }
 
+    try {
+      const { recordAuditLog } = require('./auditLogs');
+      await recordAuditLog(`Review "${id}" status changed to ${rev.status || status}`, 'REVIEW');
+    } catch (auditErr) {}
+
     res.json({ success: true, review: rev });
   } catch (err) {
     res.status(500).json({ error: err.message });

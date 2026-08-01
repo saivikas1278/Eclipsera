@@ -828,10 +828,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const mrpTotal = cart.reduce((acc, item) => acc + ((item.product.compareAtPrice || item.unitPrice) * item.quantity), 0);
   const savingsFromMRP = mrpTotal - subtotal;
 
+  const isPercentDiscount = (c: Coupon) => {
+    const type = (c.discountType || '').toUpperCase();
+    return type === 'PERCENT' || type === 'PERCENTAGE' || Boolean(c.discountPercentage);
+  };
+
   const discountTotal = appliedCoupon
-    ? appliedCoupon.discountType === 'PERCENT'
-      ? Math.round(subtotal * (appliedCoupon.discountValue / 100))
-      : appliedCoupon.discountValue
+    ? isPercentDiscount(appliedCoupon)
+      ? Math.round(subtotal * ((appliedCoupon.discountPercentage || appliedCoupon.discountValue || 10) / 100))
+      : (appliedCoupon.discountValue || 0)
     : 0;
 
   const totalSavings = savingsFromMRP + discountTotal;

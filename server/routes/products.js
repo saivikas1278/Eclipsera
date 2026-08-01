@@ -4,6 +4,7 @@ const { Product } = require('../models');
 const { verifyAdminToken } = require('../middleware');
 const { isDbReady, memoryProducts } = require('../store');
 const { deleteFromCloudinary } = require('../cloudinary');
+const { triggerLowStockNotification } = require('../services/notificationService');
 
 const crypto = require('crypto');
 
@@ -164,6 +165,11 @@ router.post('/', verifyAdminToken, async (req, res) => {
       }
     }
 
+    try {
+      const { recordAuditLog } = require('./auditLogs');
+      await recordAuditLog(`Product created: "${newProductObj.title}" (ID: ${newId})`, 'CATALOG');
+    } catch (auditErr) {}
+
     res.json({ success: true, id: newId, product: newProductObj });
   } catch (err) {
     if (cloudinaryPublicId) {
@@ -245,6 +251,17 @@ router.put('/:id/stock', verifyAdminToken, async (req, res) => {
         }
       } catch (e) {}
     }
+
+    if (newQty < 3 && prod) {
+      try {
+        triggerLowStockNotification(prod, newQty);
+      } catch (notifErr) {}
+    }
+
+    try {
+      const { recordAuditLog } = require('./auditLogs');
+      await recordAuditLog(`Stock updated for product "${id}" to ${newQty} units`, 'INVENTORY');
+    } catch (auditErr) {}
 
     res.json({ success: true });
   } catch (err) {

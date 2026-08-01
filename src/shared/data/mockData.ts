@@ -132,8 +132,9 @@ export interface Order {
 
 export interface Coupon {
   code: string;
-  discountType: 'PERCENT' | 'FLAT';
+  discountType: 'PERCENT' | 'FLAT' | string;
   discountValue: number;
+  discountPercentage?: number;
   minSubtotal: number;
   description: string;
 }
