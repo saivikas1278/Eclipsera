@@ -216,7 +216,7 @@ export const CategoryView: React.FC = () => {
                         <span>{product.rating}</span>
                       </div>
                       <button 
-                        onClick={() => addToCart(product, product.variants[0].id)}
+                        onClick={() => addToCart(product, product.variants?.[0]?.id || '')}
                         className="bg-obsidian-900 hover:bg-gold-600 hover:text-obsidian-900 text-cream-100 px-3.5 py-2 rounded-xl text-xs font-semibold uppercase flex items-center gap-1.5 transition-all shadow-sm"
                       >
                         <ShoppingBag className="w-3.5 h-3.5 text-gold-400" />

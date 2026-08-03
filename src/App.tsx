@@ -54,6 +54,7 @@ import { SplashScreen } from './user/components/common/SplashScreen';
 // Import Shared components
 import { ToastContainer } from './shared/components/ToastContainer';
 import { AuthModal } from './user/components/auth/AuthModal';
+import { ErrorBoundary } from './shared/components/ErrorBoundary';
 
 const AdminApp: React.FC = () => {
   const { isAdminLoggedIn } = useAdmin();
@@ -186,7 +187,11 @@ const UserApp: React.FC = () => {
     <div className={`min-h-screen flex flex-col justify-between bg-cream-100 text-obsidian-900 selection:bg-gold-500 selection:text-white ${shouldHideNav ? 'pb-0' : 'pb-20 md:pb-0'}`}>
       <div>
         {!shouldHideNav && <Header />}
-        <main>{renderView()}</main>
+        <main>
+          <ErrorBoundary key={currentView} onReset={() => setCurrentView('home')}>
+            {renderView()}
+          </ErrorBoundary>
+        </main>
       </div>
       {!shouldHideNav && <BottomMobileNav />}
       <CartDrawer />

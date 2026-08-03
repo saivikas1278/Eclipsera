@@ -25,8 +25,20 @@ export const ProductDetailView: React.FC = () => {
 
   const product = products.find(p => p.slug === selectedProductSlug) || products[0];
 
+  if (!product) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4 animate-fade-in text-obsidian-900 font-sans">
+        <h2 className="font-serif text-2xl font-bold">Product Not Found</h2>
+        <p className="text-xs text-obsidian-900/60">The requested handcrafted artifact could not be located.</p>
+        <button onClick={() => setCurrentView('shop')} className="px-6 py-3 bg-obsidian-900 text-cream-100 rounded-xl font-bold text-xs uppercase hover:bg-gold-500 hover:text-obsidian-900 transition-all">
+          Browse Catalog
+        </button>
+      </div>
+    );
+  }
+
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [selectedVariantId, setSelectedVariantId] = useState<string>(product?.variants[0]?.id || '');
+  const [selectedVariantId, setSelectedVariantId] = useState<string>(product?.variants?.[0]?.id || '');
   const [quantity, setQuantity] = useState(1);
   const [customNote, setCustomNote] = useState('');
 

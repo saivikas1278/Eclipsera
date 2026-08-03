@@ -10,7 +10,7 @@ export const WishlistView: React.FC = () => {
   const handleMoveToCart = (productId: string) => {
     const p = products.find(prod => prod.id === productId);
     if (!p) return;
-    addToCart(p, p.variants[0].id, 1);
+    addToCart(p, p.variants?.[0]?.id || '', 1);
     // Remove from wishlist
     toggleWishlist(productId);
   };
@@ -18,7 +18,7 @@ export const WishlistView: React.FC = () => {
   const handleMoveAllToCart = () => {
     if (savedProducts.length === 0) return;
     savedProducts.forEach(p => {
-      addToCart(p, p.variants[0].id, 1);
+      addToCart(p, p.variants?.[0]?.id || '', 1);
       toggleWishlist(p.id);
     });
     showToast(`Moved all saved masterpieces to your shopping cart!`, 'success');
