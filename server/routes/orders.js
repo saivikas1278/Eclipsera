@@ -139,10 +139,94 @@ router.get('/track/:query', async (req, res) => {
   }
 });
 
-// POST Create Order (with server-side price & coupon validation)
+// In-Memory Idempotency Key Store (24 Hour Expiration)
+const idempotencyStore = new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of idempotencyStore.entries()) {
+    if (now - val.timestamp > 86400000) idempotencyStore.delete(key);
+  }
+}, 3600000);
+
+// POST Reserve Inventory Concurrency Lock (10 Minutes)
+router.post('/reserve-lock', async (req, res) => {
+  try {
+    const { productId, variantId, quantity = 1 } = req.body || {};
+    let prod = memoryProducts.find(p => p.id === productId);
+    if (!prod && isDbReady()) {
+      try { prod = await Product.findOne({ id: productId }); } catch (e) {}
+    }
+
+    if (!prod) return res.status(404).json({ success: false, error: 'Product not found' });
+
+    const variant = (prod.variants || []).find(v => v.id === variantId) || prod.variants[0];
+    if (!variant) return res.status(404).json({ success: false, error: 'Variant not found' });
+
+    const now = Date.now();
+    const isLockActive = variant.lockedUntil && new Date(variant.lockedUntil).getTime() > now;
+    const activeLockQty = isLockActive ? (variant.lockedQuantity || 0) : 0;
+    const availableStock = Math.max(0, (variant.stockQuantity || 0) - activeLockQty);
+
+    if (availableStock < quantity) {
+      return res.status(400).json({
+        success: false,
+        error: `Insufficient available stock for ${prod.title}. Available: ${availableStock}, Requested: ${quantity}`
+      });
+    }
+
+    // Reserve 10-minute lock
+    variant.lockedQuantity = (activeLockQty || 0) + quantity;
+    variant.lockedUntil = new Date(now + 10 * 60 * 1000);
+
+    if (isDbReady()) {
+      try {
+        await Product.updateOne(
+          { id: productId, 'variants.id': variant.id },
+          { 
+            $set: { 
+              'variants.$.lockedQuantity': variant.lockedQuantity,
+              'variants.$.lockedUntil': variant.lockedUntil
+            } 
+          }
+        );
+      } catch (e) {}
+    }
+
+    res.json({
+      success: true,
+      data: {
+        productId,
+        variantId: variant.id,
+        lockedQuantity: quantity,
+        lockedUntil: variant.lockedUntil
+      },
+      message: '10-minute inventory lock reserved successfully'
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST Create Order (with server-side price & coupon validation & idempotency)
 router.post('/', async (req, res) => {
   try {
     const o = req.body;
+    const idempotencyKey = req.headers['x-idempotency-key'] || o.idempotencyKey;
+
+    // STEP 0: Check Idempotency Cache
+    if (idempotencyKey && idempotencyStore.has(idempotencyKey)) {
+      const cached = idempotencyStore.get(idempotencyKey);
+      return res.json({
+        success: true,
+        data: cached.order,
+        order: cached.order,
+        id: cached.order.id,
+        orderNumber: cached.order.orderNumber,
+        message: 'Order returned from 24-hour idempotency cache',
+        isDuplicate: true
+      });
+    }
+
     const clientItems = Array.isArray(o.items) ? o.items : [];
 
     // -----------------------------------------------------------------------
@@ -331,9 +415,14 @@ router.post('/', async (req, res) => {
       } catch (couponErr) {}
     }
 
-    res.json({ success: true, id: newId, orderNumber: orderNum, order: newOrderObj });
+    // Store in Idempotency Cache
+    if (idempotencyKey) {
+      idempotencyStore.set(idempotencyKey, { order: newOrderObj, timestamp: Date.now() });
+    }
+
+    res.json({ success: true, data: newOrderObj, id: newId, orderNumber: orderNum, order: newOrderObj, message: 'Order placed successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -441,7 +530,15 @@ router.put('/:id/fulfillment', verifyAdminToken, async (req, res) => {
       } catch (e) {}
     }
 
-    res.json({ success: true, order: ord });
+    // Broadcast SSE Order Update to User & Admin
+    try {
+      const notificationsRoute = require('./notifications');
+      if (notificationsRoute && typeof notificationsRoute.broadcastSSE === 'function') {
+        notificationsRoute.broadcastSSE('ORDER_UPDATED', ord);
+      }
+    } catch (e) {}
+
+    res.json({ success: true, data: ord, order: ord, message: 'Order fulfillment status updated' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -643,7 +740,15 @@ router.put('/:id/status', verifyAdminToken, async (req, res) => {
       } catch (e) {}
     }
 
-    res.json({ success: true, order: ord });
+    // Broadcast SSE Order Update
+    try {
+      const notificationsRoute = require('./notifications');
+      if (notificationsRoute && typeof notificationsRoute.broadcastSSE === 'function') {
+        notificationsRoute.broadcastSSE('ORDER_UPDATED', ord);
+      }
+    } catch (e) {}
+
+    res.json({ success: true, data: ord, order: ord, message: 'Order status updated successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

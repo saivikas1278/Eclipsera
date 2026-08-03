@@ -628,15 +628,26 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return currentUser?.id ? `${prefix}_${currentUser.id}` : `${prefix}_guest`;
   };
 
-  // Per-User Cart State Isolation
+  // Per-User Cart State Isolation & Cross-Device MongoDB Sync
   useEffect(() => {
-    const key = getUserStorageKey('eclipsera_cart');
-    try {
-      const saved = localStorage.getItem(key);
-      setCart(saved ? JSON.parse(saved) : []);
-    } catch (e) {
-      setCart([]);
+    async function initCart() {
+      const key = getUserStorageKey('eclipsera_cart');
+      try {
+        const saved = localStorage.getItem(key);
+        if (saved) setCart(JSON.parse(saved));
+      } catch (e) {}
+
+      if (currentUser) {
+        try {
+          const { fetchCartFromAPI } = await import('../../shared/services/apiService');
+          const apiItems = await fetchCartFromAPI();
+          if (apiItems && Array.isArray(apiItems) && apiItems.length > 0) {
+            setCart(apiItems);
+          }
+        } catch (e) {}
+      }
     }
+    initCart();
   }, [currentUser?.id]);
 
   useEffect(() => {
@@ -644,17 +655,34 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       localStorage.setItem(key, JSON.stringify(cart));
     } catch (e) {}
+
+    if (currentUser) {
+      import('../../shared/services/apiService').then(({ saveCartToAPI }) => {
+        saveCartToAPI(cart);
+      }).catch(() => {});
+    }
   }, [cart, currentUser?.id]);
 
-  // Per-User Wishlist State Isolation
+  // Per-User Wishlist State Isolation & Cross-Device MongoDB Sync
   useEffect(() => {
-    const key = getUserStorageKey('eclipsera_wishlist');
-    try {
-      const saved = localStorage.getItem(key);
-      setWishlist(saved ? JSON.parse(saved) : []);
-    } catch (e) {
-      setWishlist([]);
+    async function initWishlist() {
+      const key = getUserStorageKey('eclipsera_wishlist');
+      try {
+        const saved = localStorage.getItem(key);
+        if (saved) setWishlist(JSON.parse(saved));
+      } catch (e) {}
+
+      if (currentUser) {
+        try {
+          const { fetchWishlistFromAPI } = await import('../../shared/services/apiService');
+          const apiIds = await fetchWishlistFromAPI();
+          if (apiIds && Array.isArray(apiIds) && apiIds.length > 0) {
+            setWishlist(apiIds);
+          }
+        } catch (e) {}
+      }
     }
+    initWishlist();
   }, [currentUser?.id]);
 
   useEffect(() => {
@@ -662,6 +690,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       localStorage.setItem(key, JSON.stringify(wishlist));
     } catch (e) {}
+
+    if (currentUser) {
+      import('../../shared/services/apiService').then(({ saveWishlistToAPI }) => {
+        saveWishlistToAPI(wishlist);
+      }).catch(() => {});
+    }
   }, [wishlist, currentUser?.id]);
 
   useEffect(() => {
@@ -1045,15 +1079,17 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       paymentMethod
     };
 
+    const idempotencyKey = `idempotency_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     try {
-      const res = await createOrderInAPI(orderData);
-      if (res && res.success && res.order) {
-        setOrders(prev => [res.order, ...prev]);
-        setLastPlacedOrder(res.order);
+      const res = await createOrderInAPI(orderData, idempotencyKey);
+      const returnedOrder = res && (res.order || (res.data && res.data.id ? res.data : null));
+      if (res && res.success && returnedOrder) {
+        setOrders(prev => [returnedOrder, ...prev]);
+        setLastPlacedOrder(returnedOrder);
         clearCart();
         try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch (e) {}
         setCurrentView('order-confirmation');
-        return res.order;
+        return returnedOrder;
       } else if (res && res.error) {
         showToast(res.error, 'error');
       }

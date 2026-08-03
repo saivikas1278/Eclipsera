@@ -1,13 +1,15 @@
 const mongoose = require('mongoose');
 
-// Variant Schema
+// Variant Schema with Inventory Concurrency Lock
 const variantSchema = new mongoose.Schema({
   id: String,
   sku: String,
   colorName: String,
   colorHex: String,
   additionalPrice: { type: Number, default: 0 },
-  stockQuantity: { type: Number, default: 5 }
+  stockQuantity: { type: Number, default: 5 },
+  lockedQuantity: { type: Number, default: 0 },
+  lockedUntil: { type: Date, default: null }
 });
 
 // Artisan Schema
@@ -170,6 +172,20 @@ const notificationSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Cart Schema (Database-Backed Persistent Cart)
+const cartSchema = new mongoose.Schema({
+  userId: { type: String, required: true, unique: true },
+  items: Array,
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Wishlist Schema (Database-Backed Persistent Wishlist)
+const wishlistSchema = new mongoose.Schema({
+  userId: { type: String, required: true, unique: true },
+  productIds: [String],
+  updatedAt: { type: Date, default: Date.now }
+});
+
 const Product = mongoose.model('Product', productSchema);
 const Artisan = mongoose.model('Artisan', artisanSchema);
 const Order = mongoose.model('Order', orderSchema);
@@ -178,6 +194,8 @@ const Coupon = mongoose.model('Coupon', couponSchema);
 const Review = mongoose.model('Review', reviewSchema);
 const AuditLog = mongoose.model('AuditLog', auditLogSchema);
 const Notification = mongoose.model('Notification', notificationSchema);
+const Cart = mongoose.model('Cart', cartSchema);
+const Wishlist = mongoose.model('Wishlist', wishlistSchema);
 
 module.exports = {
   Product,
@@ -187,5 +205,7 @@ module.exports = {
   Coupon,
   Review,
   AuditLog,
-  Notification
+  Notification,
+  Cart,
+  Wishlist
 };

@@ -131,6 +131,25 @@ export const AdminDashboardView: React.FC = () => {
       }
     }
     loadAdminNotifs();
+
+    // SSE Real-time Alerts Listener
+    try {
+      const sse = new EventSource('http://localhost:5000/api/notifications/stream');
+      sse.addEventListener('NOTIFICATION', (e: MessageEvent) => {
+        try {
+          const notif = JSON.parse(e.data);
+          if (notif && (notif.recipientType === 'ADMIN' || notif.recipientId === 'admin')) {
+            setAdminNotifications(prev => [notif, ...prev]);
+            setUnreadAdminNotifCount(prev => prev + 1);
+            refreshOrders();
+          }
+        } catch (err) {}
+      });
+      sse.addEventListener('NEW_ORDER', () => {
+        refreshOrders();
+      });
+      return () => sse.close();
+    } catch (e) {}
   }, []);
 
   // --- SYSTEM AUDIT LOG STATES ---

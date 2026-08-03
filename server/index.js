@@ -7,7 +7,8 @@ const {
   securityHeadersMiddleware, 
   cookieParserMiddleware, 
   mongoSanitizeMiddleware, 
-  authRateLimiter, 
+  authRateLimiter,
+  couponRateLimiter, 
   generalRateLimiter 
 } = require('./middleware');
 
@@ -21,6 +22,8 @@ const reviewsRoutes = require('./routes/reviews');
 const artisansRoutes = require('./routes/artisans');
 const notificationsRoutes = require('./routes/notifications');
 const reportsRoutes = require('./routes/reports');
+const cartRoutes = require('./routes/cart');
+const wishlistRoutes = require('./routes/wishlist');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -54,6 +57,7 @@ app.use(mongoSanitizeMiddleware);
 
 // Rate Limiters
 app.use('/api/auth', authRateLimiter);
+app.use('/api/coupons', couponRateLimiter);
 app.use('/api', generalRateLimiter);
 
 // API Routes
@@ -67,9 +71,21 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/artisans', artisansRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/admin/reports', reportsRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', database: 'MongoDB Atlas Cloud Database Engine', storage: 'Cloudinary CDN', app: 'eclipsera_premium', security: 'hardened' });
+  res.json({ success: true, data: { status: 'ok', database: 'MongoDB Atlas Cloud Database Engine', storage: 'Cloudinary CDN', security: 'hardened' }, message: 'Service operational' });
+});
+
+// Unified Global Error Handler Middleware
+app.use((err, req, res, next) => {
+  console.error('💥 Unhandled Express Error:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    error: err.message || 'Internal Server Error',
+    data: null
+  });
 });
 
 app.listen(PORT, () => {

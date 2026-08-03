@@ -3,6 +3,37 @@ const router = express.Router();
 const { Notification } = require('../models');
 const { isDbReady, memoryNotifications } = require('../store');
 
+// SSE Clients Pool for Real-Time Streaming
+const sseClients = new Set();
+
+const broadcastSSE = (event, data) => {
+  const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+  sseClients.forEach(res => {
+    try {
+      res.write(payload);
+    } catch (e) {
+      sseClients.delete(res);
+    }
+  });
+};
+
+// GET /api/notifications/stream (Server-Sent Events)
+router.get('/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
+  res.write(`event: connected\ndata: ${JSON.stringify({ status: 'connected', timestamp: new Date().toISOString() })}\n\n`);
+
+  sseClients.add(res);
+
+  req.on('close', () => {
+    sseClients.delete(res);
+  });
+});
+
 // GET Notifications for User or Admin
 router.get('/', async (req, res) => {
   try {
@@ -91,4 +122,5 @@ router.patch('/read-all', async (req, res) => {
   }
 });
 
+router.broadcastSSE = broadcastSSE;
 module.exports = router;

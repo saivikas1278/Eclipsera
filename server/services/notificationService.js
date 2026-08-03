@@ -31,6 +31,15 @@ async function createNotification({ recipientType = 'USER', recipientId = '', ti
     }
 
     console.log(`🔔 [IN-APP NOTIFICATION] Sent to ${recipientType} (${recipientId || 'All'}): "${title}"`);
+    
+    // Broadcast via Server-Sent Events (SSE)
+    try {
+      const notificationsRoute = require('../routes/notifications');
+      if (notificationsRoute && typeof notificationsRoute.broadcastSSE === 'function') {
+        notificationsRoute.broadcastSSE('NOTIFICATION', newNotif);
+      }
+    } catch (sseErr) {}
+
     return newNotif;
   } catch (err) {
     console.error('Error creating notification:', err.message);

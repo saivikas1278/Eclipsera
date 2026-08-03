@@ -1,9 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import { Truck, ArrowLeft, Package, Clock, CheckCircle2, CircleDot } from 'lucide-react';
 
 export const OrderTrackingView: React.FC = () => {
-  const { orders, selectedOrderId, setCurrentView } = useUser();
+  const { orders, selectedOrderId, setCurrentView, currentUser } = useUser();
+
+  useEffect(() => {
+    try {
+      const sse = new EventSource('http://localhost:5000/api/notifications/stream');
+      sse.addEventListener('ORDER_UPDATED', (e: MessageEvent) => {
+        try {
+          const updated = JSON.parse(e.data);
+          if (updated && (updated.id === selectedOrderId || updated.orderNumber === selectedOrderId)) {
+            window.location.reload();
+          }
+        } catch (err) {}
+      });
+      return () => sse.close();
+    } catch (e) {}
+  }, [selectedOrderId]);
 
   const order = orders.find(o => o.id === selectedOrderId) || orders[0];
 

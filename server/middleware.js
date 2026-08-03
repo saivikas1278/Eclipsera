@@ -64,6 +64,7 @@ const mongoSanitizeMiddleware = (req, res, next) => {
 // Rate Limiter Memory Store
 const rateLimitStores = {
   auth: new Map(),
+  coupon: new Map(),
   general: new Map()
 };
 
@@ -88,6 +89,7 @@ const createRateLimiter = (type, windowMs, maxRequests) => {
       const retryAfterSeconds = Math.ceil((windowMs - (now - record.startTime)) / 1000);
       res.setHeader('Retry-After', retryAfterSeconds);
       return res.status(429).json({
+        success: false,
         error: `Too Many Requests: Rate limit exceeded. Please try again in ${retryAfterSeconds} seconds.`
       });
     }
@@ -104,12 +106,13 @@ const verifyCustomerToken = (req, res, next) => {
     req.userId = token.replace('usr_session_', '');
     next();
   } else {
-    res.status(401).json({ error: 'Access Denied: Please authenticate as a customer.' });
+    res.status(401).json({ success: false, error: 'Access Denied: Please authenticate as a customer.' });
   }
 };
 
-const authRateLimiter = createRateLimiter('auth', 15 * 60 * 1000, 500); // 500 requests per 15 min
-const generalRateLimiter = createRateLimiter('general', 15 * 60 * 1000, 2000); // 2000 requests per 15 min
+const authRateLimiter = createRateLimiter('auth', 60 * 1000, 10);      // Max 10 requests per 1 min per IP
+const couponRateLimiter = createRateLimiter('coupon', 60 * 1000, 15);   // Max 15 requests per 1 min per IP
+const generalRateLimiter = createRateLimiter('general', 60 * 1000, 100); // Max 100 requests per 1 min per IP
 
 module.exports = {
   verifyAdminToken,
@@ -118,6 +121,7 @@ module.exports = {
   securityHeadersMiddleware,
   mongoSanitizeMiddleware,
   authRateLimiter,
+  couponRateLimiter,
   generalRateLimiter,
   parseCookies
 };

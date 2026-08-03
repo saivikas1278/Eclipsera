@@ -85,12 +85,81 @@ export async function fetchAuditLogsFromAPI() {
   }
 }
 
-export async function createOrderInAPI(orderData: any) {
+export async function fetchCartFromAPI() {
   try {
-    const res = await fetch(`${API_BASE_URL}/orders`, {
+    const res = await fetch(`${API_BASE_URL}/cart`, {
+      headers: getUserHeaders()
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data ? json.data.items : json.items;
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function saveCartToAPI(items: any[]) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/cart/sync`, {
       method: 'POST',
       headers: getUserHeaders(),
-      body: JSON.stringify(orderData)
+      body: JSON.stringify({ items })
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function fetchWishlistFromAPI() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/wishlist`, {
+      headers: getUserHeaders()
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data ? json.data.productIds : json.productIds;
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function saveWishlistToAPI(productIds: string[]) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/wishlist/sync`, {
+      method: 'POST',
+      headers: getUserHeaders(),
+      body: JSON.stringify({ productIds })
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function reserveInventoryLockAPI(productId: string, variantId: string, quantity = 1) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/reserve-lock`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId, variantId, quantity })
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function createOrderInAPI(orderData: any, idempotencyKey?: string) {
+  try {
+    const headers = getUserHeaders();
+    if (idempotencyKey) headers['x-idempotency-key'] = idempotencyKey;
+    const res = await fetch(`${API_BASE_URL}/orders`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ ...orderData, idempotencyKey })
     });
     return await res.json();
   } catch (e) {
