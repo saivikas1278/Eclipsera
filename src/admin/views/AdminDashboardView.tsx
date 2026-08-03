@@ -21,6 +21,7 @@ export const AdminDashboardView: React.FC = () => {
     updateArtisan,
     deleteArtisan,
     adminLogout,
+    refreshOrders,
     showToast 
   } = useAdmin();
 
@@ -972,16 +973,27 @@ export const AdminDashboardView: React.FC = () => {
                 <p className="text-xs text-zinc-400 mt-1">Manage 9-stage fulfillment pipeline, assign AWB numbers, and generate packing slips.</p>
               </div>
 
-              {/* Search Filter */}
-              <div className="relative w-full sm:w-72">
-                <input 
-                  type="text"
-                  value={orderSearch}
-                  onChange={(e) => setOrderSearch(e.target.value)}
-                  placeholder="Search Order ID, Customer, AWB..."
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+              {/* Search Filter & Manual Refresh */}
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  onClick={() => refreshOrders()}
+                  className="px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-indigo-400 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm shrink-0"
+                  title="Pull latest live orders from database"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Sync Orders</span>
+                </button>
+
+                <div className="relative w-full sm:w-72">
+                  <input 
+                    type="text"
+                    value={orderSearch}
+                    onChange={(e) => setOrderSearch(e.target.value)}
+                    placeholder="Search Order ID, Customer, AWB..."
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+                </div>
               </div>
             </div>
 
@@ -1034,11 +1046,11 @@ export const AdminDashboardView: React.FC = () => {
                   <thead>
                     <tr className="border-b border-zinc-800 bg-zinc-950/40 text-zinc-400 font-bold uppercase text-[10px] tracking-wider">
                       <th className="py-3.5 px-4">Order ID & AWB</th>
-                      <th className="py-3.5 px-4">Customer</th>
-                      <th className="py-3.5 px-4">Date</th>
-                      <th className="py-3.5 px-4">Courier</th>
+                      <th className="py-3.5 px-4">Customer & Contact</th>
+                      <th className="py-3.5 px-4">Delivery Address</th>
+                      <th className="py-3.5 px-4">Order Date & Total</th>
                       <th className="py-3.5 px-4">Fulfillment Status</th>
-                      <th className="py-3.5 px-4 text-right">Fulfillment Actions</th>
+                      <th className="py-3.5 px-4 text-right">Fulfillment Controls</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800/60">
@@ -1046,6 +1058,7 @@ export const AdminDashboardView: React.FC = () => {
                       .filter(o => {
                         const matchesSearch = o.customerName.toLowerCase().includes(orderSearch.toLowerCase()) || 
                           o.orderNumber.toLowerCase().includes(orderSearch.toLowerCase()) ||
+                          (o.customerEmail && o.customerEmail.toLowerCase().includes(orderSearch.toLowerCase())) ||
                           (o.awbTrackingNumber && o.awbTrackingNumber.toLowerCase().includes(orderSearch.toLowerCase()));
 
                         if (!matchesSearch) return false;
@@ -1061,40 +1074,75 @@ export const AdminDashboardView: React.FC = () => {
                         <tr key={o.id} className="hover:bg-zinc-800/40 transition-colors">
                           <td className="py-3.5 px-4 font-mono">
                             <span className="font-bold text-indigo-400 block">{o.orderNumber}</span>
-                            <span className="text-[10px] text-zinc-500 font-bold">
+                            <span className="text-[10px] text-zinc-400 font-bold block mt-0.5">
                               AWB: {o.awbTrackingNumber || o.trackingNumber || 'Pending'}
+                            </span>
+                            <span className="text-[9px] text-zinc-500 block">{o.courierName || 'BlueDart Luxury Express'}</span>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className="font-bold text-zinc-200 block">{o.customerName}</span>
+                            <span className="text-[10px] text-zinc-400 block">{o.customerEmail}</span>
+                            <span className="text-[10px] text-zinc-500 block">{o.customerPhone || 'N/A'}</span>
+                          </td>
+                          <td className="py-3.5 px-4 max-w-xs">
+                            <span className="text-zinc-300 font-semibold block truncate">
+                              {o.shippingAddress?.street || '42 Lavelle Road'}
+                            </span>
+                            <span className="text-[10px] text-zinc-500 block">
+                              {o.shippingAddress?.city || 'Bengaluru'}, {o.shippingAddress?.state || 'KA'} - {o.shippingAddress?.pincode || '560001'}
                             </span>
                           </td>
                           <td className="py-3.5 px-4">
-                            <span className="font-semibold text-zinc-200 block">{o.customerName}</span>
-                            <span className="text-[10px] text-zinc-500">{o.shippingAddress?.city || 'India'}</span>
-                          </td>
-                          <td className="py-3.5 px-4 text-zinc-400">{new Date(o.createdAt).toLocaleDateString()}</td>
-                          <td className="py-3.5 px-4 font-semibold text-zinc-300">
-                            {o.courierName || 'BlueDart Luxury Express'}
+                            <span className="text-zinc-300 font-semibold block">{new Date(o.createdAt).toLocaleDateString()}</span>
+                            <span className="font-mono font-bold text-emerald-400 text-xs block mt-0.5">₹{(o.grandTotal || 0).toLocaleString()}</span>
                           </td>
                           <td className="py-3.5 px-4">
                             {renderStatusBadge(o.status)}
                           </td>
-                          <td className="py-3.5 px-4 text-right space-x-1.5">
-                            <button
-                              onClick={() => handleOpenFulfillmentModal(o)}
-                              className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-[10px] uppercase shadow transition-all touch-target-min"
-                            >
-                              Update Status
-                            </button>
-                            <button
-                              onClick={() => setPackingSlipOrder(o)}
-                              className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-amber-500/30 rounded-lg font-bold text-[10px] uppercase transition-all touch-target-min"
-                            >
-                              Packing Slip
-                            </button>
-                            <button
-                              onClick={() => setSelectedOrder(o)}
-                              className="px-2 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg font-bold text-[10px] uppercase touch-target-min"
-                            >
-                              Items
-                            </button>
+                          <td className="py-3.5 px-4 text-right space-y-1">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {['PENDING_FULFILLMENT', 'PENDING', 'PAYMENT_CONFIRMED', 'PROCESSING', 'QUALITY_CHECK', 'PACKED'].includes(o.status) && (
+                                <button
+                                  onClick={() => {
+                                    const awb = o.awbTrackingNumber || `ECL-AWB-${Math.floor(100000 + Math.random() * 900000)}`;
+                                    updateOrderStatus(o.id, 'DISPATCHED', 'BlueDart Luxury Express', awb);
+                                  }}
+                                  className="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-bold text-[10px] uppercase shadow transition-all"
+                                  title="Assign AWB and dispatch package to customer"
+                                >
+                                  Dispatch
+                                </button>
+                              )}
+                              {['DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'SHIPPED'].includes(o.status) && (
+                                <button
+                                  onClick={() => updateOrderStatus(o.id, 'DELIVERED')}
+                                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-[10px] uppercase shadow transition-all"
+                                  title="Mark order as successfully delivered"
+                                >
+                                  Delivered
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleOpenFulfillmentModal(o)}
+                                className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-[10px] uppercase shadow transition-all"
+                              >
+                                Edit Status
+                              </button>
+                            </div>
+                            <div className="flex items-center justify-end gap-1.5 pt-0.5">
+                              <button
+                                onClick={() => setPackingSlipOrder(o)}
+                                className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-amber-500/30 rounded-lg font-bold text-[9px] uppercase transition-all"
+                              >
+                                Slip
+                              </button>
+                              <button
+                                onClick={() => setSelectedOrder(o)}
+                                className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg font-bold text-[9px] uppercase"
+                              >
+                                Items ({o.items?.length || 0})
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1108,6 +1156,7 @@ export const AdminDashboardView: React.FC = () => {
                   .filter(o => {
                     const matchesSearch = o.customerName.toLowerCase().includes(orderSearch.toLowerCase()) || 
                       o.orderNumber.toLowerCase().includes(orderSearch.toLowerCase()) ||
+                      (o.customerEmail && o.customerEmail.toLowerCase().includes(orderSearch.toLowerCase())) ||
                       (o.awbTrackingNumber && o.awbTrackingNumber.toLowerCase().includes(orderSearch.toLowerCase()));
                     if (!matchesSearch) return false;
                     if (orderFilterTab === 'PENDING') return ['PENDING_FULFILLMENT', 'PENDING', 'PAYMENT_CONFIRMED', 'PROCESSING'].includes(o.status);
@@ -1123,18 +1172,38 @@ export const AdminDashboardView: React.FC = () => {
                         <div className="min-w-0 flex-1">
                           <span className="font-mono font-bold text-indigo-400 text-sm block">{o.orderNumber}</span>
                           <span className="text-[10px] text-zinc-500 font-bold block">AWB: {o.awbTrackingNumber || o.trackingNumber || 'Pending'}</span>
-                          <span className="text-xs text-zinc-200 font-semibold block mt-1">{o.customerName}</span>
-                          <span className="text-[10px] text-zinc-500">{o.shippingAddress?.city || 'India'} • {new Date(o.createdAt).toLocaleDateString()}</span>
+                          <span className="text-xs text-zinc-200 font-bold block mt-1">{o.customerName} ({o.customerPhone || o.customerEmail})</span>
+                          <span className="text-[10px] text-zinc-400 block">{o.shippingAddress?.street}, {o.shippingAddress?.city}</span>
+                          <span className="text-[10px] font-mono font-bold text-emerald-400 block mt-0.5">Total: ₹{(o.grandTotal || 0).toLocaleString()} • {new Date(o.createdAt).toLocaleDateString()}</span>
                         </div>
                         <div className="shrink-0 pt-0.5">{renderStatusBadge(o.status)}</div>
                       </div>
 
                       <div className="flex items-center gap-2 flex-wrap">
+                        {['PENDING_FULFILLMENT', 'PENDING', 'PAYMENT_CONFIRMED', 'PROCESSING', 'QUALITY_CHECK', 'PACKED'].includes(o.status) && (
+                          <button
+                            onClick={() => {
+                              const awb = o.awbTrackingNumber || `ECL-AWB-${Math.floor(100000 + Math.random() * 900000)}`;
+                              updateOrderStatus(o.id, 'DISPATCHED', 'BlueDart Luxury Express', awb);
+                            }}
+                            className="px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-bold text-[10px] uppercase shadow touch-target-min"
+                          >
+                            Dispatch
+                          </button>
+                        )}
+                        {['DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'SHIPPED'].includes(o.status) && (
+                          <button
+                            onClick={() => updateOrderStatus(o.id, 'DELIVERED')}
+                            className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-[10px] uppercase shadow touch-target-min"
+                          >
+                            Delivered
+                          </button>
+                        )}
                         <button
                           onClick={() => handleOpenFulfillmentModal(o)}
                           className="flex-1 min-w-[100px] px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-[10px] uppercase shadow text-center touch-target-min"
                         >
-                          Update Status
+                          Status
                         </button>
                         <button
                           onClick={() => setPackingSlipOrder(o)}

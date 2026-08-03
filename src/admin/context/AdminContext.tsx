@@ -36,6 +36,7 @@ interface AdminContextType {
   updateArtisan: (id: string, artisan: Partial<Artisan>) => Promise<void>;
   deleteArtisan: (id: string) => Promise<void>;
   updateOrderStatus: (orderId: string, newStatus: Order['status'], courierName?: string, trackingNumber?: string) => void;
+  refreshOrders: () => Promise<void>;
   toasts: Toast[];
   showToast: (message: string, type?: Toast['type']) => void;
   removeToast: (id: string) => void;
@@ -58,6 +59,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   });
 
+  const refreshOrders = async () => {
+    try {
+      const apiOrders = await fetchOrdersFromAPI();
+      if (apiOrders) setOrders(apiOrders);
+    } catch (e) {}
+  };
+
   useEffect(() => {
     async function loadAdminData() {
       try {
@@ -78,6 +86,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
     if (isAdminLoggedIn) {
       loadAdminData();
+      const interval = setInterval(() => {
+        refreshOrders();
+      }, 5000);
+      return () => clearInterval(interval);
     }
   }, [isAdminLoggedIn]);
 
@@ -255,6 +267,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updateArtisan,
       deleteArtisan,
       updateOrderStatus,
+      refreshOrders,
       toasts,
       showToast,
       removeToast
