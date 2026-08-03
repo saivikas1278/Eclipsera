@@ -26,6 +26,33 @@ export const validatePassword = (password: string): string | null => {
   return null;
 };
 
+export const validateConfirmPassword = (password: string, confirmPassword: string): string | null => {
+  if (!confirmPassword) return "Please confirm your password.";
+  if (password !== confirmPassword) return "Passwords do not match. Please re-enter.";
+  return null;
+};
+
+export interface PasswordStrength {
+  score: number; // 0 to 4
+  label: 'Weak' | 'Fair' | 'Strong' | 'Excellent';
+  color: string; // Tailwind color class
+  percentage: number;
+}
+
+export const getPasswordStrength = (password: string): PasswordStrength => {
+  if (!password) return { score: 0, label: 'Weak', color: 'bg-zinc-300', percentage: 0 };
+  let score = 0;
+  if (password.length >= 8) score += 1;
+  if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score += 1;
+  if (/\d/.test(password)) score += 1;
+  if (/[@$!%*?&]/.test(password)) score += 1;
+
+  if (score <= 1) return { score: 1, label: 'Weak', color: 'bg-rose-500', percentage: 25 };
+  if (score === 2) return { score: 2, label: 'Fair', color: 'bg-amber-500', percentage: 50 };
+  if (score === 3) return { score: 3, label: 'Strong', color: 'bg-emerald-500', percentage: 75 };
+  return { score: 4, label: 'Excellent', color: 'bg-gold-500', percentage: 100 };
+};
+
 export const validateFullName = (name: string): string | null => {
   const trimmed = name.trim();
   if (!trimmed) return "This field cannot be left blank.";

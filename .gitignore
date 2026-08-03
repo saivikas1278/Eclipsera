@@ -30,3 +30,5 @@ npm-debug.log*
 test-results/
 playwright-report/
 
+# Local DB
+mongodb_data/

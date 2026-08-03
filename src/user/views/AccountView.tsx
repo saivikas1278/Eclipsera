@@ -12,6 +12,8 @@ export const AccountView: React.FC = () => {
     isCustomerLoggedIn, 
     customerLogout, 
     updateCustomerProfile, 
+    changePassword,
+    deleteCustomerAccount,
     orders, 
     wishlist, 
     setCurrentView,
@@ -35,8 +37,14 @@ export const AccountView: React.FC = () => {
     products
   } = useUser();
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'profile' | 'orders' | 'addresses' | 'payments' | 'wallet' | 'reviews' | 'notifications' | 'custom-order'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'profile' | 'security' | 'orders' | 'addresses' | 'payments' | 'wallet' | 'reviews' | 'notifications' | 'custom-order' | 'danger'>('dashboard');
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+
+  // Security & Delete Account States
+  const [currentPass, setCurrentPass] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [confirmNewPass, setConfirmNewPass] = useState('');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // 1. Profile Editor States
   const [profileName, setProfileName] = useState(currentUser?.name || 'Ananya Sharma');
@@ -240,15 +248,17 @@ export const AccountView: React.FC = () => {
           {[
             { id: 'dashboard', label: 'Patron Dashboard', icon: ShieldCheck },
             { id: 'profile', label: 'Edit Profile Details', icon: User },
+            { id: 'security', label: 'Security & Password', icon: Lock },
             { id: 'orders', label: 'My Orders Ledger', icon: Package },
             { id: 'addresses', label: 'Saved Shipping Addresses', icon: MapPin },
             { id: 'payments', label: 'Vault Credit Cards', icon: CreditCard },
             { id: 'wallet', label: 'Wallet & Credits', icon: Wallet },
             { id: 'reviews', label: 'My Written Reviews', icon: Star },
             { id: 'notifications', label: 'System Notifications', icon: Bell },
-            { id: 'custom-order', label: 'Custom Blueprint Orders', icon: Briefcase }
+            { id: 'custom-order', label: 'Custom Blueprint Orders', icon: Briefcase },
+            { id: 'danger', label: 'Account Security & Danger Zone', icon: Trash2 }
           ].map(tab => {
-            const Icon = tab.icon;
+            const Icon = tab.icon as any;
             return (
               <button
                 key={tab.id}
@@ -1023,9 +1033,133 @@ export const AccountView: React.FC = () => {
             </form>
           )}
 
+          {/* TAB: Security & Password */}
+          {activeTab === 'security' && (
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (newPass !== confirmNewPass) {
+                showToast('New passwords do not match. Please re-enter.', 'warning');
+                return;
+              }
+              const res = await changePassword(currentPass, newPass);
+              if (res && res.success) {
+                setCurrentPass('');
+                setNewPass('');
+                setConfirmNewPass('');
+              }
+            }} className="bg-white p-6 rounded-3xl border border-cream-300 shadow-sm space-y-5 animate-fade-in">
+              <h3 className="font-serif text-base font-bold border-b pb-2">Security & Password Management</h3>
+              <p className="text-xs text-obsidian-900/60 font-sans">
+                Update your account password. Changing your password invalidates all other active sessions for security.
+              </p>
+
+              <div className="space-y-3 max-w-md text-xs">
+                <div>
+                  <label className="text-[10px] font-bold uppercase block mb-1">Current Password</label>
+                  <input 
+                    type="password" 
+                    required
+                    value={currentPass}
+                    onChange={(e) => setCurrentPass(e.target.value)}
+                    className="w-full bg-cream-100 border border-cream-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-gold-500 font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase block mb-1">New Password (8+ chars)</label>
+                  <input 
+                    type="password" 
+                    required
+                    value={newPass}
+                    onChange={(e) => setNewPass(e.target.value)}
+                    className="w-full bg-cream-100 border border-cream-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-gold-500 font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase block mb-1">Confirm New Password</label>
+                  <input 
+                    type="password" 
+                    required
+                    value={confirmNewPass}
+                    onChange={(e) => setConfirmNewPass(e.target.value)}
+                    className="w-full bg-cream-100 border border-cream-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-gold-500 font-bold"
+                  />
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full bg-obsidian-900 text-cream-100 hover:bg-gold-500 hover:text-obsidian-900 py-3 rounded-xl font-bold uppercase text-xs tracking-wider transition-all mt-2"
+                >
+                  Update Password & End Other Sessions
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB: Account Danger Zone */}
+          {activeTab === 'danger' && (
+            <div className="bg-white p-6 rounded-3xl border border-rose-500/30 shadow-sm space-y-4 animate-fade-in">
+              <h3 className="font-serif text-base font-bold text-rose-700 border-b pb-2 flex items-center gap-2">
+                <Trash2 className="w-5 h-5 text-rose-600" />
+                <span>Account Security & Danger Zone</span>
+              </h3>
+              <p className="text-xs text-obsidian-900/70 font-medium leading-relaxed">
+                Permanently delete your Eclipsera patron account. This action removes your profile credentials, saved delivery addresses, stored vault cards, and order tracking history. This process is immediate and irreversible.
+              </p>
+
+              <div className="pt-2">
+                <button 
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold uppercase text-xs flex items-center gap-2 shadow-md transition-all"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete My Account Permanently</span>
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
 
       </div>
+
+      {/* Delete Account Double Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 bg-obsidian-900/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in font-sans">
+          <div className="bg-white max-w-sm w-full rounded-3xl p-6 border border-rose-500/40 shadow-2xl space-y-4 text-center relative animate-scale-up">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto text-rose-600">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-serif font-bold text-xl text-obsidian-900">Are you absolutely sure?</h3>
+              <p className="text-xs text-obsidian-900/70 leading-relaxed font-medium">
+                Deleting your account will purge your saved addresses, payment methods, and purchase order history. You cannot undo this action.
+              </p>
+            </div>
+            <div className="pt-2 space-y-2">
+              <button 
+                type="button"
+                onClick={async () => {
+                  setIsDeleteModalOpen(false);
+                  await deleteCustomerAccount();
+                }}
+                className="w-full bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all"
+              >
+                <span>Yes, Delete Account Now</span>
+              </button>
+              <button 
+                type="button"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="text-xs font-semibold text-obsidian-900/60 hover:underline block mx-auto py-1"
+              >
+                Cancel & Keep My Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

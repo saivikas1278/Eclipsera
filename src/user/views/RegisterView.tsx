@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { GoogleLogin } from '@react-oauth/google';
 import { ShieldCheck, Lock, Mail, Phone, ArrowRight, User, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
-import { validateEmail, validatePhone, validatePassword, validateFullName } from '../../shared/utils/authValidation';
+import { validateEmail, validatePhone, validatePassword, validateConfirmPassword, validateFullName, getPasswordStrength } from '../../shared/utils/authValidation';
 
 export const RegisterView: React.FC = () => {
   const { customerRegister, customerGoogleLogin, setCurrentView, showToast } = useUser();
@@ -12,7 +12,9 @@ export const RegisterView: React.FC = () => {
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   // Field Errors (On Blur)
@@ -39,17 +41,24 @@ export const RegisterView: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const nErr = validateFullName(regName);
     const eErr = validateEmail(regEmail);
     const pErr = validatePhone(regPhone);
     const passErr = validatePassword(regPassword);
+    const cErr = validateConfirmPassword(regPassword, confirmPassword);
 
     setNameError(nErr);
     setEmailError(eErr);
     setPhoneError(pErr);
-    setPasswordError(passErr);
+    setPasswordError(passErr || cErr);
 
-    if (nErr || eErr || pErr || passErr) return;
+    if (!acceptTerms) {
+      showToast("Please agree to the Terms of Service and Privacy Policy.", "warning");
+      return;
+    }
+
+    if (nErr || eErr || pErr || passErr || cErr) return;
 
     setIsLoading(true);
     try {
@@ -184,16 +193,58 @@ export const RegisterView: React.FC = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {passwordError ? (
+
+              {/* Password Strength Meter */}
+              {regPassword && (
+                <div className="space-y-1 mt-1">
+                  <div className="flex justify-between items-center text-[10px] font-bold">
+                    <span className="text-obsidian-900/60 uppercase">Password Strength:</span>
+                    <span className={`font-mono ${getPasswordStrength(regPassword).score >= 3 ? 'text-emerald-700' : 'text-amber-700'}`}>
+                      {getPasswordStrength(regPassword).label}
+                    </span>
+                  </div>
+                  <div className="h-1.5 w-full bg-cream-200 rounded-full overflow-hidden">
+                    <div className={`h-full ${getPasswordStrength(regPassword).color} transition-all duration-300`} style={{ width: `${getPasswordStrength(regPassword).percentage}%` }}></div>
+                  </div>
+                </div>
+              )}
+
+              {passwordError && (
                 <p className="text-[11px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3 shrink-0" />
                   <span>{passwordError}</span>
                 </p>
-              ) : (
-                <p className="text-[10px] text-obsidian-900/50 mt-1">
-                  Must be 8+ chars with uppercase, lowercase, number, and special character (@$!%*?&).
-                </p>
               )}
+            </div>
+
+            {/* Confirm Password Field */}
+            <div>
+              <label className="text-xs font-bold text-obsidian-900 uppercase block mb-1">Confirm Password</label>
+              <div className="relative">
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  required
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full bg-cream-100 border border-cream-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-obsidian-900 font-medium focus:outline-none focus:border-gold-500"
+                />
+                <Lock className="w-4 h-4 text-obsidian-900/40 absolute left-3 top-3" />
+              </div>
+            </div>
+
+            {/* Terms and Privacy Agreement Checkbox */}
+            <div className="flex items-start gap-2 pt-1">
+              <input 
+                type="checkbox"
+                id="regTerms"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="mt-0.5 rounded text-gold-600 focus:ring-gold-500"
+              />
+              <label htmlFor="regTerms" className="text-xs text-obsidian-900/70 cursor-pointer">
+                I agree to the <span className="font-bold text-gold-700 underline">Terms of Service</span> and <span className="font-bold text-gold-700 underline">Privacy Policy</span>.
+              </label>
             </div>
 
             <button 

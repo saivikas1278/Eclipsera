@@ -53,6 +53,7 @@ import { SplashScreen } from './user/components/common/SplashScreen';
 
 // Import Shared components
 import { ToastContainer } from './shared/components/ToastContainer';
+import { AuthModal } from './user/components/auth/AuthModal';
 
 const AdminApp: React.FC = () => {
   const { isAdminLoggedIn } = useAdmin();
@@ -189,6 +190,7 @@ const UserApp: React.FC = () => {
       </div>
       {!shouldHideNav && <BottomMobileNav />}
       <CartDrawer />
+      <AuthModal />
       <ToastContainer />
     </div>
   );

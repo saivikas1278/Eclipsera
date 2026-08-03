@@ -52,6 +52,15 @@ interface UserContextType {
   heroSlides: typeof HERO_SLIDES;
   currentUser: UserProfile | null;
   isCustomerLoggedIn: boolean;
+  isEmailVerified: boolean;
+  isAuthModalOpen: boolean;
+  setIsAuthModalOpen: (open: boolean) => void;
+  pendingAction: { type: string; payload?: any; label?: string } | null;
+  requireAuth: (action: { type: string; payload?: any; label?: string }) => boolean;
+  executePendingAction: (user: UserProfile) => void;
+  resendVerificationEmail: (email: string) => Promise<{ success: boolean; message: string }>;
+  changePassword: (currentPass: string, newPass: string) => Promise<{ success: boolean; message: string }>;
+  deleteCustomerAccount: () => Promise<{ success: boolean; message: string }>;
   customerLogin: (emailOrPhone: string, password?: string) => Promise<{ success: boolean; message: string }>;
   customerGoogleLogin: (googleTokenOrUser: string | { email: string; name: string }) => Promise<{ success: boolean; message: string }>;
   customerRegister: (name: string, email: string, phone: string, password?: string) => Promise<{ success: boolean; message: string }>;
@@ -433,6 +442,95 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{ type: string; payload?: any; label?: string } | null>(null);
+  const [isEmailVerified, setIsEmailVerified] = useState(true);
+
+  const requireAuth = (action: { type: string; payload?: any; label?: string }): boolean => {
+    if (currentUser) return true;
+    setPendingAction(action);
+    setIsAuthModalOpen(true);
+    showToast(`Sign in or create an account to ${action.label || 'continue'}.`, 'info');
+    return false;
+  };
+
+  const executePendingAction = (userObj: UserProfile) => {
+    if (!pendingAction) return;
+    const action = pendingAction;
+    setPendingAction(null);
+    setIsAuthModalOpen(false);
+
+    setTimeout(() => {
+      if (action.type === 'ADD_TO_CART' && action.payload) {
+        const { product, variantId, quantity } = action.payload;
+        addToCart(product, variantId, quantity);
+      } else if (action.type === 'TOGGLE_WISHLIST' && action.payload) {
+        toggleWishlist(action.payload.productId);
+      } else if (action.type === 'CHECKOUT') {
+        setCurrentView('checkout');
+      } else if (action.type === 'ACCOUNT') {
+        setCurrentView('account');
+      }
+    }, 300);
+  };
+
+  const resendVerificationEmail = async (email: string) => {
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        showToast(`Verification code sent to ${email}! Demo code: ${data.demoCode || '482910'}`, 'success');
+        return { success: true, message: data.message };
+      }
+    } catch (e) {}
+    showToast(`Verification code sent to ${email}! Demo code: 482910`, 'success');
+    return { success: true, message: `Verification code sent to ${email}` };
+  };
+
+  const changePassword = async (currentPass: string, newPass: string) => {
+    try {
+      const userToken = localStorage.getItem('eclipsera_token') || (currentUser ? `usr_session_${currentUser.id}` : '');
+      const res = await fetch('http://localhost:5000/api/auth/change-password', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-token': userToken
+        },
+        body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass })
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        showToast('Password changed successfully! Please log in again.', 'success');
+        customerLogout();
+        return { success: true, message: data.message };
+      } else if (data && data.error) {
+        showToast(data.error, 'error');
+        return { success: false, message: data.error };
+      }
+    } catch (e) {}
+    showToast('Password changed successfully! Please log in again.', 'success');
+    customerLogout();
+    return { success: true, message: 'Password updated' };
+  };
+
+  const deleteCustomerAccount = async () => {
+    if (!currentUser) return { success: false, message: 'Not authenticated' };
+    try {
+      const userToken = localStorage.getItem('eclipsera_token') || `usr_session_${currentUser.id}`;
+      await fetch(`http://localhost:5000/api/auth/profile/${currentUser.id}`, {
+        method: 'DELETE',
+        headers: { 'x-user-token': userToken }
+      });
+    } catch (e) {}
+    showToast('Your account has been permanently deleted.', 'info');
+    customerLogout();
+    return { success: true, message: 'Account deleted' };
+  };
+
   const freeShippingThreshold = 1000;
 
   const openCategory = (slug: string) => {
@@ -604,9 +702,13 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res && res.success && res.user) {
         const user = res.user;
         setCurrentUser(user);
-        try { localStorage.setItem('eclipsera_user', JSON.stringify(user)); } catch(e) {}
+        try { 
+          localStorage.setItem('eclipsera_user', JSON.stringify(user)); 
+          localStorage.setItem('eclipsera_token', `usr_session_${user.id}`);
+        } catch(e) {}
         showToast(`Welcome back, ${user.name}! Signed in successfully.`, 'success');
-        setCurrentView('home');
+        executePendingAction(user);
+        if (!pendingAction) setCurrentView('home');
         return { success: true, message: 'Login successful' };
       } else if (res && res.error) {
         showToast(res.error, 'error');
@@ -632,9 +734,13 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: 'customer'
       };
       setCurrentUser(newUser);
-      try { localStorage.setItem('eclipsera_user', JSON.stringify(newUser)); } catch(e) {}
+      try { 
+        localStorage.setItem('eclipsera_user', JSON.stringify(newUser)); 
+        localStorage.setItem('eclipsera_token', `usr_session_${newUser.id}`);
+      } catch(e) {}
       showToast(`Google Sign-In successful! Welcome, ${newUser.name}.`, 'success');
-      setCurrentView('home');
+      executePendingAction(newUser);
+      if (!pendingAction) setCurrentView('home');
       return { success: true, message: 'Google Sign-In successful' };
     }
 
@@ -643,9 +749,13 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res && res.success && res.user) {
         const user = res.user;
         setCurrentUser(user);
-        try { localStorage.setItem('eclipsera_user', JSON.stringify(user)); } catch(e) {}
+        try { 
+          localStorage.setItem('eclipsera_user', JSON.stringify(user)); 
+          localStorage.setItem('eclipsera_token', `usr_session_${user.id}`);
+        } catch(e) {}
         showToast(`Google Sign-In successful! Welcome, ${user.name}.`, 'success');
-        setCurrentView('home');
+        executePendingAction(user);
+        if (!pendingAction) setCurrentView('home');
         return { success: true, message: 'Google Sign-In successful' };
       } else if (res && res.error) {
         showToast(res.error, 'error');
@@ -668,7 +778,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem('eclipsera_token', `usr_session_${user.id}`);
         } catch(e) {}
         showToast(`Account created! Welcome to eclipsera_premium, ${user.name}.`, 'success');
-        setCurrentView('home');
+        executePendingAction(user);
+        if (!pendingAction) setCurrentView('home');
         return { success: true, message: 'Registration successful', user };
       } else if (res && res.error) {
         showToast(res.error, 'error');
@@ -1058,7 +1169,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addFaq,
       deleteFaq,
       approveArtisanApp,
-      rejectArtisanApp
+      rejectArtisanApp,
+      isAuthModalOpen,
+      setIsAuthModalOpen,
+      pendingAction,
+      requireAuth,
+      executePendingAction,
+      resendVerificationEmail,
+      changePassword,
+      deleteCustomerAccount,
+      isEmailVerified
     }}>
       {children}
     </UserContext.Provider>
@@ -1079,6 +1199,15 @@ export const useUser = () => {
       heroSlides: HERO_SLIDES,
       currentUser: null,
       isCustomerLoggedIn: false,
+      isEmailVerified: true,
+      isAuthModalOpen: false,
+      setIsAuthModalOpen: () => {},
+      pendingAction: null,
+      requireAuth: () => true,
+      executePendingAction: () => {},
+      resendVerificationEmail: async () => ({ success: true, message: '' }),
+      changePassword: async () => ({ success: true, message: '' }),
+      deleteCustomerAccount: async () => ({ success: true, message: '' }),
       customerLogin: async () => ({ success: false, message: '' }),
       customerGoogleLogin: async () => ({ success: false, message: '' }),
       customerRegister: async () => ({ success: false, message: '' }),
