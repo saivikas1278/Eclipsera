@@ -105,7 +105,7 @@ export const Header: React.FC = () => {
                   onClick={() => setCurrentView('home')} 
                   className={`transition-colors py-1 ${currentView === 'home' ? 'text-gold-600 border-b-2 border-gold-500 font-extrabold' : 'text-obsidian-900 hover:text-gold-600 font-bold'}`}
                 >
-                  Handcrafted Showcase
+                  Home
                 </button>
                 <button 
                   onClick={() => setCurrentView('new-arrivals')} 
@@ -347,7 +347,7 @@ export const Header: React.FC = () => {
                 onClick={() => { setCurrentView('home'); setIsMobileMenuOpen(false); }}
                 className={`flex items-center justify-between w-full text-left px-3.5 py-3 rounded-xl transition-all ${currentView === 'home' ? 'bg-gold-500 text-obsidian-900 font-extrabold shadow-sm' : 'hover:bg-cream-200 text-obsidian-900'}`}
               >
-                <span>Handcrafted Showcase</span>
+                <span>Home</span>
                 <ChevronRight className="w-4 h-4 text-gold-700" />
               </button>
 
