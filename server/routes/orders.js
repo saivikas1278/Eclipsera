@@ -250,6 +250,7 @@ router.post('/', async (req, res) => {
     const newOrderObj = {
       id: newId,
       orderNumber: orderNum,
+      userId: o.userId || req.userId || null,
       customerName: o.customerName || 'Artisan Patron',
       customerEmail: o.customerEmail || 'patron@example.com',
       customerPhone: o.customerPhone || '9876543210',
@@ -599,13 +600,19 @@ router.post('/:id/return', async (req, res) => {
   }
 });
 
-// PUT Update Order Status (Legacy Fallback)
+// PUT Update Order Status (Legacy Fallback & Direct Controls)
 router.put('/:id/status', verifyAdminToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, courierName, trackingNumber } = req.body;
 
-    const ord = memoryOrders.find(o => o.id === id);
+    let ord = memoryOrders.find(o => o.id === id || o.orderNumber === id);
+    if (!ord && isDbReady()) {
+      try {
+        ord = await Order.findOne({ $or: [{ id }, { orderNumber: id }] });
+      } catch (e) {}
+    }
+
     if (ord) {
       if (status) ord.status = status;
       if (courierName) ord.courierName = courierName;
@@ -613,17 +620,30 @@ router.put('/:id/status', verifyAdminToken, async (req, res) => {
         ord.trackingNumber = trackingNumber;
         ord.awbTrackingNumber = trackingNumber;
       }
+      if (!ord.trackingHistory) ord.trackingHistory = [];
+      ord.trackingHistory.push({
+        status: status || ord.status,
+        location: 'Eclipsera Central Logistics',
+        timestamp: new Date().toISOString(),
+        note: `Order status updated to ${status || ord.status}`
+      });
     }
 
     if (isDbReady()) {
       try {
-        await Order.findOneAndUpdate({ id }, {
-          $set: { status, courierName, trackingNumber }
+        await Order.findOneAndUpdate({ $or: [{ id }, { orderNumber: id }] }, {
+          $set: { 
+            status, 
+            courierName, 
+            trackingNumber, 
+            awbTrackingNumber: trackingNumber,
+            ...(ord ? { trackingHistory: ord.trackingHistory } : {})
+          }
         });
       } catch (e) {}
     }
 
-    res.json({ success: true });
+    res.json({ success: true, order: ord });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -786,7 +786,12 @@ export const AdminDashboardView: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-zinc-800/60">
                     {orders.slice(0, 5).map(o => (
-                      <tr key={o.id} className="hover:bg-zinc-800/40 transition-colors">
+                      <tr 
+                        key={o.id} 
+                        onClick={() => setSelectedOrder(o)}
+                        className="hover:bg-zinc-800/40 transition-colors cursor-pointer"
+                        title="Click to view complete order items, customer & delivery details"
+                      >
                         <td className="py-3.5 px-3 font-mono font-bold text-indigo-400">{o.orderNumber}</td>
                         <td className="py-3.5 px-3 font-semibold text-zinc-200">{o.customerName}</td>
                         <td className="py-3.5 px-3 text-zinc-400">{new Date(o.createdAt).toLocaleDateString()}</td>
@@ -2248,12 +2253,15 @@ export const AdminDashboardView: React.FC = () => {
             <div className="space-y-3 text-xs">
               <div className="flex justify-between border-b border-zinc-800 pb-2">
                 <div>
-                  <span className="text-zinc-500 block text-[10px] font-bold uppercase">Customer</span>
-                  <span className="font-bold text-white">{selectedOrder.customerName}</span>
+                  <span className="text-zinc-500 block text-[10px] font-bold uppercase">Customer & Contact</span>
+                  <span className="font-bold text-white block">{selectedOrder.customerName}</span>
+                  <span className="text-[10px] text-zinc-400 block">{selectedOrder.customerEmail}</span>
+                  <span className="text-[10px] text-zinc-500 block">{selectedOrder.customerPhone || 'N/A'}</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-zinc-500 block text-[10px] font-bold uppercase">Status</span>
+                  <span className="text-zinc-500 block text-[10px] font-bold uppercase">Status & AWB</span>
                   {renderStatusBadge(selectedOrder.status)}
+                  <span className="text-[10px] text-zinc-400 font-mono block mt-1">AWB: {selectedOrder.awbTrackingNumber || selectedOrder.trackingNumber || 'Pending'}</span>
                 </div>
               </div>
 

@@ -89,8 +89,21 @@ export async function createOrderInAPI(orderData: any) {
   try {
     const res = await fetch(`${API_BASE_URL}/orders`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getUserHeaders(),
       body: JSON.stringify(orderData)
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function cancelOrderInAPI(orderId: string, reason?: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel`, {
+      method: 'POST',
+      headers: getUserHeaders(),
+      body: JSON.stringify({ reason })
     });
     return await res.json();
   } catch (e) {

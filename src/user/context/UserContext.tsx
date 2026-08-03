@@ -399,13 +399,31 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     showToast('Your custom order blueprint has been sent to the artisan guild.', 'success');
   };
 
-  const cancelOrder = (orderId: string) => {
+  const cancelOrder = async (orderId: string, reason?: string) => {
+    try {
+      const { cancelOrderInAPI } = await import('../../shared/services/apiService');
+      const res = await cancelOrderInAPI(orderId, reason);
+      if (res && res.success) {
+        loadUserOrders();
+        showToast('Order cancelled successfully. Stock restored.', 'info');
+        return;
+      }
+    } catch (e) {}
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'CANCELLED' as const } : o));
     showToast('Order cancelled successfully. Refund initiated to source.', 'info');
   };
 
-  const requestReturnOrder = (orderId: string, itemIds: string[], reason: string, comment: string) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'PROCESSING' as const } : o));
+  const requestReturnOrder = async (orderId: string, itemIds: string[], reason: string, comment: string) => {
+    try {
+      const { requestOrderReturnAPI } = await import('../../shared/services/apiService');
+      const res = await requestOrderReturnAPI(orderId, { reason, comments: comment });
+      if (res && res.success) {
+        loadUserOrders();
+        showToast('Return and refund request submitted for approval.', 'success');
+        return;
+      }
+    } catch (e) {}
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'RETURN_REQUESTED' as const } : o));
     showToast('Return and refund request submitted for approval.', 'success');
   };
 
@@ -681,6 +699,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (currentUser) {
       loadUserOrders();
+      const interval = setInterval(() => {
+        loadUserOrders();
+      }, 5000);
+      return () => clearInterval(interval);
     } else {
       setOrders([]);
     }
@@ -994,6 +1016,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const placeOrder = async (shippingDetails: any, paymentMethod: string) => {
     const orderData = {
+      userId: currentUser?.id || currentUser?.email || 'guest',
       customerName: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
       customerEmail: shippingDetails.email,
       customerPhone: shippingDetails.phone,
@@ -1031,6 +1054,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch (e) {}
         setCurrentView('order-confirmation');
         return res.order;
+      } else if (res && res.error) {
+        showToast(res.error, 'error');
       }
     } catch (e) {
       // offline fallback below

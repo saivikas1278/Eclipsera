@@ -69,6 +69,7 @@ const productSchema = new mongoose.Schema({
 const orderSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   orderNumber: { type: String, required: true, unique: true },
+  userId: String,
   customerName: String,
   customerEmail: String,
   customerPhone: String,
