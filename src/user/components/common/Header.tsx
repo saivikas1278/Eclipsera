@@ -268,47 +268,6 @@ export const Header: React.FC = () => {
             </div>
           </div>
 
-          {/* Sub-Header Navigation for Discovery Channels */}
-          <div className="border-t border-cream-300/60 py-2 mt-2 flex items-center justify-center gap-4 sm:gap-6 overflow-x-auto no-scrollbar text-[10px] font-bold tracking-widest uppercase text-obsidian-900/60">
-            <button 
-              onClick={() => setCurrentView('new-arrivals')} 
-              className={`hover:text-gold-700 transition-colors ${currentView === 'new-arrivals' ? 'text-gold-600 font-extrabold' : ''}`}
-            >
-              New Arrivals
-            </button>
-            <span className="text-cream-300">•</span>
-            <button 
-              onClick={() => setCurrentView('best-sellers')} 
-              className={`hover:text-gold-700 transition-colors ${currentView === 'best-sellers' ? 'text-gold-600 font-extrabold' : ''}`}
-            >
-              Best Sellers
-            </button>
-            <span className="text-cream-300">•</span>
-            <button 
-              onClick={() => setCurrentView('sale')} 
-              className={`hover:text-gold-700 transition-colors ${currentView === 'sale' ? 'text-gold-600 font-extrabold' : ''}`}
-            >
-              Special Offers
-            </button>
-            <span className="text-cream-300">•</span>
-            <button 
-              onClick={() => setCurrentView('gift-guide')} 
-              className={`hover:text-gold-700 transition-colors ${currentView === 'gift-guide' ? 'text-gold-600 font-extrabold' : ''}`}
-            >
-              Gift Guide
-            </button>
-            <span className="text-cream-300">•</span>
-            <button 
-              onClick={() => setCurrentView('compare')} 
-              className={`hover:text-gold-700 transition-colors flex items-center gap-1 ${currentView === 'compare' ? 'text-gold-600 font-extrabold' : ''}`}
-            >
-              Compare
-              {compareProductIds.length > 0 && (
-                <span className="bg-gold-500 text-obsidian-900 text-[9px] px-1.5 rounded-full font-mono font-bold leading-none py-0.5">{compareProductIds.length}</span>
-              )}
-            </button>
-          </div>
-
         </div>
       </header>
 
