@@ -108,8 +108,8 @@ const verifyCustomerToken = (req, res, next) => {
   }
 };
 
-const authRateLimiter = createRateLimiter('auth', 15 * 60 * 1000, 100); // 100 requests per 15 min
-const generalRateLimiter = createRateLimiter('general', 15 * 60 * 1000, 200); // 200 requests per 15 min
+const authRateLimiter = createRateLimiter('auth', 15 * 60 * 1000, 500); // 500 requests per 15 min
+const generalRateLimiter = createRateLimiter('general', 15 * 60 * 1000, 2000); // 2000 requests per 15 min
 
 module.exports = {
   verifyAdminToken,

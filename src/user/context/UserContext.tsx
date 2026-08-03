@@ -165,14 +165,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentViewState, setCurrentViewState] = useState<string>(getViewFromUrl());
   const [selectedProductSlug, setSelectedProductSlug] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('eclipsera_cart');
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      return [];
-    }
-  });
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -515,11 +508,45 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  const getUserStorageKey = (prefix: string) => {
+    return currentUser?.id ? `${prefix}_${currentUser.id}` : `${prefix}_guest`;
+  };
+
+  // Per-User Cart State Isolation
   useEffect(() => {
+    const key = getUserStorageKey('eclipsera_cart');
     try {
-      localStorage.setItem('eclipsera_cart', JSON.stringify(cart));
+      const saved = localStorage.getItem(key);
+      setCart(saved ? JSON.parse(saved) : []);
+    } catch (e) {
+      setCart([]);
+    }
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    const key = getUserStorageKey('eclipsera_cart');
+    try {
+      localStorage.setItem(key, JSON.stringify(cart));
     } catch (e) {}
-  }, [cart]);
+  }, [cart, currentUser?.id]);
+
+  // Per-User Wishlist State Isolation
+  useEffect(() => {
+    const key = getUserStorageKey('eclipsera_wishlist');
+    try {
+      const saved = localStorage.getItem(key);
+      setWishlist(saved ? JSON.parse(saved) : []);
+    } catch (e) {
+      setWishlist([]);
+    }
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    const key = getUserStorageKey('eclipsera_wishlist');
+    try {
+      localStorage.setItem(key, JSON.stringify(wishlist));
+    } catch (e) {}
+  }, [wishlist, currentUser?.id]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -658,7 +685,16 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const customerLogout = () => {
     setCurrentUser(null);
-    try { localStorage.removeItem('eclipsera_user'); } catch(e) {}
+    setCart([]);
+    setWishlist([]);
+    setOrders([]);
+    setCompareProductIds([]);
+    setAppliedCoupon(null);
+    setLastPlacedOrder(null);
+    try { 
+      localStorage.removeItem('eclipsera_user'); 
+      localStorage.removeItem('eclipsera_token');
+    } catch(e) {}
     showToast('Signed out of your customer account.', 'info');
     setCurrentView('auth');
   };
@@ -787,7 +823,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearCart = () => {
     setCart([]);
-    try { localStorage.removeItem('eclipsera_cart'); } catch (e) {}
+    const key = getUserStorageKey('eclipsera_cart');
+    try { localStorage.removeItem(key); } catch (e) {}
   };
 
   const applyCoupon = (code: string) => {
