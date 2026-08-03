@@ -179,82 +179,34 @@ export const HomeView: React.FC = () => {
         )}
       </section>
 
-      {/* Value Proposition Section: Why Buy Handcrafted? */}
-      <section className="bg-white p-6 sm:p-8 rounded-3xl border border-cream-300 shadow-sm space-y-6">
-        <div className="text-center space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-gold-700 bg-gold-500/10 px-3 py-1 rounded-full border border-gold-500/20 inline-block">
-            Ethical Craft Guarantee
-          </span>
-          <h2 className="font-serif text-xl sm:text-2xl font-bold">Why Buy Handcrafted at eclipsera?</h2>
+      {/* New Arrivals Showcase Section */}
+      <section className="space-y-4 pt-4 border-t border-cream-300">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-gold-600" />
+            <h2 className="font-serif text-base sm:text-xl font-bold text-obsidian-900">
+              Newly Arrived Artifacts
+            </h2>
+          </div>
+          <button 
+            onClick={() => setCurrentView('new-arrivals')}
+            className="text-xs font-bold text-gold-700 hover:underline flex items-center gap-1 uppercase tracking-wider"
+          >
+            <span>View All New Arrivals</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-xs font-semibold">
-          <div className="p-4 bg-cream-100/50 rounded-2xl space-y-2 border border-cream-300">
-            <ShieldCheck className="w-6 h-6 text-gold-600 mx-auto" />
-            <h3 className="font-serif font-bold text-sm">100% Authentic GI Mark</h3>
-            <p className="text-obsidian-900/60 text-[11px] font-sans">Certified heritage craft origin verified by regional councils.</p>
-          </div>
-          <div className="p-4 bg-cream-100/50 rounded-2xl space-y-2 border border-cream-300">
-            <Users className="w-6 h-6 text-gold-600 mx-auto" />
-            <h3 className="font-serif font-bold text-sm">Direct Artisan Profit</h3>
-            <p className="text-obsidian-900/60 text-[11px] font-sans">Zero middleman margins ensuring 100% fair trade living wages.</p>
-          </div>
-          <div className="p-4 bg-cream-100/50 rounded-2xl space-y-2 border border-cream-300">
-            <Sparkles className="w-6 h-6 text-gold-600 mx-auto" />
-            <h3 className="font-serif font-bold text-sm">Non-Toxic Organic Dyes</h3>
-            <p className="text-obsidian-900/60 text-[11px] font-sans">Turmeric and indigo vegetable dyes safe for children and home.</p>
-          </div>
-          <div className="p-4 bg-cream-100/50 rounded-2xl space-y-2 border border-cream-300">
-            <Award className="w-6 h-6 text-gold-600 mx-auto" />
-            <h3 className="font-serif font-bold text-sm">Insured Doorstep Transit</h3>
-            <p className="text-obsidian-900/60 text-[11px] font-sans">100% insured transit logistics with zero-plastic packaging.</p>
-          </div>
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+          {products.filter(p => p.isNewArrival).slice(0, 4).map(product => (
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              onQuickView={(p) => setQuickViewProduct(p)} 
+            />
+          ))}
         </div>
       </section>
-
-      {/* Gift Guide & Blog Teaser Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Gift Guide Teaser */}
-        <div 
-          onClick={() => setCurrentView('gift-guide')}
-          className="bg-obsidian-900 text-cream-100 p-6 sm:p-8 rounded-3xl border border-gold-500/30 shadow-lg cursor-pointer group space-y-4 flex flex-col justify-between"
-        >
-          <div className="space-y-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gold-400">Curated Celebrations</span>
-            <h3 className="font-serif font-bold text-xl sm:text-2xl text-white group-hover:text-gold-400 transition-colors">The Artisan Gift Guide</h3>
-            <p className="text-xs text-cream-100/70 font-sans">Find personalized woodcrafts, studio pottery, and engraved brass for every milestone celebration.</p>
-          </div>
-          <span className="text-xs font-bold text-gold-400 group-hover:translate-x-1 transition-transform flex items-center gap-1 uppercase tracking-wider">
-            Explore Gift Ideas <ArrowRight className="w-4 h-4" />
-          </span>
-        </div>
-
-        {/* Blog / Journal Preview */}
-        <div 
-          onClick={() => setCurrentView('blog')}
-          className="bg-white p-6 sm:p-8 rounded-3xl border border-cream-300 shadow-sm cursor-pointer group space-y-4 flex flex-col justify-between hover:shadow-md transition-all"
-        >
-          <div className="space-y-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gold-700">Cultural Journal</span>
-            <h3 className="font-serif font-bold text-xl sm:text-2xl group-hover:text-gold-600 transition-colors">Stories Behind the Craft</h3>
-            <p className="text-xs text-obsidian-900/70 font-sans">Read about 200-year-old Channapatna lathe turning and Madhubani natural ink painting techniques.</p>
-          </div>
-          <span className="text-xs font-bold text-gold-700 group-hover:translate-x-1 transition-transform flex items-center gap-1 uppercase tracking-wider">
-            Read Journal Articles <ArrowRight className="w-4 h-4" />
-          </span>
-        </div>
-      </div>
-
-      {/* Trust Badges Footer Strip */}
-      <div className="bg-cream-200/60 p-4 rounded-2xl border border-cream-300 flex flex-col sm:flex-row sm:flex-wrap items-center justify-around gap-3 sm:gap-4 text-center text-xs font-bold text-obsidian-900">
-        <span>🔒 100% Encrypted Payments</span>
-        <span className="text-cream-300 hidden sm:inline">•</span>
-        <span>🚚 Free Insured Shipping &gt; ₹1,000</span>
-        <span className="text-cream-300 hidden sm:inline">•</span>
-        <span>🔄 7-Day Hassle-Free Returns</span>
-        <span className="text-cream-300 hidden sm:inline">•</span>
-        <span>🌿 GI Verified Handcrafted</span>
-      </div>
 
       {/* Quick View Modal */}
       {quickViewProduct && (

@@ -108,6 +108,13 @@ export const Header: React.FC = () => {
                   Handcrafted Showcase
                 </button>
                 <button 
+                  onClick={() => setCurrentView('new-arrivals')} 
+                  className={`transition-colors py-1 flex items-center gap-1 ${currentView === 'new-arrivals' ? 'text-gold-600 border-b-2 border-gold-500 font-extrabold' : 'text-obsidian-900 hover:text-gold-600 font-bold'}`}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-gold-500" />
+                  New Arrivals
+                </button>
+                <button 
                   onClick={() => setCurrentView('shop')} 
                   className={`transition-colors py-1 ${currentView === 'shop' ? 'text-gold-600 border-b-2 border-gold-500 font-extrabold' : 'text-obsidian-900 hover:text-gold-600 font-bold'}`}
                 >
@@ -119,12 +126,6 @@ export const Header: React.FC = () => {
                 >
                   <Package className="w-3.5 h-3.5" />
                   My Orders ({orders.length})
-                </button>
-                <button 
-                  onClick={() => setCurrentView('artisan-stories')} 
-                  className={`transition-colors py-1 ${currentView === 'artisan-stories' ? 'text-gold-600 border-b-2 border-gold-500 font-extrabold' : 'text-obsidian-900 hover:text-gold-600 font-bold'}`}
-                >
-                  Artisan Guilds
                 </button>
               </nav>
             </div>
@@ -385,10 +386,13 @@ export const Header: React.FC = () => {
               </button>
 
               <button 
-                onClick={() => { setCurrentView('artisan-stories'); setIsMobileMenuOpen(false); }}
-                className={`flex items-center justify-between w-full text-left px-3.5 py-3 rounded-xl transition-all ${currentView === 'artisan-stories' ? 'bg-gold-500 text-obsidian-900 font-extrabold shadow-sm' : 'hover:bg-cream-200 text-obsidian-900'}`}
+                onClick={() => { setCurrentView('new-arrivals'); setIsMobileMenuOpen(false); }}
+                className={`flex items-center justify-between w-full text-left px-3.5 py-3 rounded-xl transition-all ${currentView === 'new-arrivals' ? 'bg-gold-500 text-obsidian-900 font-extrabold shadow-sm' : 'hover:bg-cream-200 text-obsidian-900'}`}
               >
-                <span>Artisan Guild Stories</span>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-gold-600" />
+                  <span>New Arrivals Showcase</span>
+                </div>
                 <ChevronRight className="w-4 h-4 text-gold-700" />
               </button>
 
