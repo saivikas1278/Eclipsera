@@ -50,13 +50,13 @@ router.get('/', verifyAdminToken, async (req, res) => {
       try {
         const dbOrders = await Order.find().sort({ createdAt: -1 });
         if (dbOrders && dbOrders.length) {
-          return res.json(dbOrders);
+          return res.json({ success: true, data: dbOrders, message: 'All orders retrieved successfully' });
         }
       } catch (e) {}
     }
-    res.json(memoryOrders);
+    res.json({ success: true, data: memoryOrders, message: 'All orders retrieved successfully from memory' });
   } catch (err) {
-    res.json(memoryOrders);
+    res.json({ success: true, data: memoryOrders, message: 'Fallback to memory orders due to error' });
   }
 });
 
@@ -98,9 +98,9 @@ router.get('/customer', verifyCustomerToken, async (req, res) => {
       } catch (e) {}
     }
     
-    res.json(list);
+    res.json({ success: true, data: list, message: 'Customer orders retrieved successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message, data: [] });
   }
 });
 

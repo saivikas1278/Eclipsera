@@ -3,7 +3,7 @@ import { useUser } from '../context/UserContext';
 import { 
   User, MapPin, Package, Heart, LogOut, ShieldCheck, Edit3, Check, Sparkles, 
   CreditCard, Wallet, Bell, Star, MessageSquare, Plus, Trash2, Camera, 
-  ChevronRight, Calendar, Info, RefreshCw, Briefcase, FileText, Image 
+  ChevronRight, Calendar, Info, RefreshCw, Briefcase, FileText, Image, Lock
 } from 'lucide-react';
 
 export const AccountView: React.FC = () => {

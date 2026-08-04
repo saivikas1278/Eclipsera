@@ -45,7 +45,8 @@ export async function fetchCustomerOrdersFromAPI() {
       headers: getUserHeaders()
     });
     if (!res.ok) throw new Error('Failed to fetch customer orders');
-    return await res.json();
+    const json = await res.json();
+    return json.success ? json.data : json;
   } catch (e) {
     return null;
   }
@@ -57,7 +58,8 @@ export async function fetchOrdersFromAPI() {
       headers: getAdminHeaders()
     });
     if (!res.ok) throw new Error('Failed to fetch orders');
-    return await res.json();
+    const json = await res.json();
+    return json.success ? json.data : json;
   } catch (e) {
     return null;
   }
