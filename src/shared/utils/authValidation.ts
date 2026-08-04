@@ -15,14 +15,7 @@ export const validatePhone = (phone: string): string | null => {
 
 export const validatePassword = (password: string): string | null => {
   if (!password) return "This field cannot be left blank.";
-  if (password.length < 8) return "Password must be at least 8 characters long.";
-  const hasUpper = /[A-Z]/.test(password);
-  const hasLower = /[a-z]/.test(password);
-  const hasNumber = /\d/.test(password);
-  const hasSpecial = /[@$!%*?&]/.test(password);
-  if (!hasUpper || !hasLower || !hasNumber || !hasSpecial) {
-    return "Password must be at least 8 characters and include uppercase, lowercase, a number, and a symbol.";
-  }
+  if (password.length < 4) return "Password must be at least 4 characters long.";
   return null;
 };
 

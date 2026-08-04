@@ -42,6 +42,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           src={isHovered && product.images[1] ? product.images[1] : product.images[0]} 
           alt={product.title} 
           onLoad={() => setImgLoaded(true)}
+          loading="lazy"
           className={`w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out ${
             imgLoaded ? 'opacity-100' : 'opacity-0'
           }`}

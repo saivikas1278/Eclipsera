@@ -82,7 +82,12 @@ export const CartView: React.FC = () => {
                   onClick={() => openProductDetail(item.product.slug)}
                   className="w-20 h-24 sm:w-24 sm:h-28 bg-cream-200 rounded-xl overflow-hidden cursor-pointer shrink-0 border border-cream-300"
                 >
-                  <img src={item.product.images[0]} alt="" className="w-full h-full object-cover" />
+                  <img 
+                    src={item.product.images[0]} 
+                    alt="" 
+                    loading="lazy"
+                    className="w-full h-full object-cover" 
+                  />
                 </div>
 
                 {/* Details */}
@@ -264,7 +269,12 @@ export const CartView: React.FC = () => {
                 className="bg-white border border-cream-300 rounded-2xl p-3.5 space-y-2 hover:-translate-y-1 hover:shadow-luxury cursor-pointer transition-all duration-300"
               >
                 <div className="aspect-square bg-cream-200 rounded-xl overflow-hidden">
-                  <img src={p.images[0]} alt={p.title} className="w-full h-full object-cover" />
+                  <img 
+                    src={p.images[0]} 
+                    alt={p.title} 
+                    loading="lazy"
+                    className="w-full h-full object-cover" 
+                  />
                 </div>
                 <div>
                   <span className="text-[9px] text-gold-700 font-bold uppercase tracking-wider block truncate">{p.craftTechnique}</span>

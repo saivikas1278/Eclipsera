@@ -103,6 +103,16 @@ const orderSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Indexes for Scalable Querying
+orderSchema.index({ userId: 1 });
+orderSchema.index({ customerEmail: 1 });
+orderSchema.index({ status: 1 });
+orderSchema.index({ createdAt: -1 });
+
+productSchema.index({ category: 1 });
+productSchema.index({ isFeatured: 1 });
+
+
 // User Profile Schema
 const profileSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
@@ -150,6 +160,9 @@ const reviewSchema = new mongoose.Schema({
   adminReply: String,
   createdAt: { type: Date, default: Date.now }
 });
+
+reviewSchema.index({ productId: 1 });
+reviewSchema.index({ status: 1 });
 
 // Audit Log Schema
 const auditLogSchema = new mongoose.Schema({

@@ -362,6 +362,13 @@ router.post('/', async (req, res) => {
     // Trigger Order Confirmation Email & Admin Notification
     sendOrderConfirmationEmail(newOrderObj);
     triggerNewOrderAdminNotification(newOrderObj);
+    
+    try {
+      const notificationsRoute = require('./notifications');
+      if (notificationsRoute && typeof notificationsRoute.broadcastSSE === 'function') {
+        notificationsRoute.broadcastSSE('NEW_ORDER', newOrderObj);
+      }
+    } catch(err) {}
 
     // Decrement stock in memoryProducts & Check Low Stock (< 3 units)
     for (const item of resolvedItems) {

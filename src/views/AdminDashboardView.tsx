@@ -455,7 +455,12 @@ export const AdminDashboardView: React.FC = () => {
                 return (
                   <div key={p.id} className="p-3 bg-obsidian-900/60 rounded-2xl border border-gold-500/20 flex items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-3 min-w-0">
-                      <img src={p.images[0]} alt="" className="w-10 h-10 object-cover rounded-xl border border-gold-500/30 shrink-0" />
+                      <img 
+                        src={p.images[0]} 
+                        alt="" 
+                        loading="lazy"
+                        className="w-10 h-10 object-cover rounded-xl border border-gold-500/30 shrink-0" 
+                      />
                       <div className="min-w-0">
                         <h4 className="font-serif font-bold text-cream-100 truncate">{p.title}</h4>
                         <p className="text-[10px] text-gold-400 font-semibold uppercase">{p.craftTechnique} • ₹{p.basePrice.toLocaleString()}</p>
@@ -784,7 +789,12 @@ export const AdminDashboardView: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map(p => (
                 <div key={p.id} className="p-4 rounded-2xl border border-gold-500/20 bg-obsidian-900/60 space-y-3">
-                  <img src={p.images[0]} alt="" className="w-full h-40 object-cover rounded-xl border border-gold-500/30" />
+                  <img 
+                    src={p.images[0]} 
+                    alt="" 
+                    loading="lazy"
+                    className="w-full h-40 object-cover rounded-xl border border-gold-500/30" 
+                  />
                   <div>
                     <span className="text-[10px] font-bold text-gold-400 uppercase">{p.craftTechnique}</span>
                     <h4 className="font-serif font-bold text-base text-cream-100 truncate">{p.title}</h4>
@@ -1134,7 +1144,12 @@ export const AdminDashboardView: React.FC = () => {
                 />
                 {newImage && (
                   <div className="mt-2 flex items-center gap-2">
-                    <img src={newImage} alt="" className="w-12 h-12 object-cover rounded-lg border border-gold-500/40" />
+                    <img 
+                      src={newImage} 
+                      alt="" 
+                      loading="lazy"
+                      className="w-12 h-12 object-cover rounded-lg border border-gold-500/40" 
+                    />
                     <span className="text-[10px] text-emerald-400 font-semibold">✓ Ready for publishing</span>
                   </div>
                 )}

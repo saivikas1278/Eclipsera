@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
-import { GoogleLogin } from '@react-oauth/google';
-import { ShieldCheck, Lock, Mail, Phone, Eye, EyeOff, ArrowRight, CheckCircle2, Zap, AlertCircle, Loader2, UserX, UserPlus, Chrome } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, Phone, Eye, EyeOff, ArrowRight, CheckCircle2, AlertCircle, Loader2, UserX, UserPlus, Chrome } from 'lucide-react';
 import { validateEmail, validatePhone, validatePassword, validateConfirmPassword } from '../../shared/utils/authValidation';
 
 export const AuthView: React.FC = () => {
@@ -42,12 +41,7 @@ export const AuthView: React.FC = () => {
   const [showNewResetPassword, setShowNewResetPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  const handleFillDemo = () => {
-    setEmail('ananya.sharma@example.com');
-    setPassword('Patron@123');
-    setEmailError(null);
-    setPasswordError(null);
-  };
+
 
   const handleEmailBlur = () => {
     setEmailError(validateEmail(email));
@@ -247,18 +241,6 @@ export const AuthView: React.FC = () => {
             {loginMethod === 'email' ? (
               <form onSubmit={handleEmailLogin} className="space-y-4">
                 
-                {/* 1-Tap Demo Credentials Helper */}
-                <div className="flex items-center justify-between p-2.5 bg-gold-500/10 border border-gold-500/30 rounded-xl text-xs">
-                  <span className="font-bold text-obsidian-900 text-[11px]">Testing as patron?</span>
-                  <button 
-                    type="button"
-                    onClick={handleFillDemo}
-                    className="text-gold-700 font-bold hover:underline text-[11px] flex items-center gap-1"
-                  >
-                    <Zap className="w-3 h-3 text-gold-600" />
-                    Fill Demo Credentials
-                  </button>
-                </div>
 
                 {/* Email Input */}
                 <div>
@@ -446,38 +428,7 @@ export const AuthView: React.FC = () => {
               </div>
             )}
 
-            {/* Official Google OAuth 2.0 Login */}
-            <div className="pt-3 border-t border-cream-300 space-y-2 text-center flex flex-col items-center">
-              <span className="text-[10px] font-bold text-obsidian-900/40 uppercase tracking-widest block mb-1">Or Sign In With Google</span>
-              <div className="w-full flex justify-center flex-col items-center gap-2">
-                <GoogleLogin
-                  onSuccess={(credentialResponse) => {
-                    if (credentialResponse.credential) {
-                      customerGoogleLogin(credentialResponse.credential);
-                    }
-                  }}
-                  onError={() => {
-                    customerGoogleLogin({ email: 'patron.google@gmail.com', name: 'Google Patron' });
-                  }}
-                  useOneTap={false}
-                  theme="outline"
-                  shape="pill"
-                  size="large"
-                  text="signin_with"
-                  width="280"
-                />
 
-                {/* Direct Google 1-Tap Fallback Button */}
-                <button
-                  type="button"
-                  onClick={() => customerGoogleLogin({ email: 'patron.google@gmail.com', name: 'Google Patron' })}
-                  className="w-full py-2.5 px-4 border border-cream-300 rounded-xl text-xs font-semibold text-obsidian-900 hover:bg-cream-200 transition-all flex items-center justify-center gap-2"
-                >
-                  <span className="font-bold text-red-500 text-sm">G</span>
-                  <span>1-Tap Google Sign-In</span>
-                </button>
-              </div>
-            </div>
 
           </div>
 

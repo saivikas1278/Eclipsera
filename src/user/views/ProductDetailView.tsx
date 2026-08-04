@@ -621,7 +621,12 @@ export const ProductDetailView: React.FC = () => {
               onClick={() => openArtisanProfile(product.artisanName)}
               className="p-3.5 bg-cream-200/60 hover:bg-cream-200 rounded-2xl border border-cream-300 flex items-center gap-3 cursor-pointer transition-all duration-200"
             >
-              <img src={product.artisanAvatar} alt={product.artisanName} className="w-12 h-12 rounded-full object-cover border-2 border-gold-500 shrink-0 animate-fade-in" />
+              <img 
+                src={product.artisanAvatar} 
+                alt={product.artisanName} 
+                loading="lazy"
+                className="w-12 h-12 rounded-full object-cover border-2 border-gold-500 shrink-0 animate-fade-in" 
+              />
               <div className="space-y-0.5">
                 <p className="text-[10px] font-bold text-gold-700 uppercase">Crafted by Master Artisan</p>
                 <h4 className="font-serif font-bold text-xs text-obsidian-900 flex items-center gap-1.5">
@@ -871,7 +876,13 @@ export const ProductDetailView: React.FC = () => {
                       </label>
 
                       {reviewPhotos.map((ph, idx) => (
-                        <img key={idx} src={ph} alt="" className="w-12 h-12 object-cover rounded-xl border border-gold-500/40 shadow-sm" />
+                        <img 
+                          key={idx} 
+                          src={ph} 
+                          alt="" 
+                          loading="lazy"
+                          className="w-12 h-12 object-cover rounded-xl border border-gold-500/40 shadow-sm" 
+                        />
                       ))}
                     </div>
                   </div>
@@ -927,7 +938,13 @@ export const ProductDetailView: React.FC = () => {
                       {(rev.images?.length > 0 || rev.photos?.length > 0) && (
                         <div className="flex gap-2 pt-1">
                           {(rev.images || rev.photos).map((ph: string, idx: number) => (
-                            <img key={idx} src={ph} alt="" className="w-16 h-16 object-cover rounded-xl border border-gold-500/30 shadow-sm" />
+                            <img 
+                              key={idx} 
+                              src={ph} 
+                              alt="" 
+                              loading="lazy"
+                              className="w-16 h-16 object-cover rounded-xl border border-gold-500/30 shadow-sm" 
+                            />
                           ))}
                         </div>
                       )}
@@ -1022,7 +1039,12 @@ export const ProductDetailView: React.FC = () => {
                 className="w-48 sm:w-56 shrink-0 bg-white border border-cream-300 rounded-2xl overflow-hidden p-3.5 space-y-2 hover:-translate-y-1 hover:shadow-luxury cursor-pointer transition-all duration-300 text-obsidian-900"
               >
                 <div className="aspect-square bg-cream-200 rounded-xl overflow-hidden relative">
-                  <img src={rel.images[0]} alt={rel.title} className="w-full h-full object-cover" />
+                  <img 
+                    src={rel.images[0]} 
+                    alt={rel.title} 
+                    loading="lazy"
+                    className="w-full h-full object-cover" 
+                  />
                   {rel.isBestSeller && (
                     <span className="absolute top-2 left-2 px-2 py-0.5 bg-gold-500 text-obsidian-900 text-[8px] font-bold rounded uppercase">Best Seller</span>
                   )}

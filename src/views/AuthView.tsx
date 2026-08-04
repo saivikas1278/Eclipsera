@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { GoogleLogin } from '@react-oauth/google';
-import { ShieldCheck, Lock, Mail, Phone, Eye, EyeOff, ArrowRight, CheckCircle2, Zap } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, Phone, Eye, EyeOff, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export const AuthView: React.FC = () => {
   const { customerLogin, customerGoogleLogin, requestOTP, verifyOTP, setCurrentView } = useStore();
@@ -22,10 +21,7 @@ export const AuthView: React.FC = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
 
-  const handleFillDemo = () => {
-    setEmail('ananya.sharma@example.com');
-    setPassword('patron123');
-  };
+
 
   const handleEmailLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,18 +85,6 @@ export const AuthView: React.FC = () => {
             {loginMethod === 'email' ? (
               <form onSubmit={handleEmailLogin} className="space-y-4">
                 
-                {/* 1-Tap Demo Credentials Helper */}
-                <div className="flex items-center justify-between p-2.5 bg-gold-500/10 border border-gold-500/30 rounded-xl text-xs">
-                  <span className="font-bold text-obsidian-900 text-[11px]">Testing as patron?</span>
-                  <button 
-                    type="button"
-                    onClick={handleFillDemo}
-                    className="text-gold-700 font-bold hover:underline text-[11px] flex items-center gap-1"
-                  >
-                    <Zap className="w-3 h-3 text-gold-600" />
-                    Fill Demo Credentials
-                  </button>
-                </div>
 
                 <div>
                   <label className="text-xs font-bold text-obsidian-900 uppercase block mb-1">Email Address</label>
@@ -229,39 +213,7 @@ export const AuthView: React.FC = () => {
               )
             )}
 
-            {/* Official Google OAuth 2.0 Login */}
-            <div className="pt-3 border-t border-cream-300 space-y-2 text-center flex flex-col items-center">
-              <span className="text-[10px] font-bold text-obsidian-900/40 uppercase tracking-widest block mb-1">Or Sign In With Google</span>
-              <div className="w-full flex justify-center flex-col items-center gap-2">
-                <GoogleLogin
-                  onSuccess={(credentialResponse) => {
-                    if (credentialResponse.credential) {
-                      customerGoogleLogin(credentialResponse.credential);
-                    }
-                  }}
-                  onError={() => {
-                    // Fallback to quick email login if Google popup blocked by browser
-                    customerGoogleLogin({ email: 'patron.google@gmail.com', name: 'Google Patron' });
-                  }}
-                  useOneTap={false}
-                  theme="outline"
-                  shape="pill"
-                  size="large"
-                  text="signin_with"
-                  width="280"
-                />
 
-                {/* Direct Google 1-Tap Fallback Button */}
-                <button
-                  type="button"
-                  onClick={() => customerGoogleLogin({ email: 'patron.google@gmail.com', name: 'Google Patron' })}
-                  className="w-full py-2.5 px-4 border border-cream-300 rounded-xl text-xs font-semibold text-obsidian-900 hover:bg-cream-200 transition-all flex items-center justify-center gap-2"
-                >
-                  <span className="font-bold text-red-500 text-sm">G</span>
-                  <span>1-Tap Google Sign-In</span>
-                </button>
-              </div>
-            </div>
 
           </div>
 

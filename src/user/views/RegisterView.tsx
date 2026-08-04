@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
-import { GoogleLogin } from '@react-oauth/google';
 import { ShieldCheck, Lock, Mail, Phone, ArrowRight, User, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { validateEmail, validatePhone, validatePassword, validateConfirmPassword, validateFullName, getPasswordStrength } from '../../shared/utils/authValidation';
 
@@ -58,7 +57,11 @@ export const RegisterView: React.FC = () => {
       return;
     }
 
-    if (nErr || eErr || pErr || passErr || cErr) return;
+    const firstErr = nErr || eErr || pErr || passErr || cErr;
+    if (firstErr) {
+      showToast(firstErr, "warning");
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -78,7 +81,7 @@ export const RegisterView: React.FC = () => {
         setCurrentView('home');
       }
     } catch (err: any) {
-      showToast("Unable to connect to the server. Please check your internet connection and try again.", "error");
+      showToast("Unable to connect to the server. Please try again.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -265,38 +268,6 @@ export const RegisterView: React.FC = () => {
               )}
             </button>
 
-            {/* Official Google OAuth 2.0 Registration */}
-            <div className="pt-3 border-t border-cream-300 space-y-2 text-center flex flex-col items-center">
-              <span className="text-[10px] font-bold text-obsidian-900/40 uppercase tracking-widest block mb-1">Or Quick Register With Google</span>
-              <div className="w-full flex justify-center flex-col items-center gap-2">
-                <GoogleLogin
-                  onSuccess={(credentialResponse) => {
-                    if (credentialResponse.credential) {
-                      customerGoogleLogin(credentialResponse.credential);
-                    }
-                  }}
-                  onError={() => {
-                    customerGoogleLogin({ email: 'patron.google@gmail.com', name: 'Google Patron' });
-                  }}
-                  useOneTap={false}
-                  theme="outline"
-                  shape="pill"
-                  size="large"
-                  text="signup_with"
-                  width="280"
-                />
-
-                {/* Direct Google 1-Tap Fallback Button */}
-                <button
-                  type="button"
-                  onClick={() => customerGoogleLogin({ email: 'patron.google@gmail.com', name: 'Google Patron' })}
-                  className="w-full py-2.5 px-4 border border-cream-300 rounded-xl text-xs font-semibold text-obsidian-900 hover:bg-cream-200 transition-all flex items-center justify-center gap-2"
-                >
-                  <span className="font-bold text-red-500 text-sm">G</span>
-                  <span>1-Tap Google Register</span>
-                </button>
-              </div>
-            </div>
           </form>
 
           {/* Dedicated Link to Sign In Page */}

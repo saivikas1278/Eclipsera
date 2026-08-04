@@ -185,7 +185,12 @@ export const CategoryView: React.FC = () => {
                   onClick={() => openProductDetail(product.slug)}
                   className="w-32 h-36 bg-cream-200 rounded-xl overflow-hidden cursor-pointer shrink-0"
                 >
-                  <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img 
+                    src={product.images[0]} 
+                    alt={product.title} 
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                  />
                 </div>
 
                 <div className="flex-1 flex flex-col justify-between min-w-0">

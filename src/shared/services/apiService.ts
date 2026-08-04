@@ -114,6 +114,19 @@ export async function saveCartToAPI(items: any[]) {
   }
 }
 
+export async function clearCartAPI() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/cart`, {
+      method: 'DELETE',
+      headers: getUserHeaders()
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function fetchWishlistFromAPI() {
   try {
     const res = await fetch(`${API_BASE_URL}/wishlist`, {
@@ -201,6 +214,31 @@ export async function createProductInAPI(productData: any) {
       method: 'POST',
       headers: getAdminHeaders(),
       body: JSON.stringify(productData)
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function updateProductInAPI(productId: string, productData: any) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
+      method: 'PUT',
+      headers: getAdminHeaders(),
+      body: JSON.stringify(productData)
+    });
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function deleteProductInAPI(productId: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
+      method: 'DELETE',
+      headers: getAdminHeaders()
     });
     return await res.json();
   } catch (e) {

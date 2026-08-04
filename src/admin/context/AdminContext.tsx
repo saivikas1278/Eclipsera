@@ -10,6 +10,8 @@ import {
   deleteArtisanInAPI,
   updateOrderStatusInAPI,
   createProductInAPI,
+  updateProductInAPI,
+  deleteProductInAPI,
   updateStockInAPI,
   createCouponInAPI
 } from '../../shared/services/apiService';
@@ -29,6 +31,7 @@ interface AdminContextType {
   adminLogin: (password: string) => Promise<boolean> | boolean;
   adminLogout: () => void;
   addProduct: (productData: Partial<Product>) => void;
+  updateProduct: (id: string, productData: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
   updateStock: (productId: string, variantId: string, newStock: number) => void;
   addCoupon: (coupon: Coupon) => void;
@@ -159,9 +162,30 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const deleteProduct = (id: string) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
-    showToast('Product archived.', 'info');
+  const updateProduct = async (id: string, productData: Partial<Product>) => {
+    try {
+      const res = await updateProductInAPI(id, productData);
+      if (res && res.success && res.product) {
+        setProducts(prev => prev.map(p => p.id === id ? res.product : p));
+        showToast(`Product "${res.product.title}" updated successfully.`, 'success');
+      } else {
+        setProducts(prev => prev.map(p => p.id === id ? { ...p, ...productData } as Product : p));
+        showToast(`Product updated (Local).`, 'success');
+      }
+    } catch (e) {
+      showToast('Error updating product.', 'error');
+    }
+  };
+
+  const deleteProduct = async (id: string) => {
+    try {
+      await deleteProductInAPI(id);
+      setProducts(prev => prev.filter(p => p.id !== id));
+      showToast('Product archived successfully.', 'info');
+    } catch (e) {
+      setProducts(prev => prev.filter(p => p.id !== id));
+      showToast('Product archived (Local).', 'info');
+    }
   };
 
   const updateStock = async (productId: string, variantId: string, newStock: number) => {
@@ -260,6 +284,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       adminLogin,
       adminLogout,
       addProduct,
+      updateProduct,
       deleteProduct,
       updateStock,
       addCoupon,
