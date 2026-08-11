@@ -2,6 +2,7 @@ import { useState, useContext } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { StoreContext } from '../context/StoreContext';
+import { GoogleLogin } from '@react-oauth/google';
 
 const RegisterScreen = () => {
   const [name, setName] = useState('');
@@ -51,6 +52,33 @@ const RegisterScreen = () => {
       );
       setLoading(false);
     }
+  };
+
+  const googleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const config = { headers: { 'Content-Type': 'application/json' } };
+      const { data } = await axios.post(
+        '/api/users/google',
+        { credential: credentialResponse.credential },
+        config
+      );
+      setUserInfo(data);
+      localStorage.setItem('userInfo', JSON.stringify(data));
+      navigate(redirect);
+    } catch (err) {
+      setError(
+        err.response && err.response.data.message
+          ? err.response.data.message
+          : err.message
+      );
+      setLoading(false);
+    }
+  };
+
+  const googleError = () => {
+    setError('Google Sign In was unsuccessful. Try again later.');
   };
 
   return (
@@ -121,6 +149,22 @@ const RegisterScreen = () => {
             {loading ? 'Processing...' : 'Register'}
           </button>
         </form>
+
+        <div className="my-6 flex items-center justify-center">
+          <div className="w-full border-t border-accent-gold/20"></div>
+          <span className="px-4 text-text-primary/60 text-sm whitespace-nowrap">or continue with</span>
+          <div className="w-full border-t border-accent-gold/20"></div>
+        </div>
+
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={googleSuccess}
+            onError={googleError}
+            useOneTap
+            shape="rectangular"
+            theme="filled_black"
+          />
+        </div>
 
         <div className="mt-8 text-center text-text-primary/70">
           Already have an account?{' '}

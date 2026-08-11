@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcryptjs');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/userModel');
 const generateToken = require('../utils/generateToken');
 
@@ -353,9 +354,72 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
+/**
+ * @desc    Auth user with Google OAuth (Login / Register)
+ * @route   POST /api/users/google
+ * @access  Public
+ */
+const googleAuth = asyncHandler(async (req, res) => {
+  const { credential } = req.body;
+  
+  if (!credential) {
+    res.status(400);
+    throw new Error('No Google credential provided');
+  }
+
+  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  
+  // Verify the ID token
+  const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID, 
+  });
+  const payload = ticket.getPayload();
+  
+  if (!payload || !payload.email) {
+    res.status(400);
+    throw new Error('Invalid Google Token');
+  }
+
+  const { email, name, sub: googleId } = payload;
+
+  // Check if user exists
+  let user = await User.findOne({ email });
+
+  if (user) {
+    // Merge accounts
+    if (!user.googleId) {
+      user.googleId = googleId;
+      await user.save();
+    }
+  } else {
+    // Create new user with random strong password
+    const crypto = require('crypto');
+    const randomPassword = crypto.randomBytes(32).toString('hex');
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
+    user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      googleId,
+    });
+  }
+
+  res.status(200).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    isAdmin: user.isAdmin,
+    token: generateToken(user._id),
+  });
+});
+
 module.exports = {
   registerUser,
   authUser,
+  googleAuth,
   getUserProfile,
   updateUserProfile,
   getUsers,

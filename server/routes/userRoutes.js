@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   registerUser,
   authUser,
+  googleAuth,
   getUserProfile,
   updateUserProfile,
   getUsers,
@@ -23,6 +24,10 @@ router.route('/').post(registerUser).get(protect, admin, getUsers);
 // 2. Route for user login
 // Path: /api/users/login
 router.post('/login', authUser);
+
+// 2.1 Route for Google OAuth login/register
+// Path: /api/users/google
+router.post('/google', googleAuth);
 
 // 3. Route for user profile
 // Path: /api/users/profile
