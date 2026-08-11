@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "sans-serif";
+  --font-serif: "Playfair Display", "serif";
+  
+  /* Primary Accent */
+  --color-accent-gold: #D4AF37;
+  --color-accent-gold-hover: #C5A059;
+  
+  /* Background Base */
+  --color-bg-base: #121212;
+  --color-bg-secondary: #1A1A1A;
+  
+  /* Card & Surface */
+  --color-surface: #242424;
+  --color-elevated: #2D2D2D;
+  
+  /* Text */
+  --color-text-primary: #F5F5F0;
+  --color-text-secondary: #B8A99A;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    color: var(--color-text-primary);
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-in-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
