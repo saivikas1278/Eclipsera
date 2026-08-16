@@ -40,20 +40,13 @@ const MobileBottomNav = () => {
           <span className="text-[10px] font-bold">Wishlist</span>
         </Link>
 
-        <button 
-          onClick={() => setIsCartDrawerOpen(true)}
-          className="flex flex-col items-center justify-center w-full h-full min-w-[44px] min-h-[44px] text-text-secondary hover:text-text-primary relative"
+        <Link 
+          to="/search" 
+          className={`flex flex-col items-center justify-center w-full h-full min-w-[44px] min-h-[44px] ${isActive('/search') ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'}`}
         >
-          <div className="relative">
-            <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-2 bg-accent-gold text-bg-base text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                {cartCount}
-              </span>
-            )}
-          </div>
-          <span className="text-[10px] font-bold">Cart</span>
-        </button>
+          <svg className="w-6 h-6 mb-1" fill={isActive('/search') ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+          <span className="text-[10px] font-bold">Shop</span>
+        </Link>
 
         <Link 
           to={userInfo ? "/account" : "/login"} 

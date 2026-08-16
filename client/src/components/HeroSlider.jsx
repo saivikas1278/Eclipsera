@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 
-const slides = [
+import axios from 'axios';
+
+const defaultSlides = [
   {
-    id: 1,
+    _id: 'default1',
     image: '/images/hero_banner.png',
     heading: 'Luxurious Handmade Goods',
     subheading: 'Curated with precision, crafted with passion. Discover the art of elegant living.',
@@ -12,7 +14,7 @@ const slides = [
     link: '/search'
   },
   {
-    id: 2,
+    _id: 'default2',
     image: '/images/category_home.png',
     heading: 'Elevate Your Space',
     subheading: 'Transform your home with our exclusive collection of artisanal decor and accents.',
@@ -20,7 +22,7 @@ const slides = [
     link: '/search?category=Home'
   },
   {
-    id: 3,
+    _id: 'default3',
     image: '/images/category_candles.png',
     heading: 'The Art of Atmosphere',
     subheading: 'Hand-poured signature scents designed to create moments of pure tranquility.',
@@ -33,16 +35,39 @@ const HeroSlider = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
+  const [slides, setSlides] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch dynamic storefront config
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const { data } = await axios.get('/api/config/storefront');
+        if (data && data.heroSlides && data.heroSlides.length > 0) {
+          setSlides(data.heroSlides);
+        } else {
+          setSlides(defaultSlides);
+        }
+      } catch (error) {
+        console.error('Failed to fetch storefront config', error);
+        setSlides(defaultSlides);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchConfig();
+  }, []);
+
   // Auto-play logic
   useEffect(() => {
     let interval;
-    if (!isHovered) {
+    if (!isHovered && slides.length > 0) {
       interval = setInterval(() => {
         setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
       }, 5000);
     }
     return () => clearInterval(interval);
-  }, [isHovered]);
+  }, [isHovered, slides.length]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
@@ -56,6 +81,15 @@ const HeroSlider = () => {
     setCurrentSlide(index);
   };
 
+  if (loading) {
+    return (
+      <div className="w-full h-[60vh] md:h-[80vh] min-h-[60vh] md:min-h-[80vh] mb-16 bg-zinc-900 animate-pulse flex flex-col items-center justify-center">
+        <div className="w-16 h-16 border-4 border-accent-gold/20 border-t-accent-gold rounded-full animate-spin mb-4"></div>
+        <div className="text-accent-gold font-serif tracking-widest text-sm uppercase">Loading Storefront</div>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="relative w-full h-[60vh] md:h-[80vh] min-h-[60vh] md:min-h-[80vh] overflow-hidden group mb-16 flex flex-col items-center justify-center text-center"
@@ -65,7 +99,7 @@ const HeroSlider = () => {
       {/* Slides */}
       {slides.map((slide, index) => (
         <div 
-          key={slide.id}
+          key={slide._id || index}
           className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
             index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
           }`}
@@ -104,7 +138,7 @@ const HeroSlider = () => {
                   index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
                 }`}
               >
-                Discover Collection
+                {slide.cta || 'Discover Collection'}
               </Link>
             </div>
           </div>

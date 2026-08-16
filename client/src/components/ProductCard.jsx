@@ -68,8 +68,20 @@ const ProductCard = ({ product }) => {
         </Link>
         
         <div className="flex items-center gap-1 mb-3 text-accent-gold text-xs sm:text-sm">
-          <span>★</span>
-          <span className="text-text-secondary font-medium">{product.rating} <span className="text-text-primary/40 font-light ml-1 text-[10px] sm:text-xs">({product.numReviews})</span></span>
+          <div className="flex">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <svg 
+                key={star}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${star <= Math.round(product.rating) ? 'text-accent-gold fill-accent-gold' : 'text-accent-gold/30'}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            ))}
+          </div>
+          <span className="text-text-secondary font-medium ml-1">{product.rating.toFixed(1)} <span className="text-text-primary/40 font-light text-[10px] sm:text-xs">({product.numReviews})</span></span>
         </div>
 
         <div className="flex items-center justify-between mt-auto pt-3 sm:pt-4 border-t border-white/5">

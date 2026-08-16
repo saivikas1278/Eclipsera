@@ -11,7 +11,7 @@ const SocialProofStrip = () => {
     <section className="mb-0 overflow-hidden">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-serif text-text-primary">Follow Our Journey</h2>
-        <a href="#" className="text-accent-gold hover:text-accent-gold-hover font-sans text-sm tracking-widest uppercase">@EclipseraPremium</a>
+        <a href="https://www.instagram.com/eclipsera_premium?igsh=MTVhMmZqdzI0dmZqZw==&igsi=MTVhMmZqdzI0dmZqZw==" target="_blank" rel="noopener noreferrer" className="text-accent-gold hover:text-accent-gold-hover font-sans text-sm tracking-widest uppercase">@EclipseraPremium</a>
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-1">

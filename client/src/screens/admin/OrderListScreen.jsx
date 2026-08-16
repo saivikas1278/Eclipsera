@@ -38,6 +38,7 @@ const OrderListScreen = () => {
     "The provided payment screenshot indicates the transaction is pending or failed. We have not received the funds.",
     "We apologize, but one or more items in your order are currently out of stock due to an inventory mismatch.",
     "We are currently unable to deliver to the shipping address or PIN code provided.",
+    "Cash on Delivery is currently unavailable for this item or location.",
     "The customization request provided cannot be fulfilled. Please contact support for alternative options.",
     "Other (Custom Reason)"
   ];
@@ -469,7 +470,12 @@ const OrderListScreen = () => {
           <div className="bg-surface border border-accent-gold/20 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col relative">
             
             <div className="sticky top-0 bg-surface/95 backdrop-blur z-10 px-6 py-4 border-b border-accent-gold/20 flex justify-between items-center">
-              <h2 className="text-2xl font-serif font-bold text-text-primary">Order #{selectedOrder._id}</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-serif font-bold text-text-primary">Order #{selectedOrder._id}</h2>
+                {selectedOrder.paymentMethod === 'Cash On Delivery' && (
+                  <span className="bg-red-900/30 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">COD</span>
+                )}
+              </div>
               <button onClick={closeModal} className="text-text-secondary hover:text-accent-gold text-2xl font-bold">&times;</button>
             </div>
 
@@ -517,6 +523,9 @@ const OrderListScreen = () => {
                     </div>
                     <p className="text-sm text-text-secondary mt-2">
                       Payment Status: {selectedOrder.isPaid ? `Paid on ${selectedOrder.paidAt.substring(0,10)}` : 'Unpaid'}
+                    </p>
+                    <p className="text-sm text-text-secondary mt-1">
+                      Payment Method: <span className="font-bold text-accent-gold">{selectedOrder.paymentMethod || 'N/A'}</span>
                     </p>
                     {selectedOrder.paymentMethod === 'PHONEPE' && (
                       <div className="mt-4 pt-4 border-t border-walnut/10">
@@ -600,6 +609,61 @@ const OrderListScreen = () => {
                         )}
                         {selectedOrder.isCancelled && (
                           <p className="text-red-500 font-bold text-sm bg-red-900/20 p-2 rounded inline-block mt-2">Order Cancelled: {selectedOrder.cancelReason}</p>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Cash On Delivery Decline Block */}
+                    {selectedOrder.paymentMethod === 'Cash On Delivery' && !selectedOrder.isCancelled && !selectedOrder.isDelivered && (
+                      <div className="w-full mt-4 bg-bg-base p-4 rounded-xl border border-red-500/30">
+                        <p className="font-bold text-red-400 mb-3">Cash On Delivery Order</p>
+                        {!showDeclineOptions ? (
+                          <button 
+                            onClick={(e) => { e.preventDefault(); setShowDeclineOptions(true); }}
+                            disabled={updateLoading}
+                            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm"
+                          >
+                            Decline COD Order
+                          </button>
+                        ) : (
+                          <div className="flex flex-col gap-3 w-full animate-fade-in">
+                            <label className="text-sm font-bold text-red-500">Select Decline Reason:</label>
+                            <select 
+                              value={declineReason}
+                              onChange={(e) => setDeclineReason(e.target.value)}
+                              className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 focus:outline-none focus:border-accent-gold"
+                            >
+                              {predefinedReasons.map((r, idx) => (
+                                <option key={idx} value={r}>{r}</option>
+                              ))}
+                            </select>
+                            
+                            {declineReason === 'Other (Custom Reason)' && (
+                              <textarea 
+                                value={customReason}
+                                onChange={(e) => setCustomReason(e.target.value)}
+                                placeholder="Type your exact reason here..."
+                                className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 h-20 resize-none focus:outline-none focus:border-accent-gold"
+                              />
+                            )}
+                            
+                            <div className="flex gap-2 w-full mt-2">
+                              <button 
+                                onClick={(e) => { e.preventDefault(); setShowDeclineOptions(false); }}
+                                disabled={updateLoading}
+                                className="w-1/3 bg-surface hover:bg-surface/80 border border-walnut/20 text-text-primary font-bold py-2 rounded-lg transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button 
+                                onClick={(e) => { e.preventDefault(); handleDeclineOrder(); }}
+                                disabled={updateLoading}
+                                className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition-colors shadow-md"
+                              >
+                                Confirm Decline
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
                     )}

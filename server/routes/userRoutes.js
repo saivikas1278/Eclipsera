@@ -14,6 +14,8 @@ const {
   updateAddress,
   deleteAddress,
   setDefaultAddress,
+  forgotPassword,
+  resetPassword,
 } = require('../controllers/userController');
 const { protect, admin } = require('../middleware/authMiddleware');
 const { strictAuthLimiter } = require('../middleware/rateLimiter');
@@ -29,6 +31,11 @@ router.post('/login', strictAuthLimiter, authUser);
 // 2.1 Route for Google OAuth login/register
 // Path: /api/users/google
 router.post('/google', strictAuthLimiter, googleAuth);
+
+// 2.2 Routes for Password Reset
+// Path: /api/users/forgot-password and /api/users/reset-password/:token
+router.post('/forgot-password', strictAuthLimiter, forgotPassword);
+router.post('/reset-password/:token', strictAuthLimiter, resetPassword);
 
 // 3. Route for user profile
 // Path: /api/users/profile

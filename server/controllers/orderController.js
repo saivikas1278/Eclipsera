@@ -217,6 +217,16 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
     };
 
     const updatedOrder = await order.save();
+
+    // Send admin alert asynchronously
+    const { sendEmailJS } = require('../services/emailService');
+    sendEmailJS({
+      to_email: 'admin@eclipsera.com', // Replace with actual admin email if needed
+      to_name: 'Admin',
+      subject: `New Order Received! #${updatedOrder._id}`,
+      message: `You have received a new order from ${updatedOrder.paymentResult.email_address} for a total of INR ${updatedOrder.totalPrice}. Please fulfill it as soon as possible.`,
+    });
+
     res.json(updatedOrder);
   } else {
     res.status(404);
@@ -276,6 +286,22 @@ const updateOrderFulfillment = asyncHandler(async (req, res) => {
       message: notificationMsg,
       type: 'order'
     });
+
+    // Send email to customer asynchronously
+    const { sendEmailJS } = require('../services/emailService');
+    const customerEmail = order.user?.email || order.shippingAddress?.email;
+    const customerName = order.user?.name || order.shippingAddress?.name || 'Customer';
+    
+    if (customerEmail) {
+      sendEmailJS({
+        to_email: customerEmail,
+        email: customerEmail,
+        to_name: customerName,
+        name: customerName,
+        subject: `Order Status Update - Eclipsera #${order._id}`,
+        message: notificationMsg,
+      });
+    }
 
     res.json(updatedOrder);
   } else {
@@ -452,6 +478,28 @@ const cancelOrder = asyncHandler(async (req, res) => {
     }
 
     await recordAuditLog(`Order ${order._id} cancelled. Reason: ${order.cancelReason}`, 'ORDER');
+
+    // Send email to customer asynchronously
+    const { sendEmailJS } = require('../services/emailService');
+    const customerEmail = order.user?.email || order.shippingAddress?.email;
+    const customerName = order.user?.name || order.shippingAddress?.name || 'Customer';
+    
+    if (customerEmail) {
+      let emailMessage = `Your order #${order._id} has been cancelled. Reason: ${order.cancelReason}`;
+      
+      if (order.paymentMethod === 'Cash On Delivery') {
+        emailMessage = `We regret to inform you that we are unable to fulfill your Cash on Delivery order (#${order._id}) at this time. Your order has been declined. Reason: ${order.cancelReason}. If you wish to place the order again using a prepaid method, please visit our website.`;
+      }
+      
+      sendEmailJS({
+        to_email: customerEmail,
+        email: customerEmail,
+        to_name: customerName,
+        name: customerName,
+        subject: `Order Cancelled - Eclipsera #${order._id}`,
+        message: emailMessage,
+      });
+    }
 
     res.json(updatedOrder);
   } else {

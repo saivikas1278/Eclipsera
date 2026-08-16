@@ -16,6 +16,8 @@ const adminRoutes = require('./routes/adminRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const cartRoutes = require('./routes/cartRoutes');
+const configRoutes = require('./routes/configRoutes');
+const sitemapRoutes = require('./routes/sitemapRoutes');
 const { globalLimiter } = require('./middleware/rateLimiter');
 
 // 4. Connect to MongoDB
@@ -47,6 +49,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/config', configRoutes);
+app.use('/', sitemapRoutes);
 
 // Initialize Background Jobs
 require('./jobs/abandonedCart');

@@ -1,8 +1,10 @@
 const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/userModel');
 const generateToken = require('../utils/generateToken');
+const { sendEmailJS } = require('../services/emailService');
 
 /**
  * @desc    Register a new user
@@ -35,6 +37,16 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // 4. If the user was successfully created, return their data and a JWT
   if (user) {
+    // Send Welcome Email asynchronously
+    sendEmailJS({
+      to_email: user.email,
+      email: user.email,
+      to_name: user.name,
+      name: user.name,
+      subject: 'Welcome to Eclipsera Premium!',
+      message: 'Thank you for joining our exclusive community. Explore our latest handcrafted collections today.',
+    });
+
     res.status(201).json({
       _id: user._id,
       name: user.name,
@@ -405,6 +417,16 @@ const googleAuth = asyncHandler(async (req, res) => {
       password: hashedPassword,
       googleId,
     });
+
+    // Send Welcome Email asynchronously
+    sendEmailJS({
+      to_email: user.email,
+      email: user.email,
+      to_name: user.name,
+      name: user.name,
+      subject: 'Welcome to Eclipsera Premium!',
+      message: 'Thank you for joining our exclusive community via Google. Explore our latest handcrafted collections today.',
+    });
   }
 
   res.status(200).json({
@@ -414,6 +436,86 @@ const googleAuth = asyncHandler(async (req, res) => {
     isAdmin: user.isAdmin,
     token: generateToken(user._id),
   });
+});
+
+/**
+ * @desc    Forgot password
+ * @route   POST /api/users/forgot-password
+ * @access  Public
+ */
+const forgotPassword = asyncHandler(async (req, res) => {
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    // Return 200 even if user not found to prevent email enumeration
+    return res.status(200).json({ message: 'If an account with that email exists, we sent a password reset link.' });
+  }
+
+  // Get reset token
+  const resetToken = user.getResetPasswordToken();
+  await user.save({ validateBeforeSave: false });
+
+  // Create reset URL (Using origin for environment flexibility)
+  const origin = req.headers.origin || 'http://localhost:5173';
+  const resetUrl = `${origin}/reset-password/${resetToken}`;
+
+  const message = `You are receiving this email because you (or someone else) requested a password reset. \n\nPlease click on the following link, or paste this into your browser to complete the process:\n\n${resetUrl}\n\nIf you did not request this, please ignore this email and your password will remain unchanged.`;
+
+  try {
+    await sendEmailJS({
+      to_email: user.email,
+      email: user.email,
+      to_name: user.firstName || user.name,
+      name: user.firstName || user.name,
+      subject: 'Password Reset Request',
+      message: message,
+    });
+
+    res.status(200).json({ message: 'If an account with that email exists, we sent a password reset link.' });
+  } catch (err) {
+    console.error('Password reset email error:', err);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    res.status(500);
+    throw new Error('Email could not be sent');
+  }
+});
+
+/**
+ * @desc    Reset password
+ * @route   POST /api/users/reset-password/:token
+ * @access  Public
+ */
+const resetPassword = asyncHandler(async (req, res) => {
+  // Get hashed token
+  const resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    res.status(400);
+    throw new Error('Invalid or expired token');
+  }
+
+  // Set new password
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(req.body.password, salt);
+
+  // Clear reset token fields
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+
+  res.status(200).json({ message: 'Password successfully reset' });
 });
 
 module.exports = {
@@ -430,4 +532,6 @@ module.exports = {
   updateAddress,
   deleteAddress,
   setDefaultAddress,
+  forgotPassword,
+  resetPassword,
 };

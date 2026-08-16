@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const Product = require('../models/productModel');
+const Order = require('../models/orderModel');
 const { recordAuditLog } = require('../services/auditService');
 const { clearCache } = require('../services/cacheService');
 
@@ -152,6 +153,18 @@ const createProductReview = asyncHandler(async (req, res) => {
     if (alreadyReviewed) {
       res.status(400);
       throw new Error('Product already reviewed');
+    }
+
+    // Verify that the user has actually purchased and paid for this product
+    const hasPurchased = await Order.findOne({
+      user: req.user._id,
+      'orderItems.product': product._id,
+      isPaid: true
+    });
+
+    if (!hasPurchased) {
+      res.status(403); // 403 Forbidden
+      throw new Error('You must purchase and pay for this product before leaving a review');
     }
 
     const review = {

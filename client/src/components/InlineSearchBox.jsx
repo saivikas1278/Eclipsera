@@ -47,7 +47,7 @@ const InlineSearchBox = () => {
     e.preventDefault();
     if (keyword.trim()) {
       setShowDropdown(false);
-      navigate(`/?keyword=${keyword}`);
+      navigate(`/search?search=${keyword}`);
     }
   };
 

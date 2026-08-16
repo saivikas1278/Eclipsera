@@ -97,6 +97,11 @@ const LoginScreen = () => {
               {...register('password')}
             />
             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+            <div className="text-right mt-2">
+              <Link to="/forgot-password" className="text-sm text-accent-gold font-bold hover:underline transition-all">
+                Forgot Password?
+              </Link>
+            </div>
           </div>
 
           <button

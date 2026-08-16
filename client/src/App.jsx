@@ -15,6 +15,8 @@ const HomeScreen = lazy(() => import('./screens/HomeScreen'));
 const ProductScreen = lazy(() => import('./screens/ProductScreen'));
 const CartScreen = lazy(() => import('./screens/CartScreen'));
 const LoginScreen = lazy(() => import('./screens/LoginScreen'));
+const ForgotPasswordScreen = lazy(() => import('./screens/ForgotPasswordScreen'));
+const ResetPasswordScreen = lazy(() => import('./screens/ResetPasswordScreen'));
 const RegisterScreen = lazy(() => import('./screens/RegisterScreen'));
 const ShippingScreen = lazy(() => import('./screens/ShippingScreen'));
 const PlaceOrderScreen = lazy(() => import('./screens/PlaceOrderScreen'));
@@ -25,9 +27,15 @@ const ProductListScreen = lazy(() => import('./screens/admin/ProductListScreen')
 const ProductEditScreen = lazy(() => import('./screens/admin/ProductEditScreen'));
 const RefundQueueScreen = lazy(() => import('./screens/admin/RefundQueueScreen'));
 const DashboardScreen = lazy(() => import('./screens/admin/DashboardScreen'));
+const AdminStorefrontScreen = lazy(() => import('./screens/admin/AdminStorefrontScreen'));
 const UserListScreen = lazy(() => import('./screens/admin/UserListScreen'));
 const UserEditScreen = lazy(() => import('./screens/admin/UserEditScreen'));
 const AccountScreen = lazy(() => import('./screens/AccountScreen'));
+const SearchScreen = lazy(() => import('./screens/SearchScreen'));
+const FAQScreen = lazy(() => import('./screens/FAQScreen'));
+const ShippingPolicyScreen = lazy(() => import('./screens/ShippingPolicyScreen'));
+const CareGuideScreen = lazy(() => import('./screens/CareGuideScreen'));
+const ContactScreen = lazy(() => import('./screens/ContactScreen'));
 const NotFoundScreen = lazy(() => import('./screens/NotFoundScreen'));
 
 function App() {
@@ -95,9 +103,18 @@ function App() {
           <Routes>
             {/* --- PUBLIC ROUTES --- */}
             <Route path="/" element={<HomeScreen />} />
+            <Route path="/search" element={<SearchScreen />} />
             <Route path="/product/:id" element={<ProductScreen />} />
             <Route path="/cart" element={<CartScreen />} />
+            
+            {/* --- STATIC PAGES --- */}
+            <Route path="/faq" element={<FAQScreen />} />
+            <Route path="/shipping-policy" element={<ShippingPolicyScreen />} />
+            <Route path="/care-guide" element={<CareGuideScreen />} />
+            <Route path="/contact" element={<ContactScreen />} />
             <Route path="/login" element={<LoginScreen />} />
+            <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordScreen />} />
             <Route path="/register" element={<RegisterScreen />} />
             <Route path="/wishlist" element={<WishlistScreen />} />
 
@@ -113,6 +130,7 @@ function App() {
             <Route path="" element={<AdminRoute />}>
               <Route path="/admin" element={<AdminLayout />}>
                 <Route path="dashboard" element={<DashboardScreen />} />
+                <Route path="storefront" element={<AdminStorefrontScreen />} />
                 <Route path="userlist" element={<UserListScreen />} />
                 <Route path="user/:id/edit" element={<UserEditScreen />} />
                 <Route path="orderlist" element={<OrderListScreen />} />
