@@ -2,9 +2,9 @@ import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { StoreContext } from '../context/StoreContext';
-import ProfileSidebar from '../components/ProfileSidebar';
+import ProfileSidebar from '../components/ProfileSidebar'; // Can be removed later
 
-const TrackOrderScreen = () => {
+const TrackOrderScreen = ({ setActiveTab }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -81,19 +81,12 @@ const TrackOrderScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg-base py-8 px-4 sm:px-6 lg:px-8 font-sans animate-fade-in relative">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6">
-        
-        {/* Left Sidebar */}
-        <ProfileSidebar />
-
-        {/* Main Content Area */}
-        <div className="flex-1">
-          <div className="bg-surface rounded-xl shadow-md border border-accent-gold/10 p-6 md:p-8">
-            <Link to="/account" className="md:hidden flex items-center gap-2 text-accent-gold font-semibold mb-6 hover:text-accent-gold-hover transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
-              Back to Profile
-            </Link>
+    <div className="animate-fade-in relative">
+      <div className="bg-surface rounded-2xl p-6 md:p-8 shadow-sm border border-accent-gold/20">
+        <button onClick={() => setActiveTab('overview')} className="md:hidden flex items-center gap-2 text-accent-gold font-semibold mb-6 hover:text-accent-gold-hover transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+          Back to Overview
+        </button>
             <h1 className="text-2xl font-bold text-text-primary mb-6 border-b border-accent-gold/10 pb-4">Track My Orders</h1>
 
             {loading ? (
@@ -132,7 +125,7 @@ const TrackOrderScreen = () => {
                           order.fulfillmentStatus === 'CANCELLED' ? 'bg-red-900/50 text-red-400' :
                           'bg-accent-gold/20 text-accent-gold'
                         }`}>
-                          {order.fulfillmentStatus || 'PENDING'}
+                          {order.fulfillmentStatus === 'CANCELLED' ? 'DECLINED' : (order.fulfillmentStatus || 'PENDING')}
                         </span>
                       </div>
                     </div>
@@ -171,8 +164,6 @@ const TrackOrderScreen = () => {
               </div>
             )}
           </div>
-        </div>
-      </div>
 
       {/* Tracking Modal */}
       {isModalOpen && selectedOrder && (
@@ -197,146 +188,169 @@ const TrackOrderScreen = () => {
                 </div>
                 <div>
                   <p className="text-sm text-text-secondary font-medium">Expected Arrival</p>
-                  <p className="text-lg font-bold text-accent-gold">
-                    {selectedOrder.isDelivered ? `Delivered on ${selectedOrder.deliveredAt.substring(0, 10)}` : 'Arriving Soon'}
+                  <p className={`text-lg font-bold ${selectedOrder.isCancelled ? 'text-red-500' : 'text-accent-gold'}`}>
+                    {selectedOrder.isCancelled ? 'Order Declined' : selectedOrder.isDelivered ? `Delivered on ${selectedOrder.deliveredAt.substring(0, 10)}` : 'Arriving Soon'}
                   </p>
                 </div>
               </div>
 
-              {/* Progress Timeline */}
-              <div className="mb-12 relative">
-                <div className="absolute top-1/2 left-0 w-full h-1 bg-accent-gold/20 -translate-y-1/2 rounded-full hidden sm:block"></div>
-                
-                {/* Dynamically fill the progress bar */}
-                <div 
-                  className="absolute top-1/2 left-0 h-1 bg-accent-gold -translate-y-1/2 rounded-full transition-all duration-1000 hidden sm:block"
-                  style={{ width: `${(getStatusStage(selectedOrder.fulfillmentStatus || 'PENDING') - 1) * 33.33}%` }}
-                ></div>
-
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-8 sm:gap-0">
-                  
-                  {/* Stage 1 */}
-                  <div className="flex sm:flex-col items-center gap-4 sm:gap-2 relative w-full sm:w-1/4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md z-10 shrink-0 transition-colors ${
-                      getStatusStage(selectedOrder.fulfillmentStatus) >= 1 ? 'bg-accent-gold text-bg-base ring-4 ring-bg-base' : 'bg-surface border-2 border-accent-gold/30 text-text-secondary'
-                    }`}>
-                      1
-                    </div>
-                    <div className="text-left sm:text-center">
-                      <p className={`font-bold ${getStatusStage(selectedOrder.fulfillmentStatus) >= 1 ? 'text-text-primary' : 'text-text-secondary'}`}>Order Placed</p>
-                      <p className="text-xs text-text-secondary mt-1 hidden sm:block">We have received your order</p>
-                    </div>
-                    {/* Mobile connecting line */}
-                    <div className="absolute top-10 left-5 w-[2px] h-[calc(100%+32px)] bg-accent-gold/20 sm:hidden"></div>
-                  </div>
-
-                  {/* Stage 2 */}
-                  <div className="flex sm:flex-col items-center gap-4 sm:gap-2 relative w-full sm:w-1/4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md z-10 shrink-0 transition-colors ${
-                      getStatusStage(selectedOrder.fulfillmentStatus) >= 2 ? 'bg-accent-gold text-bg-base ring-4 ring-bg-base' : 'bg-surface border-2 border-accent-gold/30 text-text-secondary'
-                    }`}>
-                      2
-                    </div>
-                    <div className="text-left sm:text-center">
-                      <p className={`font-bold ${getStatusStage(selectedOrder.fulfillmentStatus) >= 2 ? 'text-text-primary' : 'text-text-secondary'}`}>Processing</p>
-                      <p className="text-xs text-text-secondary mt-1 hidden sm:block">Packing your items</p>
-                    </div>
-                    {/* Mobile connecting line */}
-                    <div className="absolute top-10 left-5 w-[2px] h-[calc(100%+32px)] bg-accent-gold/20 sm:hidden"></div>
-                  </div>
-
-                  {/* Stage 3 */}
-                  <div className="flex sm:flex-col items-center gap-4 sm:gap-2 relative w-full sm:w-1/4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md z-10 shrink-0 transition-colors ${
-                      getStatusStage(selectedOrder.fulfillmentStatus) >= 3 ? 'bg-accent-gold text-bg-base ring-4 ring-bg-base' : 'bg-surface border-2 border-accent-gold/30 text-text-secondary'
-                    }`}>
-                      3
-                    </div>
-                    <div className="text-left sm:text-center">
-                      <p className={`font-bold ${getStatusStage(selectedOrder.fulfillmentStatus) >= 3 ? 'text-text-primary' : 'text-text-secondary'}`}>Dispatched</p>
-                      <p className="text-xs text-text-secondary mt-1 hidden sm:block">Handed to courier</p>
-                    </div>
-                    {/* Mobile connecting line */}
-                    <div className="absolute top-10 left-5 w-[2px] h-[calc(100%+32px)] bg-accent-gold/20 sm:hidden"></div>
-                  </div>
-
-                  {/* Stage 4 */}
-                  <div className="flex sm:flex-col items-center gap-4 sm:gap-2 relative w-full sm:w-1/4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md z-10 shrink-0 transition-colors ${
-                      getStatusStage(selectedOrder.fulfillmentStatus) >= 4 ? 'bg-accent-gold text-bg-base ring-4 ring-bg-base' : 'bg-surface border-2 border-accent-gold/30 text-text-secondary'
-                    }`}>
-                      4
-                    </div>
-                    <div className="text-left sm:text-center">
-                      <p className={`font-bold ${getStatusStage(selectedOrder.fulfillmentStatus) >= 4 ? 'text-text-primary' : 'text-text-secondary'}`}>Delivered</p>
-                      <p className="text-xs text-text-secondary mt-1 hidden sm:block">Package arrived</p>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              {/* Courier Info & Admin Notes */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 border-t border-accent-gold/10 pt-8">
-                
-                {/* Courier Details */}
-                <div className="bg-bg-base p-6 rounded-xl border border-accent-gold/20 shadow-sm relative overflow-hidden group">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-accent-gold"></div>
-                  <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">Courier / AWB Tracking</h3>
-                  
-                  {selectedOrder.trackingNumber ? (
-                    <div className="mt-4">
-                      <p className="text-2xl font-bold text-text-primary mb-4 break-all">
-                        {selectedOrder.trackingNumber}
-                      </p>
-                      <button 
-                        onClick={() => copyToClipboard(selectedOrder.trackingNumber)}
-                        className={`text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all shadow-sm ${
-                          copySuccess ? 'bg-green-600/20 text-green-500 border border-green-500/50' : 'bg-surface hover:bg-surface-hover text-text-primary border border-accent-gold/20 hover:border-accent-gold/50'
-                        }`}
+              {selectedOrder.isCancelled ? (
+                <div className="mb-8 bg-red-900/20 border border-red-800/50 p-6 rounded-2xl flex flex-col gap-4 shadow-sm">
+                  <div className="flex items-start gap-4">
+                    <svg className="w-8 h-8 text-red-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <div>
+                      <h3 className="text-xl font-bold text-red-500 mb-2">Order Declined by Admin</h3>
+                      <p className="text-red-400 text-lg mb-6">{selectedOrder.cancelReason}</p>
+                      
+                      <Link 
+                        to="/" 
+                        className="inline-flex items-center gap-2 bg-surface hover:bg-surface-hover border border-accent-gold/50 text-accent-gold font-bold py-2.5 px-5 rounded-lg transition-colors shadow-sm"
+                        onClick={closeModal}
                       >
-                        {copySuccess ? (
-                          <>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                            Copy Number
-                          </>
-                        )}
-                      </button>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                        Place a new order with the correct details
+                      </Link>
                     </div>
-                  ) : (
-                    <div className="mt-4 flex flex-col justify-center h-20">
-                      <p className="text-text-secondary italic">Tracking details will appear here once the order is dispatched.</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Admin Fulfillment Notes */}
-                <div className="bg-bg-base p-6 rounded-xl border border-accent-gold/20 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-accent-gold"></div>
-                  <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">Latest Updates</h3>
-                  
-                  <div className="mt-4">
-                    {selectedOrder.fulfillmentNote ? (
-                      <div className="bg-surface p-4 rounded-lg border border-accent-gold/10">
-                        <p className="text-text-primary font-medium leading-relaxed">
-                          "{selectedOrder.fulfillmentNote}"
-                        </p>
-                        <p className="text-xs text-text-secondary mt-2 text-right">- Warehouse Team</p>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col justify-center h-20">
-                        <p className="text-text-secondary italic">No additional notes from the warehouse team.</p>
-                      </div>
-                    )}
                   </div>
                 </div>
+              ) : (
+                <>
+                  {/* Progress Timeline */}
+                  <div className="mb-12 relative">
+                    <div className="absolute top-1/2 left-0 w-full h-1 bg-accent-gold/20 -translate-y-1/2 rounded-full hidden sm:block"></div>
+                    
+                    {/* Dynamically fill the progress bar */}
+                    <div 
+                      className="absolute top-1/2 left-0 h-1 bg-accent-gold -translate-y-1/2 rounded-full transition-all duration-1000 hidden sm:block"
+                      style={{ width: `${(getStatusStage(selectedOrder.fulfillmentStatus || 'PENDING') - 1) * 33.33}%` }}
+                    ></div>
 
-              </div>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-8 sm:gap-0">
+                      
+                      {/* Stage 1 */}
+                      <div className="flex sm:flex-col items-center gap-4 sm:gap-2 relative w-full sm:w-1/4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md z-10 shrink-0 transition-colors ${
+                          getStatusStage(selectedOrder.fulfillmentStatus) >= 1 ? 'bg-accent-gold text-bg-base ring-4 ring-bg-base' : 'bg-surface border-2 border-accent-gold/30 text-text-secondary'
+                        }`}>
+                          1
+                        </div>
+                        <div className="text-left sm:text-center">
+                          <p className={`font-bold ${getStatusStage(selectedOrder.fulfillmentStatus) >= 1 ? 'text-text-primary' : 'text-text-secondary'}`}>Order Placed</p>
+                          <p className="text-xs text-text-secondary mt-1 hidden sm:block">We have received your order</p>
+                        </div>
+                        {/* Mobile connecting line */}
+                        <div className="absolute top-10 left-5 w-[2px] h-[calc(100%+32px)] bg-accent-gold/20 sm:hidden"></div>
+                      </div>
+
+                      {/* Stage 2 */}
+                      <div className="flex sm:flex-col items-center gap-4 sm:gap-2 relative w-full sm:w-1/4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md z-10 shrink-0 transition-colors ${
+                          getStatusStage(selectedOrder.fulfillmentStatus) >= 2 ? 'bg-accent-gold text-bg-base ring-4 ring-bg-base' : 'bg-surface border-2 border-accent-gold/30 text-text-secondary'
+                        }`}>
+                          2
+                        </div>
+                        <div className="text-left sm:text-center">
+                          <p className={`font-bold ${getStatusStage(selectedOrder.fulfillmentStatus) >= 2 ? 'text-text-primary' : 'text-text-secondary'}`}>Processing</p>
+                          <p className="text-xs text-text-secondary mt-1 hidden sm:block">Packing your items</p>
+                        </div>
+                        {/* Mobile connecting line */}
+                        <div className="absolute top-10 left-5 w-[2px] h-[calc(100%+32px)] bg-accent-gold/20 sm:hidden"></div>
+                      </div>
+
+                      {/* Stage 3 */}
+                      <div className="flex sm:flex-col items-center gap-4 sm:gap-2 relative w-full sm:w-1/4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md z-10 shrink-0 transition-colors ${
+                          getStatusStage(selectedOrder.fulfillmentStatus) >= 3 ? 'bg-accent-gold text-bg-base ring-4 ring-bg-base' : 'bg-surface border-2 border-accent-gold/30 text-text-secondary'
+                        }`}>
+                          3
+                        </div>
+                        <div className="text-left sm:text-center">
+                          <p className={`font-bold ${getStatusStage(selectedOrder.fulfillmentStatus) >= 3 ? 'text-text-primary' : 'text-text-secondary'}`}>Dispatched</p>
+                          <p className="text-xs text-text-secondary mt-1 hidden sm:block">Handed to courier</p>
+                        </div>
+                        {/* Mobile connecting line */}
+                        <div className="absolute top-10 left-5 w-[2px] h-[calc(100%+32px)] bg-accent-gold/20 sm:hidden"></div>
+                      </div>
+
+                      {/* Stage 4 */}
+                      <div className="flex sm:flex-col items-center gap-4 sm:gap-2 relative w-full sm:w-1/4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md z-10 shrink-0 transition-colors ${
+                          getStatusStage(selectedOrder.fulfillmentStatus) >= 4 ? 'bg-accent-gold text-bg-base ring-4 ring-bg-base' : 'bg-surface border-2 border-accent-gold/30 text-text-secondary'
+                        }`}>
+                          4
+                        </div>
+                        <div className="text-left sm:text-center">
+                          <p className={`font-bold ${getStatusStage(selectedOrder.fulfillmentStatus) >= 4 ? 'text-text-primary' : 'text-text-secondary'}`}>Delivered</p>
+                          <p className="text-xs text-text-secondary mt-1 hidden sm:block">Package arrived</p>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Courier Info & Admin Notes */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 border-t border-accent-gold/10 pt-8">
+                    
+                    {/* Courier Details */}
+                    <div className="bg-bg-base p-6 rounded-xl border border-accent-gold/20 shadow-sm relative overflow-hidden group">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-accent-gold"></div>
+                      <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">Courier / AWB Tracking</h3>
+                      
+                      {selectedOrder.trackingNumber ? (
+                        <div className="mt-4">
+                          <p className="text-2xl font-bold text-text-primary mb-4 break-all">
+                            {selectedOrder.trackingNumber}
+                          </p>
+                          <button 
+                            onClick={() => copyToClipboard(selectedOrder.trackingNumber)}
+                            className={`text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all shadow-sm ${
+                              copySuccess ? 'bg-green-600/20 text-green-500 border border-green-500/50' : 'bg-surface hover:bg-surface-hover text-text-primary border border-accent-gold/20 hover:border-accent-gold/50'
+                            }`}
+                          >
+                            {copySuccess ? (
+                              <>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                Copy Number
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="mt-4 flex flex-col justify-center h-20">
+                          <p className="text-text-secondary italic">Tracking details will appear here once the order is dispatched.</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Admin Fulfillment Notes */}
+                    <div className="bg-bg-base p-6 rounded-xl border border-accent-gold/20 shadow-sm relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-accent-gold"></div>
+                      <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">Latest Updates</h3>
+                      
+                      <div className="mt-4">
+                        {selectedOrder.fulfillmentNote ? (
+                          <div className="bg-surface p-4 rounded-lg border border-accent-gold/10">
+                            <p className="text-text-primary font-medium leading-relaxed">
+                              "{selectedOrder.fulfillmentNote}"
+                            </p>
+                            <p className="text-xs text-text-secondary mt-2 text-right">- Warehouse Team</p>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col justify-center h-20">
+                            <p className="text-text-secondary italic">No additional notes from the warehouse team.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                  </div>
+                </>
+              )}
 
             </div>
           </div>

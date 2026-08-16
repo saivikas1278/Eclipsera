@@ -120,9 +120,9 @@ const DashboardScreen = () => {
             All products have sufficient stock levels!
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-hidden">
             <table className="w-full text-left border-collapse">
-              <thead>
+              <thead className="hidden md:table-header-group">
                 <tr className="bg-surface text-text-primary/80 text-sm uppercase tracking-wider">
                   <th className="p-4 rounded-tl-xl font-semibold">Product Name</th>
                   <th className="p-4 font-semibold">Current Stock</th>
@@ -131,28 +131,37 @@ const DashboardScreen = () => {
               </thead>
               <tbody className="divide-y divide-walnut/10">
                 {stats.lowStockItems.map((product) => (
-                  <tr key={product._id} className="hover:bg-accent-gold/5 transition-colors">
-                    <td className="p-4 text-text-primary font-medium">
-                      <Link to={`/product/${product._id}`} className="hover:text-accent-gold transition-colors">
-                        {product.name}
-                      </Link>
+                  <tr key={product._id} className="block md:table-row hover:bg-accent-gold/5 transition-colors mb-4 md:mb-0 border border-accent-gold/20 md:border-none rounded-xl md:rounded-none bg-surface md:bg-transparent overflow-hidden shadow-sm md:shadow-none">
+                    <td className="block md:table-cell p-4 text-text-primary font-medium border-b border-accent-gold/10 md:border-none">
+                      <div className="flex items-center justify-between md:block">
+                        <span className="md:hidden font-bold text-xs uppercase tracking-wider text-text-secondary">Product Name</span>
+                        <Link to={`/product/${product._id}`} className="hover:text-accent-gold transition-colors break-words">
+                          {product.name}
+                        </Link>
+                      </div>
                     </td>
-                    <td className="p-4">
-                      <span className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-sm font-bold bg-accent-gold/10 text-accent-gold">
-                        <span className="w-2 h-2 rounded-full bg-accent-gold"></span>
-                        {product.countInStock}
-                      </span>
+                    <td className="block md:table-cell p-4 border-b border-accent-gold/10 md:border-none">
+                      <div className="flex items-center justify-between md:block">
+                        <span className="md:hidden font-bold text-xs uppercase tracking-wider text-text-secondary">Current Stock</span>
+                        <span className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-sm font-bold bg-accent-gold/10 text-accent-gold">
+                          <span className="w-2 h-2 rounded-full bg-accent-gold"></span>
+                          {product.countInStock}
+                        </span>
+                      </div>
                     </td>
-                    <td className="p-4 text-right">
-                      <Link
-                        to={`/admin/product/${product._id}/edit`}
-                        className="inline-flex items-center gap-2 bg-surface border border-accent-gold/20 hover:border-accent-gold hover:text-accent-gold px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                        Edit
-                      </Link>
+                    <td className="block md:table-cell p-4 text-right">
+                      <div className="flex items-center justify-between md:justify-end">
+                        <span className="md:hidden font-bold text-xs uppercase tracking-wider text-text-secondary">Action</span>
+                        <Link
+                          to={`/admin/product/${product._id}/edit`}
+                          className="inline-flex items-center gap-2 bg-surface border border-accent-gold/20 hover:border-accent-gold hover:text-accent-gold px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                          Edit
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

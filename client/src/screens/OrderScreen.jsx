@@ -12,8 +12,6 @@ const OrderScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [sdkReady, setSdkReady] = useState(false);
-  const [payLoading, setPayLoading] = useState(false);
   const [deliverLoading, setDeliverLoading] = useState(false);
 
   const [registerPassword, setRegisterPassword] = useState('');
@@ -43,90 +41,8 @@ const OrderScreen = () => {
 
     if (!order || order._id !== orderId) {
       fetchOrder();
-    } else if (!order.isPaid) {
-      const addRazorpayScript = async () => {
-        const { data: clientId } = await axios.get('/api/config/razorpay');
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-        script.onload = () => {
-          setSdkReady(true);
-        };
-        document.body.appendChild(script);
-      };
-      
-      if (!window.Razorpay) {
-        addRazorpayScript();
-      } else {
-        setSdkReady(true);
-      }
     }
   }, [order, orderId, userInfo]);
-
-  const paymentHandler = async () => {
-    setPayLoading(true);
-    try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(userInfo && { Authorization: `Bearer ${userInfo.token}` }),
-        },
-      };
-
-      // 1. Create a Razorpay order on the backend
-      const { data: razorpayOrder } = await axios.post(`/api/orders/${orderId}/razorpay`, {}, config);
-
-      // 2. Open Razorpay modal
-      const { data: clientId } = await axios.get('/api/config/razorpay');
-      const options = {
-        key: clientId,
-        amount: razorpayOrder.amount,
-        currency: razorpayOrder.currency,
-        name: 'ARTISAN',
-        description: `Order ${order._id}`,
-        order_id: razorpayOrder.id,
-        handler: async function (response) {
-          try {
-            // 3. Save successful payment to backend
-            await axios.put(`/api/orders/${orderId}/pay`, {
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-            }, config);
-            
-            // Reload order
-            const { data: updatedOrder } = await axios.get(`/api/orders/${orderId}`, config);
-            setOrder(updatedOrder);
-          } catch (err) {
-            alert('Payment verification failed.');
-          }
-        },
-        prefill: {
-          name: userInfo ? userInfo.name : order.shippingAddress.name,
-          email: userInfo ? userInfo.email : order.shippingAddress.email,
-        },
-        theme: {
-          color: '#E64A19', // terracotta
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', function (response) {
-        alert(response.error.description);
-      });
-      rzp.open();
-      
-    } catch (err) {
-      alert(
-        err.response && err.response.data.message
-          ? err.response.data.message
-          : err.message
-      );
-    } finally {
-      setPayLoading(false);
-    }
-  };
 
   const shadowRegisterHandler = async (e) => {
     e.preventDefault();
@@ -217,6 +133,23 @@ const OrderScreen = () => {
     <div className="py-12 animate-fade-in max-w-6xl mx-auto">
       <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8">Order <span className="text-text-primary/60 font-sans text-xl">#{order._id}</span></h1>
       
+      {order.isCancelled && (
+        <div className="mb-8 bg-red-900/20 border border-red-800/50 p-6 rounded-2xl flex items-start gap-4 animate-fade-in shadow-sm">
+          <svg className="w-8 h-8 text-red-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <div className="w-full">
+            <h3 className="text-xl font-bold text-red-500 mb-2">Order Declined</h3>
+            <p className="text-red-400 text-lg mb-4">Reason: {order.cancelReason}</p>
+            <Link 
+              to="/" 
+              className="inline-flex items-center gap-2 bg-surface hover:bg-surface-hover border border-accent-gold/50 text-accent-gold font-bold py-2 px-4 rounded-lg transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+              Place a new order with the correct details
+            </Link>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Left Side */}
         <div className="lg:w-2/3 space-y-8">
@@ -250,7 +183,7 @@ const OrderScreen = () => {
             <h2 className="text-2xl font-serif font-extrabold text-text-primary mb-4 border-b border-accent-gold/20 pb-4">Payment Method</h2>
             <p className="text-text-primary/70 text-lg mb-4">
               <span className="font-semibold text-text-primary mr-2">Method: </span>
-              Razorpay (UPI / Card / NetBanking)
+              {order.paymentMethod === 'PHONEPE' ? 'PhonePe (Manual Verification)' : 'Cash on Delivery (COD)'}
             </p>
             {order.isPaid ? (
               <div className="bg-green-900/30 text-green-400 p-4 rounded-xl border border-green-800/50 font-medium">
@@ -270,17 +203,17 @@ const OrderScreen = () => {
             ) : (
               <ul className="divide-y divide-walnut/10">
                 {order.orderItems.map((item, index) => (
-                  <li key={index} className="py-4 flex items-center gap-6">
+                  <li key={index} className="py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
                     <img 
                       src={item.image || (item.product && item.product.image) || 'https://placehold.co/150x150?text=No+Image'} 
                       alt={item.name} 
                       onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/150x150?text=No+Image'; }}
                       className="w-16 h-16 rounded-xl object-cover border border-accent-gold/20 shadow-sm" 
                     />
-                    <Link to={`/product/${item.product}`} className="flex-1 text-lg font-serif font-bold text-text-primary hover:text-accent-gold transition-colors">
+                    <Link to={`/product/${item.product}`} className="flex-1 text-lg font-serif font-bold text-text-primary hover:text-accent-gold transition-colors line-clamp-2 break-words">
                       {item.name}
                     </Link>
-                    <div className="font-semibold text-text-primary/70 text-lg">
+                    <div className="font-semibold text-text-primary/70 text-lg whitespace-nowrap">
                       {item.quantity} x ₹{item.price.toFixed(2)} = <span className="text-text-primary ml-1">₹{(item.quantity * item.price).toFixed(2)}</span>
                     </div>
                   </li>
@@ -318,20 +251,15 @@ const OrderScreen = () => {
               Download Invoice (PDF)
             </button>
 
-            {!order.isPaid && (
-              <div className="mt-4">
-                {payLoading ? (
-                  <div className="text-center py-2 text-accent-gold font-medium animate-pulse">Initializing Razorpay...</div>
-                ) : (
-                  <button
-                    type="button"
-                    className="w-full bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-4 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50"
-                    onClick={paymentHandler}
-                    disabled={!sdkReady}
-                  >
-                    Pay ₹{order.totalPrice.toFixed(2)} Now
-                  </button>
-                )}
+            {!order.isPaid && order.paymentMethod === 'PHONEPE' && !order.isVerifiedByAdmin && !order.isCancelled && (
+              <div className="mt-4 bg-accent-gold/10 p-4 rounded-xl border border-accent-gold/20 text-center">
+                <p className="text-accent-gold font-medium">Payment verification pending. Our admin will verify your screenshot soon.</p>
+              </div>
+            )}
+            
+            {!order.isPaid && order.paymentMethod === 'COD' && (
+              <div className="mt-4 bg-surface p-4 rounded-xl border border-accent-gold/20 text-center">
+                <p className="text-text-primary/70 font-medium">Please pay cash upon delivery.</p>
               </div>
             )}
 

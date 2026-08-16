@@ -1,46 +1,58 @@
 const TrustBadges = () => {
+  const badges = [
+    {
+      title: "Handmade Guarantee",
+      desc: "Crafted with absolute precision.",
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+    },
+    {
+      title: "Secure Checkout",
+      desc: "Processed securely via Razorpay.",
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    },
+    {
+      title: "Fast Shipping",
+      desc: "Tracked shipping on all orders.",
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+    },
+    {
+      title: "Artisan Quality",
+      desc: "Sourced globally, perfected locally.",
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    }
+  ];
+
   return (
-    <section className="py-6 md:py-12 border-y border-accent-gold/10 bg-bg-secondary my-8 md:my-16">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          
-          <div className="flex flex-row md:flex-col items-center md:items-center text-left md:text-center gap-4 md:gap-0 bg-surface/50 md:bg-transparent p-4 md:p-0 rounded-xl md:rounded-none">
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-surface border border-accent-gold/20 flex flex-shrink-0 items-center justify-center md:mb-4">
-              <svg className="w-6 h-6 md:w-8 md:h-8 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+    <section className="py-8 md:py-12 border-y border-accent-gold/10 bg-surface my-8 md:my-16 overflow-hidden relative">
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          animation: marquee 25s linear infinite;
+        }
+      `}</style>
+      
+      {/* Gradients for fade effect on edges */}
+      <div className="absolute top-0 bottom-0 left-0 w-16 md:w-32 bg-gradient-to-r from-surface to-transparent z-10 pointer-events-none"></div>
+      <div className="absolute top-0 bottom-0 right-0 w-16 md:w-32 bg-gradient-to-l from-surface to-transparent z-10 pointer-events-none"></div>
+      
+      <div className="flex w-max animate-marquee gap-8 md:gap-16 items-center">
+        {/* Duplicate badges to ensure infinite scroll fills the screen */}
+        {[...badges, ...badges, ...badges, ...badges, ...badges, ...badges].map((badge, idx) => (
+          <div key={idx} className="flex items-center gap-4 w-60 md:w-80">
+            <div className="w-12 h-12 rounded-full bg-bg-base border border-accent-gold/30 flex flex-shrink-0 items-center justify-center shadow-inner">
+              <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {badge.icon}
               </svg>
             </div>
             <div>
-              <h4 className="text-text-primary font-serif font-bold text-base md:text-lg mb-1 md:mb-2">Handmade Guarantee</h4>
-              <p className="text-text-secondary text-xs md:text-sm md:px-4">Every item is crafted with premium materials and absolute precision.</p>
+              <h4 className="text-text-primary font-serif font-bold text-sm md:text-base mb-1">{badge.title}</h4>
+              <p className="text-text-secondary text-[10px] md:text-xs leading-tight">{badge.desc}</p>
             </div>
           </div>
-
-          <div className="flex flex-row md:flex-col items-center md:items-center text-left md:text-center gap-4 md:gap-0 bg-surface/50 md:bg-transparent p-4 md:p-0 rounded-xl md:rounded-none">
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-surface border border-accent-gold/20 flex flex-shrink-0 items-center justify-center md:mb-4">
-              <svg className="w-6 h-6 md:w-8 md:h-8 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <div>
-              <h4 className="text-text-primary font-serif font-bold text-base md:text-lg mb-1 md:mb-2">Secure Checkout</h4>
-              <p className="text-text-secondary text-xs md:text-sm md:px-4">Your payment information is processed securely via Razorpay.</p>
-            </div>
-          </div>
-
-          <div className="flex flex-row md:flex-col items-center md:items-center text-left md:text-center gap-4 md:gap-0 bg-surface/50 md:bg-transparent p-4 md:p-0 rounded-xl md:rounded-none">
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-surface border border-accent-gold/20 flex flex-shrink-0 items-center justify-center md:mb-4">
-              <svg className="w-6 h-6 md:w-8 md:h-8 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-              </svg>
-            </div>
-            <div>
-              <h4 className="text-text-primary font-serif font-bold text-base md:text-lg mb-1 md:mb-2">Fast, Tracked Shipping</h4>
-              <p className="text-text-secondary text-xs md:text-sm md:px-4">Complimentary tracked shipping on all orders over ₹10,000.</p>
-            </div>
-          </div>
-
-        </div>
+        ))}
       </div>
     </section>
   );

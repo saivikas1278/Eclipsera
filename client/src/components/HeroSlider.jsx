@@ -58,7 +58,7 @@ const HeroSlider = () => {
 
   return (
     <div 
-      className="relative w-full h-[600px] overflow-hidden rounded-2xl shadow-2xl mb-16 group"
+      className="relative w-full h-[60vh] md:h-[80vh] min-h-[60vh] md:min-h-[80vh] overflow-hidden group mb-16 flex flex-col items-center justify-center text-center"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -70,41 +70,43 @@ const HeroSlider = () => {
             index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
           }`}
         >
-          {/* Background Image */}
+          {/* Background Image with Parallax */}
           <div 
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] ease-linear"
+            className="absolute inset-0 bg-cover bg-center bg-fixed transition-transform duration-[10000ms] ease-linear"
             style={{ 
               backgroundImage: `url(${slide.image})`,
               transform: index === currentSlide ? 'scale(1.05)' : 'scale(1)'
             }}
           >
-            <div className="absolute inset-0 bg-bg-base/50"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent"></div>
           </div>
           
           {/* Content */}
-          <div className="relative h-full flex flex-col justify-center items-center text-center px-4 w-full">
-            <h1 
-              className={`text-3xl md:text-5xl lg:text-7xl font-serif font-bold text-text-primary mb-4 md:mb-6 drop-shadow-lg transition-all duration-700 delay-300 transform ${
-                index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-              }`}
-            >
-              {slide.heading}
-            </h1>
-            <p 
-              className={`text-base md:text-xl lg:text-2xl text-text-primary mb-8 md:mb-10 max-w-2xl font-light drop-shadow-md transition-all duration-700 delay-500 transform ${
-                index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-              }`}
-            >
-              {slide.subheading}
-            </p>
-            <Link 
-              to={slide.link} 
-              className={`bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-4 px-10 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-xl delay-700 ${
-                index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-              }`}
-            >
-              {slide.cta}
-            </Link>
+          <div className="relative h-full flex flex-col justify-center items-start text-left px-6 md:px-16 lg:px-32 w-full z-20">
+            <div className="max-w-2xl">
+              <h1 
+                className={`text-4xl md:text-6xl lg:text-8xl font-serif font-light text-text-primary mb-6 drop-shadow-md transition-all duration-1000 delay-300 transform ${
+                  index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
+                }`}
+              >
+                {slide.heading}
+              </h1>
+              <p 
+                className={`text-lg md:text-xl text-text-primary/90 mb-12 font-light tracking-wide drop-shadow-sm transition-all duration-1000 delay-500 transform ${
+                  index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
+                }`}
+              >
+                {slide.subheading}
+              </p>
+              <Link 
+                to={slide.link} 
+                className={`inline-flex items-center justify-center border border-accent-gold text-accent-gold hover:bg-accent-gold hover:text-bg-base font-medium h-14 px-10 rounded-sm text-sm transition-all duration-500 transform hover:scale-105 delay-700 uppercase tracking-[0.2em] ${
+                  index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
+                }`}
+              >
+                Discover Collection
+              </Link>
+            </div>
           </div>
         </div>
       ))}
@@ -131,13 +133,15 @@ const HeroSlider = () => {
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            className={`min-w-[44px] min-h-[44px] flex items-center justify-center transition-all duration-300`}
+            aria-label={`Go to slide ${index + 1}`}
+          >
+            <span className={`w-3 h-3 rounded-full transition-all duration-300 ${
               index === currentSlide 
                 ? 'bg-accent-gold scale-125' 
                 : 'bg-text-primary/40 hover:bg-text-primary/80'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
+            }`}></span>
+          </button>
         ))}
       </div>
     </div>

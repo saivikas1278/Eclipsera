@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Product = require('../models/productModel');
 const { recordAuditLog } = require('../services/auditService');
+const { clearCache } = require('../services/cacheService');
 
 /**
  * @desc    Fetch all products
@@ -11,18 +12,29 @@ const getProducts = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 50;
   const page = parseInt(req.query.page) || 1;
   const search = req.query.search || req.query.keyword || '';
+  const category = req.query.category || '';
+  const minPrice = parseInt(req.query.minPrice) || 0;
+  const maxPrice = parseInt(req.query.maxPrice) || Number.MAX_SAFE_INTEGER;
+  const inStock = req.query.inStock === 'true';
 
-  const keyword = search
-    ? {
-        name: {
-          $regex: search,
-          $options: 'i',
-        },
-      }
-    : {};
+  const filter = {};
+  
+  if (search) {
+    filter.$text = { $search: search };
+  }
+  
+  if (category && category !== 'All') {
+    filter.category = category;
+  }
+  
+  filter.price = { $gte: minPrice, $lte: maxPrice };
+  
+  if (inStock) {
+    filter.countInStock = { $gt: 0 };
+  }
 
-  const totalCount = await Product.countDocuments({ ...keyword });
-  const products = await Product.find({ ...keyword })
+  const totalCount = await Product.countDocuments(filter);
+  const products = await Product.find(filter)
     .skip(limit * (page - 1))
     .limit(limit)
     .sort({ createdAt: -1 });
@@ -69,6 +81,7 @@ const createProduct = asyncHandler(async (req, res) => {
   });
 
   const createdProduct = await product.save();
+  await clearCache('products_all');
   res.status(201).json(createdProduct);
 });
 
@@ -78,7 +91,7 @@ const createProduct = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const updateProduct = asyncHandler(async (req, res) => {
-  const { name, price, description, image, countInStock } = req.body;
+  const { name, price, description, image, countInStock, paymentQRCode, upiId } = req.body;
 
   const product = await Product.findById(req.params.id);
 
@@ -88,8 +101,11 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.description = description;
     product.image = image;
     product.countInStock = countInStock;
+    if (paymentQRCode !== undefined) product.paymentQRCode = paymentQRCode;
+    if (upiId !== undefined) product.upiId = upiId;
 
     const updatedProduct = await product.save();
+    await clearCache('products_all');
     res.json(updatedProduct);
   } else {
     res.status(404);
@@ -110,6 +126,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
   if (product) {
     await Product.deleteOne({ _id: product._id });
+    await clearCache('products_all');
     res.json({ message: 'Product removed' });
   } else {
     res.status(404);
@@ -261,6 +278,7 @@ const bulkUpdateProducts = asyncHandler(async (req, res) => {
   }
 
   await recordAuditLog(`Bulk inline update performed on ${updates.length} products`, 'CATALOG');
+  await clearCache('products_all');
 
   res.json({ message: `Successfully updated ${updates.length} products` });
 });

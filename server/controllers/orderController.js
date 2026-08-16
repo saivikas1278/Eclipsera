@@ -1,4 +1,5 @@
 const asyncHandler = require('express-async-handler');
+const mongoose = require('mongoose');
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
 const Notification = require('../models/notificationModel');
@@ -17,25 +18,52 @@ const addOrderItems = asyncHandler(async (req, res) => {
     orderItems,
     shippingAddress,
     totalPrice,
+    paymentMethod,
+    paymentReceipt,
   } = req.body;
 
-  // 1. Check if the order contains any items
   if (orderItems && orderItems.length === 0) {
-    res.status(400); // 400 Bad Request
+    res.status(400);
     throw new Error('No order items');
-  } else {
-    // 2. Instantiate a new order
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    for (const item of orderItems) {
+      const product = await Product.findById(item.product).session(session);
+      if (!product) {
+        throw new Error(`Product ${item.name} not found`);
+      }
+      if (product.countInStock < item.quantity && product.countInStock < item.qty) {
+        const qty = item.qty || item.quantity;
+        throw new Error(`Insufficient stock for ${product.name}. Only ${product.countInStock} available, requested ${qty}.`);
+      }
+      // Decrement stock
+      const qty = item.qty || item.quantity || 1;
+      await Product.findByIdAndUpdate(
+        item.product,
+        { $inc: { countInStock: -qty } },
+        { session }
+      );
+    }
+
     const order = new Order({
       orderItems,
       shippingAddress,
       totalPrice,
+      paymentMethod,
+      paymentReceipt,
       user: req.user ? req.user._id : undefined,
     });
 
-    // 3. Save the order to the database
-    const createdOrder = await order.save();
+    const createdOrder = await order.save({ session });
 
-    // 4. Asynchronously generate invoice and send email
+    await session.commitTransaction();
+    session.endSession();
+
+    // Asynchronously generate invoice and send email outside the transaction
     (async () => {
       try {
         const pdfBuffer = await generateInvoicePDF(createdOrder);
@@ -45,8 +73,12 @@ const addOrderItems = asyncHandler(async (req, res) => {
       }
     })();
 
-    // 5. Return the successful creation status and the order data
     res.status(201).json(createdOrder);
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    res.status(400);
+    throw new Error(error.message);
   }
 });
 
@@ -62,20 +94,34 @@ const getOrders = asyncHandler(async (req, res) => {
 
   let query = {};
   if (search) {
-    // Search by order ID or user name/email. Since we populate user, it's easier to search by order _id first
-    // or we can search by order _id if it's a valid object ID.
     const mongoose = require('mongoose');
     if (mongoose.Types.ObjectId.isValid(search)) {
       query._id = search;
     } else {
-      // Searching populated fields requires an aggregation or a 2-step query.
-      // To keep it simple, search by shippingAddress.email or shippingAddress.name.
       query = {
         $or: [
           { 'shippingAddress.email': { $regex: search, $options: 'i' } },
           { 'shippingAddress.name': { $regex: search, $options: 'i' } }
         ]
       };
+    }
+  }
+
+  if (req.query.status) {
+    query.fulfillmentStatus = req.query.status;
+  }
+  
+  if (req.query.financialStatus) {
+    query.financialStatus = req.query.financialStatus;
+  }
+
+  if (req.query.startDate || req.query.endDate) {
+    query.createdAt = {};
+    if (req.query.startDate) query.createdAt.$gte = new Date(req.query.startDate);
+    if (req.query.endDate) {
+      const end = new Date(req.query.endDate);
+      end.setHours(23, 59, 59, 999);
+      query.createdAt.$lte = end;
     }
   }
 
@@ -141,7 +187,7 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
     const options = {
       amount: Math.round(order.totalPrice * 100), // amount in the smallest currency unit
       currency: "INR",
-      receipt: order._id.toString(),
+      receipt: `receipt_order_${order._id}`
     };
 
     try {
@@ -162,6 +208,7 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 
   if (order) {
     order.isPaid = true;
+    order.financialStatus = 'PAID';
     order.paidAt = Date.now();
     order.paymentResult = {
       id: req.body.razorpay_payment_id,
@@ -326,6 +373,119 @@ const bulkUpdateOrderStatuses = asyncHandler(async (req, res) => {
   res.json({ message: `Successfully updated ${orders.length} orders`, updatedCount: orders.length });
 });
 
+/**
+ * @desc    Verify manual payment (e.g. PhonePe)
+ * @route   PUT /api/orders/:id/verify-payment
+ * @access  Private/Admin
+ */
+const verifyManualPayment = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+
+  if (order) {
+    order.isVerifiedByAdmin = true;
+    order.isPaid = true;
+    order.financialStatus = 'PAID';
+    order.paidAt = Date.now();
+    order.paymentResult = {
+      id: 'MANUAL_VERIFICATION',
+      status: 'COMPLETED',
+      email_address: req.user.email,
+    };
+
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
+  } else {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+});
+
+/**
+ * @desc    Cancel order (Admin)
+ * @route   PUT /api/orders/:id/cancel
+ * @access  Private/Admin
+ */
+const cancelOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id).populate('user', 'id name email');
+
+  if (order) {
+    if (order.isCancelled) {
+      res.status(400);
+      throw new Error('Order is already cancelled');
+    }
+
+    order.isCancelled = true;
+    order.cancelReason = req.body.reason || 'No reason provided';
+    
+    if (order.isPaid || order.financialStatus === 'PAID') {
+      order.financialStatus = 'REFUND_PENDING';
+    }
+    
+    const oldStatus = order.fulfillmentStatus || 'PENDING';
+    order.fulfillmentStatus = 'CANCELLED';
+    order.trackingHistory.push({
+      status: 'CANCELLED',
+      note: req.body.reason || 'Cancelled by admin',
+      date: Date.now()
+    });
+
+    const restoringStatuses = ['CANCELLED', 'RETURN_APPROVED', 'REFUNDED'];
+    if (!restoringStatuses.includes(oldStatus)) {
+      for (const item of order.orderItems) {
+        const product = await Product.findById(item.product);
+        if (product) {
+          product.countInStock += item.quantity;
+          await product.save();
+        }
+      }
+    }
+
+    const updatedOrder = await order.save();
+
+    if (order.user) {
+      await Notification.create({
+        user: order.user._id,
+        title: 'Order Cancelled',
+        message: `Your order ${order._id} was cancelled. Reason: ${order.cancelReason}`,
+        type: 'order'
+      });
+    }
+
+    await recordAuditLog(`Order ${order._id} cancelled. Reason: ${order.cancelReason}`, 'ORDER');
+
+    res.json(updatedOrder);
+  } else {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+});
+
+/**
+ * @desc    Mark order as refunded (Admin)
+ * @route   PUT /api/orders/:id/refund
+ * @access  Private/Admin
+ */
+const markOrderRefunded = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+
+  if (order) {
+    if (order.financialStatus !== 'REFUND_PENDING') {
+      res.status(400);
+      throw new Error('Order is not pending a refund');
+    }
+    
+    order.financialStatus = 'REFUNDED';
+    const updatedOrder = await order.save();
+    
+    const { recordAuditLog } = require('../utils/auditLog');
+    await recordAuditLog(`Order ${order._id} marked as REFUNDED`, 'ORDER');
+    
+    res.json(updatedOrder);
+  } else {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+});
 
 module.exports = {
   addOrderItems,
@@ -338,4 +498,7 @@ module.exports = {
   updateOrderFulfillment,
   downloadInvoice,
   bulkUpdateOrderStatuses,
+  verifyManualPayment,
+  markOrderRefunded,
+  cancelOrder,
 };

@@ -52,6 +52,16 @@ export const StoreProvider = ({ children }) => {
       return [];
     }
   });
+
+  const [savedForLaterItems, setSavedForLaterItems] = useState(() => {
+    try {
+      const identifier = userInfo?._id || userInfo?.email || 'guest';
+      const savedLater = localStorage.getItem(`eclipsera_saved_${identifier}`);
+      return savedLater ? JSON.parse(savedLater) : [];
+    } catch (e) {
+      return [];
+    }
+  });
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
 
   // Sync state when the logged-in user changes (or on initial mount)
@@ -84,6 +94,7 @@ export const StoreProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Failed to load/sync cart', error);
+        toast.error('Unable to sync your saved cart. Please refresh.');
       }
     };
 
@@ -95,10 +106,14 @@ export const StoreProvider = ({ children }) => {
 
       const savedWishlist = localStorage.getItem(getStorageKey('wishlist'));
       setWishlistItems(savedWishlist ? JSON.parse(savedWishlist) : []);
+      
+      const savedLater = localStorage.getItem(getStorageKey('saved'));
+      setSavedForLaterItems(savedLater ? JSON.parse(savedLater) : []);
     } catch (error) {
       console.error('Failed to load scoped user data from localStorage', error);
       setShippingAddress({});
       setWishlistItems([]);
+      setSavedForLaterItems([]);
     }
     
     return () => { mounted = false; };
@@ -225,7 +240,56 @@ export const StoreProvider = ({ children }) => {
     });
   };
 
+  const saveForLater = (cartItemIdOrId) => {
+    const itemToSave = cartItems.find((item) => (item.cartItemId && item.cartItemId === cartItemIdOrId) || (!item.cartItemId && item._id === cartItemIdOrId));
+    if (itemToSave) {
+      removeFromCart(cartItemIdOrId);
+      setSavedForLaterItems((prev) => {
+        const newSaved = [...prev, itemToSave];
+        try {
+          localStorage.setItem(getStorageKey('saved'), JSON.stringify(newSaved));
+          toast('Item saved for later', { icon: '🛒' });
+        } catch (err) {
+          console.error('Failed to save savedForLaterItems', err);
+        }
+        return newSaved;
+      });
+    }
+  };
+
+  const moveToCart = (cartItemIdOrId) => {
+    const itemToMove = savedForLaterItems.find((item) => (item.cartItemId && item.cartItemId === cartItemIdOrId) || (!item.cartItemId && item._id === cartItemIdOrId));
+    if (itemToMove) {
+      setSavedForLaterItems((prev) => {
+        const newSaved = prev.filter((item) => (item.cartItemId && item.cartItemId !== cartItemIdOrId) || (!item.cartItemId && item._id !== cartItemIdOrId));
+        try {
+          localStorage.setItem(getStorageKey('saved'), JSON.stringify(newSaved));
+        } catch (err) {
+          console.error('Failed to save savedForLaterItems', err);
+        }
+        return newSaved;
+      });
+      addToCart(itemToMove, itemToMove.qty, itemToMove.variant, itemToMove.personalization);
+    }
+  };
+
   const updateSession = (newUserData) => {
+    if (newUserData && !userInfo) {
+      try {
+        const guestCartStr = localStorage.getItem('eclipsera_cart_guest');
+        if (guestCartStr) {
+          const guestCart = JSON.parse(guestCartStr);
+          if (guestCart && guestCart.length > 0) {
+            const newKey = `eclipsera_cart_${newUserData._id || newUserData.email}`;
+            localStorage.setItem(newKey, JSON.stringify(guestCart));
+          }
+          localStorage.removeItem('eclipsera_cart_guest');
+        }
+      } catch (e) {
+        console.error('Guest cart migration failed', e);
+      }
+    }
+
     setUserInfo(newUserData);
     try {
       if (newUserData) {
@@ -267,6 +331,9 @@ export const StoreProvider = ({ children }) => {
     wishlistItems,
     addToWishlist,
     removeFromWishlist,
+    savedForLaterItems,
+    saveForLater,
+    moveToCart,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

@@ -19,15 +19,11 @@ const RegisterScreen = lazy(() => import('./screens/RegisterScreen'));
 const ShippingScreen = lazy(() => import('./screens/ShippingScreen'));
 const PlaceOrderScreen = lazy(() => import('./screens/PlaceOrderScreen'));
 const OrderScreen = lazy(() => import('./screens/OrderScreen'));
-const ProfileScreen = lazy(() => import('./screens/ProfileScreen'));
-const AddressScreen = lazy(() => import('./screens/AddressScreen'));
 const WishlistScreen = lazy(() => import('./screens/WishlistScreen'));
-const UserReviewsScreen = lazy(() => import('./screens/UserReviewsScreen'));
-const NotificationsScreen = lazy(() => import('./screens/NotificationsScreen'));
-const TrackOrderScreen = lazy(() => import('./screens/TrackOrderScreen'));
 const OrderListScreen = lazy(() => import('./screens/admin/OrderListScreen'));
 const ProductListScreen = lazy(() => import('./screens/admin/ProductListScreen'));
 const ProductEditScreen = lazy(() => import('./screens/admin/ProductEditScreen'));
+const RefundQueueScreen = lazy(() => import('./screens/admin/RefundQueueScreen'));
 const DashboardScreen = lazy(() => import('./screens/admin/DashboardScreen'));
 const UserListScreen = lazy(() => import('./screens/admin/UserListScreen'));
 const UserEditScreen = lazy(() => import('./screens/admin/UserEditScreen'));
@@ -61,9 +57,10 @@ function App() {
   return (
     <div className="min-h-screen bg-transparent flex flex-col font-sans text-text-primary selection:bg-accent-gold/20 selection:text-accent-gold">
       <ScrollToTop />
-      <Toaster 
+      <Toaster
         position="bottom-center"
         toastOptions={{
+          className: 'z-[9999]',
           style: {
             background: '#18181b',
             color: '#fff',
@@ -82,8 +79,17 @@ function App() {
       {!isAuthPage && <Header />}
       <main className={`flex-grow container mx-auto px-4 sm:px-6 lg:px-8 w-full max-w-7xl ${isAuthPage ? '' : 'py-8'}`}>
         <Suspense fallback={
-          <div className="flex w-full h-[60vh] items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-gold"></div>
+          <div className="w-full flex flex-col gap-8 p-4 md:p-8 animate-fade-in">
+            <div className="w-full h-12 bg-zinc-800/50 animate-pulse rounded-xl mb-8"></div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex flex-col gap-4">
+                  <div className="w-full h-64 md:h-80 bg-zinc-800/50 animate-pulse rounded-2xl"></div>
+                  <div className="w-3/4 h-6 bg-zinc-800/50 animate-pulse rounded"></div>
+                  <div className="w-1/2 h-6 bg-zinc-800/50 animate-pulse rounded"></div>
+                </div>
+              ))}
+            </div>
           </div>
         }>
           <Routes>
@@ -99,11 +105,6 @@ function App() {
             <Route path="" element={<PrivateRoute />}>
               <Route path="/shipping" element={<ShippingScreen />} />
               <Route path="/placeorder" element={<PlaceOrderScreen />} />
-              <Route path="/profile" element={<ProfileScreen />} />
-              <Route path="/profile/addresses" element={<AddressScreen />} />
-              <Route path="/profile/reviews" element={<UserReviewsScreen />} />
-              <Route path="/profile/notifications" element={<NotificationsScreen />} />
-              <Route path="/profile/track-orders" element={<TrackOrderScreen />} />
               <Route path="/account" element={<AccountScreen />} />
               <Route path="/order/:id" element={<OrderScreen />} />
             </Route>
@@ -115,6 +116,7 @@ function App() {
                 <Route path="userlist" element={<UserListScreen />} />
                 <Route path="user/:id/edit" element={<UserEditScreen />} />
                 <Route path="orderlist" element={<OrderListScreen />} />
+                <Route path="refunds" element={<RefundQueueScreen />} />
                 <Route path="productlist" element={<ProductListScreen />} />
                 <Route path="product/:id/edit" element={<ProductEditScreen />} />
               </Route>

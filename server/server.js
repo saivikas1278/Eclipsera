@@ -16,6 +16,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const cartRoutes = require('./routes/cartRoutes');
+const { globalLimiter } = require('./middleware/rateLimiter');
 
 // 4. Connect to MongoDB
 connectDB();
@@ -24,6 +25,9 @@ connectDB();
 const app = express();
 
 // --- Middlewares ---
+
+// Apply global rate limiter
+app.use('/api', globalLimiter);
 
 // Enable CORS (Cross-Origin Resource Sharing)
 app.use(cors({

@@ -91,11 +91,19 @@ const productSchema = new mongoose.Schema(
     shippingReturns: {
       type: String,
     },
+    paymentQRCode: {
+      type: String,
+    },
+    upiId: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+productSchema.index({ name: 'text', description: 'text', category: 'text' });
 
 const Product = mongoose.model('Product', productSchema);
 module.exports = Product;

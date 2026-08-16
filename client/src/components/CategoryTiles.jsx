@@ -11,8 +11,8 @@ const CategoryTiles = () => {
   return (
     <section className="mb-20">
       <div className="text-center mb-10">
-        <h2 className="text-3xl font-serif font-bold text-text-primary">Shop by Occasion</h2>
-        <div className="w-24 h-1 bg-accent-gold mx-auto mt-4 opacity-50"></div>
+        <h2 className="text-2xl md:text-4xl font-bold font-serif text-text-primary text-center md:text-left mb-8 md:mb-12 tracking-tight">Shop by Occasion</h2>
+        <div className="w-24 h-px bg-accent-gold mx-auto mt-4 opacity-50"></div>
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -20,7 +20,7 @@ const CategoryTiles = () => {
           <Link 
             key={index} 
             to={cat.link}
-            className="group relative block h-64 overflow-hidden rounded-xl bg-surface border border-accent-gold/10 hover:border-accent-gold transition-colors duration-300"
+            className="group relative block h-64 overflow-hidden rounded-sm bg-surface transition-colors duration-300"
           >
             <img 
               src={cat.image} 

@@ -35,6 +35,25 @@ const orderSchema = new mongoose.Schema(
       postalCode: { type: String, required: true },
       country: { type: String, required: true },
     },
+    paymentMethod: {
+      type: String,
+      required: true,
+      default: 'COD', // 'COD' or 'PHONEPE'
+    },
+    paymentReceipt: {
+      type: String,
+    },
+    cancelReason: {
+      type: String,
+    },
+    isCancelled: {
+      type: Boolean,
+      default: false,
+    },
+    isVerifiedByAdmin: {
+      type: Boolean,
+      default: false,
+    },
     totalPrice: {
       type: Number,
       required: true,
@@ -44,6 +63,11 @@ const orderSchema = new mongoose.Schema(
       type: Boolean,
       required: true,
       default: false,
+    },
+    financialStatus: {
+      type: String,
+      enum: ['PENDING', 'PAID', 'REFUND_PENDING', 'REFUNDED'],
+      default: 'PENDING',
     },
     paidAt: {
       type: Date,

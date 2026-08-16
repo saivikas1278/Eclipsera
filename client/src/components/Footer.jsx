@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
+  const [openSection, setOpenSection] = useState(null);
   const currentYear = new Date().getFullYear();
 
   return (
@@ -28,9 +30,15 @@ const Footer = () => {
           </div>
 
           {/* Shop */}
-          <div className="col-span-1">
-            <h4 className="text-text-primary font-bold mb-4 md:mb-6 tracking-wider">SHOP</h4>
-            <ul className="space-y-3">
+          <div className="col-span-2 md:col-span-1 border-b border-accent-gold/10 md:border-0 pb-4 md:pb-0">
+            <button 
+              onClick={() => setOpenSection(openSection === 'shop' ? null : 'shop')}
+              className="w-full flex justify-between items-center text-text-primary font-bold md:mb-6 tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold md:pointer-events-none"
+            >
+              SHOP
+              <svg className={`w-5 h-5 md:hidden transition-transform ${openSection === 'shop' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            <ul className={`space-y-3 overflow-hidden transition-all duration-300 ${openSection === 'shop' ? 'max-h-48 opacity-100 mt-4' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100 md:mt-0'}`}>
               <li><Link to="/search" className="text-text-secondary hover:text-accent-gold transition-colors">All Products</Link></li>
               <li><Link to="/search?category=New" className="text-text-secondary hover:text-accent-gold transition-colors">New Arrivals</Link></li>
               <li><Link to="/search?category=BestSellers" className="text-text-secondary hover:text-accent-gold transition-colors">Bestsellers</Link></li>
@@ -39,9 +47,15 @@ const Footer = () => {
           </div>
 
           {/* Support */}
-          <div className="col-span-1">
-            <h4 className="text-text-primary font-bold mb-4 md:mb-6 tracking-wider">SUPPORT</h4>
-            <ul className="space-y-3">
+          <div className="col-span-2 md:col-span-1 border-b border-accent-gold/10 md:border-0 pb-4 md:pb-0">
+            <button 
+              onClick={() => setOpenSection(openSection === 'support' ? null : 'support')}
+              className="w-full flex justify-between items-center text-text-primary font-bold md:mb-6 tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold md:pointer-events-none"
+            >
+              SUPPORT
+              <svg className={`w-5 h-5 md:hidden transition-transform ${openSection === 'support' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            <ul className={`space-y-3 overflow-hidden transition-all duration-300 ${openSection === 'support' ? 'max-h-48 opacity-100 mt-4' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100 md:mt-0'}`}>
               <li><Link to="/faq" className="text-text-secondary hover:text-accent-gold transition-colors">FAQ</Link></li>
               <li><Link to="/shipping-policy" className="text-text-secondary hover:text-accent-gold transition-colors">Shipping & Returns</Link></li>
               <li><Link to="/contact" className="text-text-secondary hover:text-accent-gold transition-colors">Contact Us</Link></li>

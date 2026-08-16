@@ -17,6 +17,11 @@ const OrderListScreen = () => {
   const [totalCount, setTotalCount] = useState(0);
   const debouncedSearch = useDebounce(search, 500);
 
+  // Filters
+  const [statusFilter, setStatusFilter] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
   // Modal State
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +30,20 @@ const OrderListScreen = () => {
   const [fulfillmentNote, setFulfillmentNote] = useState('');
   const [updateLoading, setUpdateLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Decline Form State
+  const predefinedReasons = [
+    "We were unable to verify the payment receipt provided. Please ensure the screenshot is clear and corresponds to this exact order.",
+    "The payment amount received does not match the order total. Please contact support to resolve this discrepancy.",
+    "The provided payment screenshot indicates the transaction is pending or failed. We have not received the funds.",
+    "We apologize, but one or more items in your order are currently out of stock due to an inventory mismatch.",
+    "We are currently unable to deliver to the shipping address or PIN code provided.",
+    "The customization request provided cannot be fulfilled. Please contact support for alternative options.",
+    "Other (Custom Reason)"
+  ];
+  const [showDeclineOptions, setShowDeclineOptions] = useState(false);
+  const [declineReason, setDeclineReason] = useState(predefinedReasons[0]);
+  const [customReason, setCustomReason] = useState('');
 
   // Bulk Action State
   const [selectedOrders, setSelectedOrders] = useState([]);
@@ -44,7 +63,7 @@ const OrderListScreen = () => {
           },
         };
 
-        const { data } = await axios.get(`/api/orders?page=${page}&limit=50&search=${debouncedSearch}`, config);
+        const { data } = await axios.get(`/api/orders?page=${page}&limit=50&search=${debouncedSearch}&status=${statusFilter}&startDate=${startDate}&endDate=${endDate}`, config);
         setOrders(data.data ? data.data : data);
         if (data.totalPages) setTotalPages(data.totalPages);
         if (data.totalCount) setTotalCount(data.totalCount);
@@ -67,7 +86,7 @@ const OrderListScreen = () => {
     if (userInfo && userInfo.isAdmin) {
       fetchOrders();
     }
-  }, [userInfo, navigate, handleLogout, page, debouncedSearch]);
+  }, [userInfo, navigate, handleLogout, page, debouncedSearch, statusFilter, startDate, endDate]);
 
   const openModal = (order) => {
     setSelectedOrder(order);
@@ -80,6 +99,9 @@ const OrderListScreen = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedOrder(null);
+    setShowDeclineOptions(false);
+    setDeclineReason(predefinedReasons[0]);
+    setCustomReason('');
   };
 
   const showToast = (msg) => {
@@ -125,6 +147,9 @@ const OrderListScreen = () => {
       // Update local state instantly
       const updatedOrders = orders.map(order => {
         if (selectedOrders.includes(order._id)) {
+          if (bulkStatus === 'DELIVERED') {
+            return { ...order, fulfillmentStatus: bulkStatus, isDelivered: true, deliveredAt: new Date().toISOString() };
+          }
           return { ...order, fulfillmentStatus: bulkStatus };
         }
         return order;
@@ -175,6 +200,60 @@ const OrderListScreen = () => {
     }
   };
 
+  const handleVerifyPayment = async () => {
+    setUpdateLoading(true);
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${userInfo.token}` },
+      };
+      const { data: updatedOrder } = await axios.put(
+        `/api/orders/${selectedOrder._id}/verify-payment`,
+        {},
+        config
+      );
+      
+      setOrders(orders.map((o) => (o._id === updatedOrder._id ? updatedOrder : o)));
+      setSelectedOrder(updatedOrder);
+      setUpdateLoading(false);
+      showToast('Payment verified successfully!');
+    } catch (err) {
+      setUpdateLoading(false);
+      alert(err.response?.data?.message || err.message);
+    }
+  };
+
+  const handleDeclineOrder = async () => {
+    let reason = declineReason;
+    if (reason === 'Other (Custom Reason)') {
+      if (!customReason.trim()) {
+        alert("Please enter a custom reason.");
+        return;
+      }
+      reason = customReason;
+    }
+
+    setUpdateLoading(true);
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${userInfo.token}` },
+      };
+      const { data: updatedOrder } = await axios.put(
+        `/api/orders/${selectedOrder._id}/cancel`,
+        { reason },
+        config
+      );
+      
+      setOrders(orders.map((o) => (o._id === updatedOrder._id ? updatedOrder : o)));
+      setSelectedOrder(updatedOrder);
+      setShowDeclineOptions(false);
+      setUpdateLoading(false);
+      showToast('Order declined successfully!');
+    } catch (err) {
+      setUpdateLoading(false);
+      alert(err.response?.data?.message || err.message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64 text-xl font-medium text-accent-gold/80 animate-pulse">
@@ -209,6 +288,44 @@ const OrderListScreen = () => {
           onChange={(e) => {setSearch(e.target.value); setPage(1);}}
           className="bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold w-full sm:w-72"
         />
+      </div>
+      
+      {/* Filters Bar */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6 bg-surface p-4 rounded-xl border border-accent-gold/20 shadow-sm animate-fade-in">
+        <div className="flex-1">
+          <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Status</label>
+          <select 
+            value={statusFilter}
+            onChange={(e) => {setStatusFilter(e.target.value); setPage(1);}}
+            className="w-full bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold min-h-[44px]"
+          >
+            <option value="">All Statuses</option>
+            <option value="PENDING">PENDING</option>
+            <option value="PROCESSING">PROCESSING</option>
+            <option value="SHIPPED">SHIPPED</option>
+            <option value="DELIVERED">DELIVERED</option>
+            <option value="CANCELLED">CANCELLED</option>
+            <option value="RETURNED">RETURNED</option>
+          </select>
+        </div>
+        <div className="flex-1">
+          <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Start Date</label>
+          <input 
+            type="date"
+            value={startDate}
+            onChange={(e) => {setStartDate(e.target.value); setPage(1);}}
+            className="w-full bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold min-h-[44px]"
+          />
+        </div>
+        <div className="flex-1">
+          <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">End Date</label>
+          <input 
+            type="date"
+            value={endDate}
+            onChange={(e) => {setEndDate(e.target.value); setPage(1);}}
+            className="w-full bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold min-h-[44px]"
+          />
+        </div>
       </div>
       
       {/* Bulk Action Bar */}
@@ -253,8 +370,12 @@ const OrderListScreen = () => {
         <TableVirtuoso
           data={orders}
           useWindowScroll={false}
+          components={{
+            Table: (props) => <table {...props} className="w-full border-collapse" />,
+            TableRow: (props) => <tr {...props} className="grid grid-cols-2 md:table-row gap-y-1 p-3 mb-3 border border-accent-gold/20 md:border-none rounded-xl md:rounded-none bg-surface md:bg-transparent shadow-sm md:shadow-none md:p-0 relative hover:bg-bg-base/50 transition-colors cursor-pointer" />
+          }}
           fixedHeaderContent={() => (
-            <tr className="bg-bg-base/95 backdrop-blur-sm border-b border-accent-gold/20 shadow-sm">
+            <tr className="bg-bg-base/95 backdrop-blur-sm border-b border-accent-gold/20 shadow-sm hidden md:table-row">
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider w-12 z-10">
                   <input 
                     type="checkbox" 
@@ -272,35 +393,52 @@ const OrderListScreen = () => {
           )}
           itemContent={(index, order) => (
             <>
-                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                    <input 
-                      type="checkbox" 
-                      className="w-4 h-4 rounded text-accent-gold focus:ring-accent-gold bg-bg-base border-accent-gold/40 cursor-pointer"
-                      checked={selectedOrders.includes(order._id)}
-                      onChange={() => handleSelectOrder(order._id)}
-                    />
+                  {/* Checkbox: Top right absolute on mobile */}
+                  <td className="absolute top-3 right-3 md:static md:table-cell md:px-6 md:py-4 md:border-b md:border-white/5" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-center">
+                      <input 
+                        type="checkbox" 
+                        className="w-5 h-5 md:w-4 md:h-4 rounded text-accent-gold focus:ring-accent-gold bg-bg-base border-accent-gold/40 cursor-pointer shadow-sm"
+                        checked={selectedOrders.includes(order._id)}
+                        onChange={() => handleSelectOrder(order._id)}
+                      />
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-text-primary font-medium cursor-pointer" onClick={() => openModal(order)}>
-                    {order._id}
+                  
+                  {/* Order ID */}
+                  <td className="col-start-1 col-span-2 row-start-1 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
+                    <span className="text-sm md:text-sm font-black text-text-primary pr-10 block truncate">#{order._id}</span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-text-primary/90 font-semibold cursor-pointer" onClick={() => openModal(order)}>
-                    {order.user && order.user.name ? order.user.name : 'Deleted User'}
+                  
+                  {/* User */}
+                  <td className="col-start-1 col-span-1 row-start-2 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
+                    <span className="text-sm font-bold text-text-primary/90 truncate block">{order.user?.name || 'Deleted'}</span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-text-primary/70 cursor-pointer" onClick={() => openModal(order)}>
-                    {order.createdAt.substring(0, 10)}
+                  
+                  {/* Date */}
+                  <td className="col-start-1 col-span-1 row-start-3 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
+                    <span className="text-xs font-semibold text-text-secondary">{order.createdAt.substring(0, 10)}</span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-accent-gold font-bold cursor-pointer" onClick={() => openModal(order)}>
-                    ₹{order.totalPrice.toFixed(2)}
+                  
+                  {/* Total */}
+                  <td className="col-start-2 col-span-1 row-start-2 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
+                    <div className="text-right pr-10 md:pr-0 md:text-left">
+                      <span className="text-sm font-black text-accent-gold block">₹{order.totalPrice.toFixed(2)}</span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-sm cursor-pointer" onClick={() => openModal(order)}>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      order.fulfillmentStatus === 'DELIVERED' ? 'bg-green-900/50 text-green-400' :
-                      order.fulfillmentStatus === 'SHIPPED' ? 'bg-blue-900/50 text-blue-400' :
-                      order.fulfillmentStatus === 'CANCELLED' ? 'bg-red-900/50 text-red-400' :
-                      'bg-accent-gold/20 text-accent-gold'
-                    }`}>
-                      {order.fulfillmentStatus || 'PENDING'}
-                    </span>
+                  
+                  {/* Status */}
+                  <td className="col-start-2 col-span-1 row-start-3 flex items-center justify-end pr-10 md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
+                    <div className="flex justify-end md:justify-start w-full">
+                      <span className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-black tracking-wide shadow-sm border ${
+                        order.fulfillmentStatus === 'DELIVERED' ? 'bg-green-900/30 text-green-400 border-green-500/30' :
+                        order.fulfillmentStatus === 'SHIPPED' ? 'bg-blue-900/30 text-blue-400 border-blue-500/30' :
+                        order.fulfillmentStatus === 'CANCELLED' ? 'bg-red-900/30 text-red-400 border-red-500/30' :
+                        'bg-accent-gold/20 text-accent-gold border-accent-gold/30'
+                      }`}>
+                        {order.fulfillmentStatus || 'PENDING'}
+                      </span>
+                    </div>
                   </td>
             </>
           )}
@@ -380,6 +518,91 @@ const OrderListScreen = () => {
                     <p className="text-sm text-text-secondary mt-2">
                       Payment Status: {selectedOrder.isPaid ? `Paid on ${selectedOrder.paidAt.substring(0,10)}` : 'Unpaid'}
                     </p>
+                    {selectedOrder.paymentMethod === 'PHONEPE' && (
+                      <div className="mt-4 pt-4 border-t border-walnut/10">
+                        <p className="font-bold text-text-primary mb-2">PhonePe Manual Payment</p>
+                        {selectedOrder.paymentReceipt ? (
+                          <div className="mb-4">
+                            <a href={selectedOrder.paymentReceipt} target="_blank" rel="noreferrer" className="text-accent-gold underline text-sm">
+                              View Uploaded Receipt
+                            </a>
+                            <div className="mt-2 w-32 h-32 rounded border border-walnut/10 overflow-hidden">
+                              <img src={selectedOrder.paymentReceipt} alt="Receipt" className="w-full h-full object-cover" />
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-red-400 mb-4">No receipt uploaded</p>
+                        )}
+                        
+                        {!selectedOrder.isVerifiedByAdmin && selectedOrder.paymentReceipt && !selectedOrder.isCancelled && (
+                          <div className="w-full mt-4 bg-bg-base p-4 rounded-xl border border-walnut/10">
+                            {!showDeclineOptions ? (
+                              <div className="flex gap-2 w-full">
+                                <button 
+                                  onClick={(e) => { e.preventDefault(); handleVerifyPayment(); }}
+                                  disabled={updateLoading}
+                                  className="w-1/2 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-2 rounded-lg transition-colors"
+                                >
+                                  Approve
+                                </button>
+                                <button 
+                                  onClick={(e) => { e.preventDefault(); setShowDeclineOptions(true); }}
+                                  disabled={updateLoading}
+                                  className="w-1/2 bg-surface hover:bg-surface/80 border border-red-500 text-red-500 font-bold py-2 rounded-lg transition-colors"
+                                >
+                                  Decline
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-3 w-full animate-fade-in">
+                                <label className="text-sm font-bold text-red-500">Select Decline Reason:</label>
+                                <select 
+                                  value={declineReason}
+                                  onChange={(e) => setDeclineReason(e.target.value)}
+                                  className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 focus:outline-none focus:border-accent-gold"
+                                >
+                                  {predefinedReasons.map((r, idx) => (
+                                    <option key={idx} value={r}>{r}</option>
+                                  ))}
+                                </select>
+                                
+                                {declineReason === 'Other (Custom Reason)' && (
+                                  <textarea 
+                                    value={customReason}
+                                    onChange={(e) => setCustomReason(e.target.value)}
+                                    placeholder="Type your exact reason here..."
+                                    className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 h-20 resize-none focus:outline-none focus:border-accent-gold"
+                                  />
+                                )}
+                                
+                                <div className="flex gap-2 w-full mt-2">
+                                  <button 
+                                    onClick={(e) => { e.preventDefault(); setShowDeclineOptions(false); }}
+                                    disabled={updateLoading}
+                                    className="w-1/3 bg-surface hover:bg-surface/80 border border-walnut/20 text-text-primary font-bold py-2 rounded-lg transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button 
+                                    onClick={(e) => { e.preventDefault(); handleDeclineOrder(); }}
+                                    disabled={updateLoading}
+                                    className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition-colors"
+                                  >
+                                    Confirm Decline
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {selectedOrder.isVerifiedByAdmin && !selectedOrder.isCancelled && (
+                          <p className="text-green-400 font-bold text-sm bg-green-900/20 p-2 rounded inline-block mt-2">Payment Verified</p>
+                        )}
+                        {selectedOrder.isCancelled && (
+                          <p className="text-red-500 font-bold text-sm bg-red-900/20 p-2 rounded inline-block mt-2">Order Cancelled: {selectedOrder.cancelReason}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -5,7 +5,7 @@ import { StoreContext } from '../context/StoreContext';
 const MobileNavDrawer = ({ isOpen, onClose }) => {
   const { userInfo, updateSession } = useContext(StoreContext);
   const navigate = useNavigate();
-  
+
   // Accordion states
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [occasionsOpen, setOccasionsOpen] = useState(false);
@@ -19,6 +19,18 @@ const MobileNavDrawer = ({ isOpen, onClose }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   const logoutHandler = () => {
     updateSession(null);
     onClose();
@@ -30,14 +42,14 @@ const MobileNavDrawer = ({ isOpen, onClose }) => {
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 z-50 transition-opacity backdrop-blur-sm lg:hidden"
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div className="fixed top-0 left-0 h-full w-4/5 max-w-sm bg-surface shadow-2xl z-50 overflow-y-auto lg:hidden flex flex-col border-r border-accent-gold/20 animate-slide-right">
-        
+
         {/* Header */}
         <div className="p-6 border-b border-accent-gold/10 flex justify-between items-center bg-bg-base">
           <Link to="/" onClick={onClose} className="text-xl font-serif font-bold text-accent-gold uppercase tracking-widest">
@@ -61,7 +73,7 @@ const MobileNavDrawer = ({ isOpen, onClose }) => {
 
           {/* Categories Accordion */}
           <div className="border-b border-accent-gold/5">
-            <button 
+            <button
               className="w-full py-3 flex justify-between items-center text-lg font-serif"
               onClick={() => setCategoriesOpen(!categoriesOpen)}
               aria-expanded={categoriesOpen}
@@ -83,7 +95,7 @@ const MobileNavDrawer = ({ isOpen, onClose }) => {
 
           {/* Occasions Accordion */}
           <div className="border-b border-accent-gold/5">
-            <button 
+            <button
               className="w-full py-3 flex justify-between items-center text-lg font-serif"
               onClick={() => setOccasionsOpen(!occasionsOpen)}
               aria-expanded={occasionsOpen}
@@ -115,7 +127,7 @@ const MobileNavDrawer = ({ isOpen, onClose }) => {
           {userInfo ? (
             <div className="space-y-4">
               <div className="text-accent-gold font-bold mb-2">Hello, {userInfo.name}</div>
-              <Link to="/profile" onClick={onClose} className="block text-text-primary hover:text-accent-gold">My Profile</Link>
+              <Link to="/account" onClick={onClose} className="block text-text-primary hover:text-accent-gold">My Account</Link>
               {userInfo.isAdmin && (
                 <Link to="/admin/orderlist" onClick={onClose} className="block text-text-primary hover:text-accent-gold">Admin Dashboard</Link>
               )}

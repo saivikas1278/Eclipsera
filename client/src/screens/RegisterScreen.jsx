@@ -3,14 +3,28 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { StoreContext } from '../context/StoreContext';
 import { GoogleLogin } from '@react-oauth/google';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
+const registerSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().min(1, 'Email is required').email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string().min(1, 'Confirm Password is required'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
+});
 
 const RegisterScreen = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const { register, handleSubmit, formState: { errors, isValid } } = useForm({
+    resolver: zodResolver(registerSchema),
+    mode: 'onTouched',
+  });
 
   const { setUserInfo } = useContext(StoreContext);
   const navigate = useNavigate();
@@ -18,38 +32,21 @@ const RegisterScreen = () => {
 
   const redirect = new URLSearchParams(location.search).get('redirect') || '/';
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
+  const submitHandler = async (dataForm) => {
     setLoading(true);
     setError(null);
-
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      };
-
+      const config = { headers: { 'Content-Type': 'application/json' } };
       const { data } = await axios.post(
         '/api/users',
-        { name, email, password },
+        { name: dataForm.name, email: dataForm.email, password: dataForm.password },
         config
       );
-
       setUserInfo(data);
       localStorage.setItem('userInfo', JSON.stringify(data));
       navigate(redirect);
     } catch (err) {
-      setError(
-        err.response && err.response.data.message
-          ? err.response.data.message
-          : err.message
-      );
+      setError(err.response?.data?.message || err.message);
       setLoading(false);
     }
   };
@@ -68,11 +65,7 @@ const RegisterScreen = () => {
       localStorage.setItem('userInfo', JSON.stringify(data));
       navigate(redirect);
     } catch (err) {
-      setError(
-        err.response && err.response.data.message
-          ? err.response.data.message
-          : err.message
-      );
+      setError(err.response?.data?.message || err.message);
       setLoading(false);
     }
   };
@@ -92,58 +85,54 @@ const RegisterScreen = () => {
           </div>
         )}
 
-        <form onSubmit={submitHandler} className="space-y-6">
+        <form onSubmit={handleSubmit(submitHandler)} className="space-y-6">
           <div>
             <label className="block text-sm font-semibold text-text-primary/80 mb-2">Full Name</label>
             <input
               type="text"
-              className="w-full px-5 py-4 rounded-xl bg-surface border border-accent-gold/20 focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300"
+              className={`w-full px-5 py-4 rounded-xl bg-surface border ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-accent-gold/20 focus:ring-accent-gold'} focus:ring-2 outline-none transition-all duration-300`}
               placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
+              {...register('name')}
             />
+            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
           </div>
 
           <div>
             <label className="block text-sm font-semibold text-text-primary/80 mb-2">Email Address</label>
             <input
               type="email"
-              className="w-full px-5 py-4 rounded-xl bg-surface border border-accent-gold/20 focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300"
+              className={`w-full px-5 py-4 rounded-xl bg-surface border ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-accent-gold/20 focus:ring-accent-gold'} focus:ring-2 outline-none transition-all duration-300`}
               placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              {...register('email')}
             />
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
           </div>
 
           <div>
             <label className="block text-sm font-semibold text-text-primary/80 mb-2">Password</label>
             <input
               type="password"
-              className="w-full px-5 py-4 rounded-xl bg-surface border border-accent-gold/20 focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300"
+              className={`w-full px-5 py-4 rounded-xl bg-surface border ${errors.password ? 'border-red-500 focus:ring-red-500' : 'border-accent-gold/20 focus:ring-accent-gold'} focus:ring-2 outline-none transition-all duration-300`}
               placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              {...register('password')}
             />
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
           </div>
 
           <div>
             <label className="block text-sm font-semibold text-text-primary/80 mb-2">Confirm Password</label>
             <input
               type="password"
-              className="w-full px-5 py-4 rounded-xl bg-surface border border-accent-gold/20 focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300"
+              className={`w-full px-5 py-4 rounded-xl bg-surface border ${errors.confirmPassword ? 'border-red-500 focus:ring-red-500' : 'border-accent-gold/20 focus:ring-accent-gold'} focus:ring-2 outline-none transition-all duration-300`}
               placeholder="Confirm password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
+              {...register('confirmPassword')}
             />
+            {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>}
           </div>
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !isValid}
             className="w-full bg-accent-gold hover:bg-accent-gold-hover text-white font-bold text-lg py-4 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Processing...' : 'Register'}
@@ -168,8 +157,8 @@ const RegisterScreen = () => {
 
         <div className="mt-8 text-center text-text-primary/70">
           Already have an account?{' '}
-          <Link to={redirect !== '/' ? `/login?redirect=${redirect}` : '/login'} className="text-accent-gold font-bold hover:underline">
-            Sign In
+          <Link to={redirect !== '/' ? `/login?redirect=${redirect}` : '/login'} className="text-accent-gold font-bold hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-4 focus-visible:ring-offset-bg-base rounded-sm">
+            Sign In Here
           </Link>
         </div>
       </div>

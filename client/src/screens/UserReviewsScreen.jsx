@@ -2,9 +2,9 @@ import { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { StoreContext } from '../context/StoreContext';
-import ProfileSidebar from '../components/ProfileSidebar';
+import ProfileSidebar from '../components/ProfileSidebar'; // Can be removed later
 
-const UserReviewsScreen = () => {
+const UserReviewsScreen = ({ setActiveTab }) => {
   const { userInfo } = useContext(StoreContext);
   const navigate = useNavigate();
 
@@ -50,16 +50,11 @@ const UserReviewsScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg-base py-8 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6">
-        
-        <ProfileSidebar activeTab="reviews" />
-
-        <div className="flex-1 bg-surface rounded-xl shadow-md border border-accent-gold/10 p-6 md:p-8 flex flex-col gap-8">
-          <Link to="/account" className="md:hidden flex items-center gap-2 text-accent-gold font-semibold mb-2 hover:text-accent-gold-hover transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
-            Back to Profile
-          </Link>
+    <div className="animate-fade-in bg-surface rounded-2xl p-6 md:p-8 shadow-sm border border-accent-gold/20 flex flex-col gap-8">
+      <button onClick={() => setActiveTab('overview')} className="md:hidden flex items-center gap-2 text-accent-gold font-semibold mb-2 hover:text-accent-gold-hover transition-colors">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+        Back to Overview
+      </button>
           <div className="border-b border-accent-gold/10 pb-4">
             <h2 className="text-2xl font-bold text-text-primary">My Reviews & Ratings</h2>
             <p className="text-text-secondary mt-1">You have reviewed {reviews.length} {reviews.length === 1 ? 'item' : 'items'}</p>
@@ -110,8 +105,6 @@ const UserReviewsScreen = () => {
             </div>
           )}
 
-        </div>
-      </div>
     </div>
   );
 };

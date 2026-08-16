@@ -35,7 +35,7 @@ const upload = multer({
 
 // POST /api/upload
 // Note: We use upload.single('image') where 'image' must match the field name in the frontend FormData
-router.post('/', protect, admin, (req, res) => {
+router.post('/', protect, (req, res) => {
   upload.single('image')(req, res, function (err) {
     if (err) {
       console.error("Upload Error:", err);

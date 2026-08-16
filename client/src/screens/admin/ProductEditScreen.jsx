@@ -12,6 +12,8 @@ const ProductEditScreen = () => {
   const [image, setImage] = useState('');
   const [description, setDescription] = useState('');
   const [countInStock, setCountInStock] = useState(0);
+  const [paymentQRCode, setPaymentQRCode] = useState('');
+  const [upiId, setUpiId] = useState('');
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,6 +35,8 @@ const ProductEditScreen = () => {
         setImage(data.image);
         setDescription(data.description);
         setCountInStock(data.countInStock);
+        setPaymentQRCode(data.paymentQRCode || '');
+        setUpiId(data.upiId || '');
         setLoading(false);
       } catch (err) {
         setError(
@@ -75,6 +79,34 @@ const ProductEditScreen = () => {
     }
   };
 
+  const uploadPaymentQRHandler = async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    setUploading(true);
+    setUploadError(null);
+
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+
+      const { data } = await axios.post('/api/upload', formData, config);
+      setPaymentQRCode(data);
+      setUploading(false);
+    } catch (err) {
+      setUploadError(
+        err.response && err.response.data.message
+          ? err.response.data.message
+          : err.message
+      );
+      setUploading(false);
+    }
+  };
+
   const submitHandler = async (e) => {
     e.preventDefault();
     setUpdateLoading(true);
@@ -89,7 +121,7 @@ const ProductEditScreen = () => {
 
       await axios.put(
         `/api/products/${productId}`,
-        { name, price, image, description, countInStock },
+        { name, price, image, description, countInStock, paymentQRCode, upiId },
         config
       );
 
@@ -144,7 +176,7 @@ const ProductEditScreen = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-semibold text-text-primary/80 mb-2">Price (₹)</label>
               <input
@@ -208,6 +240,39 @@ const ProductEditScreen = () => {
                 {uploadError}
               </div>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-text-primary/80 mb-2">Admin UPI ID (for PhonePe Deep Link)</label>
+            <input
+              type="text"
+              className="w-full px-5 py-4 rounded-xl bg-surface border border-accent-gold/20 text-text-primary focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300 mb-6"
+              placeholder="e.g. yourname@ybl"
+              value={upiId}
+              onChange={(e) => setUpiId(e.target.value)}
+            />
+
+            <label className="block text-sm font-semibold text-text-primary/80 mb-2">Payment QR Code URL (PhonePe/Manual)</label>
+            <input
+              type="text"
+              className="w-full px-5 py-4 rounded-xl bg-surface border border-accent-gold/20 text-text-primary focus:ring-2 focus:ring-accent-gold focus:border-accent-gold outline-none transition-all duration-300 mb-3"
+              placeholder="Enter QR Code URL"
+              value={paymentQRCode}
+              onChange={(e) => setPaymentQRCode(e.target.value)}
+            />
+            
+            <label className="block text-sm font-semibold text-text-primary/80 mb-2">Upload QR Code Image</label>
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp"
+              onChange={uploadPaymentQRHandler}
+              className="w-full text-sm text-text-primary/60
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-xl file:border-0
+                file:text-sm file:font-semibold
+                file:bg-accent-gold/10 file:text-accent-gold
+                hover:file:bg-accent-gold/20 transition-colors"
+            />
           </div>
 
           <div>

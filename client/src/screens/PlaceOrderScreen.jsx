@@ -9,6 +9,28 @@ const PlaceOrderScreen = () => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('PHONEPE');
+  const [paymentReceipt, setPaymentReceipt] = useState('');
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+
+  // Fetch QR code for the first item in the cart if PHONEPE is selected
+  useEffect(() => {
+    const fetchQr = async () => {
+      if (cartItems.length > 0 && paymentMethod === 'PHONEPE') {
+        try {
+          const { data } = await axios.get(`/api/products/${cartItems[0]._id}`);
+          if (data.paymentQRCode) {
+            setQrCodeUrl(data.paymentQRCode);
+          }
+        } catch (error) {
+          console.error('Failed to fetch QR code', error);
+        }
+      }
+    };
+    fetchQr();
+  }, [cartItems, paymentMethod]);
 
   // If there's no shipping address saved, bounce them back to the shipping screen
   // If the cart is empty, bounce them back to the cart screen
@@ -26,6 +48,7 @@ const PlaceOrderScreen = () => {
   const placeOrderHandler = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) return;
+    
     setLoading(true);
     try {
       const config = {
@@ -47,6 +70,8 @@ const PlaceOrderScreen = () => {
           })),
           shippingAddress,
           totalPrice: Number(totalPrice),
+          paymentMethod,
+          paymentReceipt,
         },
         config
       );
@@ -71,6 +96,31 @@ const PlaceOrderScreen = () => {
         );
         setLoading(false);
       }
+    }
+  };
+
+  const uploadReceiptHandler = async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    setUploadingReceipt(true);
+    setUploadError(null);
+
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+
+      const { data } = await axios.post('/api/upload', formData, config);
+      setPaymentReceipt(data);
+      setUploadingReceipt(false);
+      toast.success('Receipt uploaded successfully!');
+    } catch (err) {
+      setUploadError(err.response?.data?.message || err.message);
+      setUploadingReceipt(false);
     }
   };
 
@@ -103,17 +153,17 @@ const PlaceOrderScreen = () => {
             ) : (
               <ul className="divide-y divide-walnut/10">
                 {cartItems.map((item, index) => (
-                  <li key={index} className="py-4 flex items-center gap-6">
+                  <li key={index} className="py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
                     <img 
                       src={item.image || 'https://placehold.co/150x150?text=No+Image'} 
                       alt={item.name} 
                       onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/150x150?text=No+Image'; }}
                       className="w-20 h-20 rounded-xl object-cover border border-accent-gold/20 shadow-sm" 
                     />
-                    <Link to={`/product/${item._id}`} className="flex-1 text-lg font-serif font-bold text-text-primary hover:text-accent-gold transition-colors">
+                    <Link to={`/product/${item._id}`} className="flex-1 text-lg font-serif font-bold text-text-primary hover:text-accent-gold transition-colors line-clamp-2 break-words">
                       {item.name}
                     </Link>
-                    <div className="font-semibold text-text-primary/70 text-lg">
+                    <div className="font-semibold text-text-primary/70 text-lg whitespace-nowrap">
                       {item.qty} x ₹{item.price.toFixed(2)} = <span className="text-text-primary ml-1">₹{(item.qty * item.price).toFixed(2)}</span>
                     </div>
                   </li>
@@ -143,11 +193,63 @@ const PlaceOrderScreen = () => {
               </div>
             </div>
 
+            <div className="mb-8 bg-bg-base p-6 rounded-xl border border-accent-gold/20">
+              <h3 className="text-xl font-bold text-text-primary mb-4 border-b border-accent-gold/20 pb-2">Payment Method</h3>
+              
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="paymentMethod" 
+                    value="COD" 
+                    checked={paymentMethod === 'COD'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-5 h-5 text-accent-gold focus:ring-accent-gold bg-surface border-accent-gold/40"
+                  />
+                  <span className="text-text-primary text-lg font-medium">Cash on Delivery (COD)</span>
+                </label>
+                
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input 
+                    type="radio" 
+                    name="paymentMethod" 
+                    value="PHONEPE" 
+                    checked={paymentMethod === 'PHONEPE'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-5 h-5 text-accent-gold focus:ring-accent-gold bg-surface border-accent-gold/40"
+                  />
+                  <span className="text-text-primary text-lg font-medium">PhonePe (Scan & Pay)</span>
+                </label>
+              </div>
+            </div>
+
+            {paymentMethod === 'PHONEPE' && (
+              <div className="mb-8 bg-surface p-6 rounded-xl border border-accent-gold/20">
+                <h3 className="text-lg font-bold text-text-primary mb-4">Complete Payment</h3>
+                <p className="text-text-primary/70 mb-4 text-sm">Please pay ₹{totalPrice} to our official PhonePe account and upload the screenshot below.</p>
+                
+                {/* Display dynamic Cloudinary QR code, fallback to placeholder */}
+                <img src={qrCodeUrl || "/images/qr-placeholder.png"} alt="Scan to Pay" className="w-48 h-48 mx-auto mb-4 object-contain border border-accent-gold/20 p-2 rounded-lg" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/200x200?text=Scan+QR'; }} />
+                
+                <div className="mt-4">
+                  <label className="block text-sm font-semibold text-text-primary mb-2">Upload Payment Receipt / Screenshot *</label>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png"
+                    onChange={uploadReceiptHandler}
+                    className="w-full text-sm text-text-primary/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-gold/10 file:text-accent-gold hover:file:bg-accent-gold/20"
+                  />
+                  {uploadingReceipt && <p className="text-accent-gold text-sm mt-2 font-medium animate-pulse">Uploading...</p>}
+                  {uploadError && <p className="text-red-500 text-sm mt-2">{uploadError}</p>}
+                  {paymentReceipt && <p className="text-green-500 text-sm mt-2 font-medium">✓ Receipt uploaded</p>}
+                </div>
+              </div>
+            )}
 
 
             <button
               onClick={placeOrderHandler}
-              disabled={cartItems.length === 0 || loading}
+              disabled={cartItems.length === 0 || loading || (paymentMethod === 'PHONEPE' && !paymentReceipt)}
               className="w-full bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-4 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg"
             >
               {loading ? 'Processing...' : 'Confirm & Place Order'}

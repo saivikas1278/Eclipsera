@@ -16,18 +16,19 @@ const {
   setDefaultAddress,
 } = require('../controllers/userController');
 const { protect, admin } = require('../middleware/authMiddleware');
+const { strictAuthLimiter } = require('../middleware/rateLimiter');
 
 // 1. Route for user registration and fetching all users
 // Path: /api/users/
-router.route('/').post(registerUser).get(protect, admin, getUsers);
+router.route('/').post(strictAuthLimiter, registerUser).get(protect, admin, getUsers);
 
 // 2. Route for user login
 // Path: /api/users/login
-router.post('/login', authUser);
+router.post('/login', strictAuthLimiter, authUser);
 
 // 2.1 Route for Google OAuth login/register
 // Path: /api/users/google
-router.post('/google', googleAuth);
+router.post('/google', strictAuthLimiter, googleAuth);
 
 // 3. Route for user profile
 // Path: /api/users/profile

@@ -13,6 +13,7 @@ const {
   bulkUpdateProducts,
 } = require('../controllers/productController');
 const { protect, admin } = require('../middleware/authMiddleware');
+const { cacheMiddleware } = require('../services/cacheService');
 
 router.get('/top', getTopProducts);
 router.route('/my-reviews').get(protect, getUserReviews);
@@ -20,7 +21,7 @@ router.route('/my-reviews').get(protect, getUserReviews);
 // Route: /api/products/
 // GET is public, POST requires protect and admin
 router.route('/')
-  .get(getProducts)
+  .get(cacheMiddleware('products_all'), getProducts)
   .post(protect, admin, createProduct);
 
 router.route('/bulk-update').put(protect, admin, bulkUpdateProducts);

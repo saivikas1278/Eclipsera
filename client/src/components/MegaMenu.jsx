@@ -1,11 +1,9 @@
 import { Link } from 'react-router-dom';
 
 const MegaMenu = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
   return (
     <div 
-      className="absolute top-full left-0 w-full bg-surface border-t border-accent-gold/20 shadow-2xl z-40 transition-all duration-300 transform origin-top"
+      className={`absolute top-full left-0 w-full bg-surface border-t border-accent-gold/20 shadow-2xl z-40 transition-all duration-300 transform origin-top ${isOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
       onMouseLeave={onClose}
     >
       <div className="container mx-auto max-w-7xl px-4 py-8 flex">

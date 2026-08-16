@@ -11,6 +11,9 @@ const {
   updateOrderFulfillment,
   downloadInvoice,
   bulkUpdateOrderStatuses,
+  verifyManualPayment,
+  cancelOrder,
+  markOrderRefunded,
 } = require('../controllers/orderController');
 const { protect, admin, optionalProtect } = require('../middleware/authMiddleware');
 
@@ -24,7 +27,10 @@ router.route('/:id').get(optionalProtect, getOrderById);
 router.route('/:id/invoice').get(optionalProtect, downloadInvoice);
 router.route('/:id/razorpay').post(optionalProtect, createRazorpayOrder);
 router.put('/:id/pay', optionalProtect, updateOrderToPaid);
+router.put('/:id/verify-payment', protect, admin, verifyManualPayment);
 router.put('/:id/deliver', protect, admin, updateOrderToDelivered);
 router.put('/:id/fulfillment', protect, admin, updateOrderFulfillment);
+router.put('/:id/cancel', protect, admin, cancelOrder);
+router.put('/:id/refund', protect, admin, markOrderRefunded);
 
 module.exports = router;
