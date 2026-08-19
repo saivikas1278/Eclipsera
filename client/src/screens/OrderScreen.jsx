@@ -130,7 +130,7 @@ const OrderScreen = () => {
   if (!order) return null;
 
   return (
-    <div className="py-12 animate-fade-in max-w-6xl mx-auto">
+    <div className="py-12 animate-fade-in max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8">Order <span className="text-text-primary/60 font-sans text-xl">#{order._id}</span></h1>
       
       {order.isCancelled && (
@@ -163,10 +163,16 @@ const OrderScreen = () => {
               <span className="font-semibold text-text-primary mr-2">Email: </span>
               <a href={`mailto:${order.user?.email || order.shippingAddress?.email}`} className="text-accent-gold hover:underline">{order.user?.email || order.shippingAddress?.email}</a>
             </p>
-            <p className="text-text-primary/70 text-lg mb-4">
+            <p className="text-text-primary/70 text-lg mb-2">
               <span className="font-semibold text-text-primary mr-2">Address: </span>
-              {order.shippingAddress.address}, {order.shippingAddress.city} {order.shippingAddress.postalCode}, {order.shippingAddress.country}
+              {order.shippingAddress.address}, {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}, {order.shippingAddress.country}
             </p>
+            {order.shippingAddress.phone && (
+              <p className="text-text-primary/70 text-lg mb-4">
+                <span className="font-semibold text-text-primary mr-2">Phone: </span>
+                {order.shippingAddress.phone}
+              </p>
+            )}
             
             {order.isDelivered ? (
               <div className="bg-green-900/30 text-green-400 p-4 rounded-xl border border-green-800/50 font-medium">
@@ -245,7 +251,7 @@ const OrderScreen = () => {
 
             <button
               onClick={downloadInvoiceHandler}
-              className="w-full bg-surface hover:bg-surface/90 text-text-primary font-bold py-4 rounded-xl shadow-sm border border-accent-gold/20 transition-all hover:shadow-md flex items-center justify-center gap-2 mb-4"
+              className="w-full bg-surface hover:bg-surface/90 text-text-primary font-bold py-4 min-h-12 rounded-xl shadow-sm border border-accent-gold/20 transition-all hover:shadow-md flex items-center justify-center gap-2 mb-4"
             >
               <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               Download Invoice (PDF)
@@ -267,7 +273,7 @@ const OrderScreen = () => {
               <div className="mt-4">
                 <button
                   type="button"
-                  className="w-full bg-surface hover:bg-surface/90 text-white font-bold py-4 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50"
+                  className="w-full bg-surface hover:bg-surface/90 text-white font-bold py-4 min-h-12 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50"
                   onClick={deliverHandler}
                   disabled={deliverLoading}
                 >
@@ -287,12 +293,12 @@ const OrderScreen = () => {
                     value={registerPassword}
                     onChange={(e) => setRegisterPassword(e.target.value)}
                     required
-                    className="w-full px-4 py-3 rounded-xl bg-surface border border-accent-gold/20 focus:ring-2 focus:ring-accent-gold outline-none transition-all duration-300"
+                    className="w-full px-4 py-3 min-h-12 rounded-xl bg-surface border border-accent-gold/20 focus:ring-2 focus:ring-accent-gold outline-none transition-all duration-300"
                   />
                   <button
                     type="submit"
                     disabled={registerLoading}
-                    className="w-full bg-surface hover:bg-surface/90 text-text-primary font-bold py-3 rounded-xl shadow-sm border border-accent-gold/20 transition-all hover:shadow-md disabled:opacity-50"
+                    className="w-full bg-surface hover:bg-surface/90 text-text-primary font-bold py-3 min-h-12 rounded-xl shadow-sm border border-accent-gold/20 transition-all hover:shadow-md disabled:opacity-50"
                   >
                     {registerLoading ? 'Creating...' : 'Create Account'}
                   </button>

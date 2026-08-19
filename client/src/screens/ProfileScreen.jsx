@@ -85,7 +85,7 @@ const ProfileScreen = () => {
 
         {/* Main Content Area (Fluid Width) */}
         <div className="flex-1 bg-surface rounded-xl shadow-md border border-accent-gold/10 p-6 md:p-8 flex flex-col gap-8">
-          <Link to="/account" className="md:hidden flex items-center gap-2 text-accent-gold font-semibold mb-2 hover:text-accent-gold-hover transition-colors">
+          <Link to="/account" className="md:hidden flex items-center gap-2 min-h-12 text-accent-gold font-semibold mb-2 hover:text-accent-gold-hover transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
             Back to Profile
           </Link>
@@ -107,7 +107,7 @@ const ProfileScreen = () => {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="First Name"
-                    className="px-4 py-3 bg-bg-base border border-accent-gold/20 rounded focus:outline-none focus:border-accent-gold text-text-primary"
+                    className="px-4 py-3 min-h-12 bg-bg-base border border-accent-gold/20 rounded focus:outline-none focus:border-accent-gold text-text-primary"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -116,7 +116,7 @@ const ProfileScreen = () => {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Last Name"
-                    className="px-4 py-3 bg-bg-base border border-accent-gold/20 rounded focus:outline-none focus:border-accent-gold text-text-primary"
+                    className="px-4 py-3 min-h-12 bg-bg-base border border-accent-gold/20 rounded focus:outline-none focus:border-accent-gold text-text-primary"
                   />
                 </div>
               </div>
@@ -124,7 +124,7 @@ const ProfileScreen = () => {
               <div className="mt-4">
                 <p className="text-sm text-text-secondary mb-2">Your Gender</p>
                 <div className="flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2 cursor-pointer min-h-12">
                     <input 
                       type="radio" 
                       name="gender" 
@@ -135,7 +135,7 @@ const ProfileScreen = () => {
                     />
                     <span className="text-text-primary">Male</span>
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-2 cursor-pointer min-h-12">
                     <input 
                       type="radio" 
                       name="gender" 
@@ -160,7 +160,7 @@ const ProfileScreen = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="px-4 py-3 bg-bg-base border border-accent-gold/20 rounded focus:outline-none focus:border-accent-gold text-text-primary"
+                  className="px-4 py-3 min-h-12 bg-bg-base border border-accent-gold/20 rounded focus:outline-none focus:border-accent-gold text-text-primary"
                 />
               </div>
             </section>
@@ -176,7 +176,7 @@ const ProfileScreen = () => {
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value)}
                   placeholder="+91"
-                  className="px-4 py-3 bg-bg-base border border-accent-gold/20 rounded focus:outline-none focus:border-accent-gold text-text-primary"
+                  className="px-4 py-3 min-h-12 bg-bg-base border border-accent-gold/20 rounded focus:outline-none focus:border-accent-gold text-text-primary"
                 />
               </div>
             </section>
@@ -190,7 +190,7 @@ const ProfileScreen = () => {
                   placeholder="New Password (Leave blank to keep current)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="px-4 py-3 bg-bg-base border border-accent-gold/20 rounded focus:outline-none focus:border-accent-gold text-text-primary"
+                  className="px-4 py-3 min-h-12 bg-bg-base border border-accent-gold/20 rounded focus:outline-none focus:border-accent-gold text-text-primary"
                 />
               </div>
             </section>
@@ -199,7 +199,7 @@ const ProfileScreen = () => {
               <button 
                 type="submit" 
                 disabled={loading} 
-                className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-3 px-8 rounded transition-colors text-lg"
+                className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-3 min-h-12 px-8 rounded transition-colors text-lg"
               >
                 {loading ? 'Saving...' : 'Save Profile Changes'}
               </button>
@@ -208,7 +208,7 @@ const ProfileScreen = () => {
 
           {/* Deactivate Account */}
           <div className="mt-8 pt-6 border-t border-accent-gold/10 flex justify-start">
-            <button onClick={handleComingSoon} className="text-red-500/80 hover:text-red-500 text-sm font-bold transition-colors">
+            <button onClick={handleComingSoon} className="text-red-500/80 hover:text-red-500 text-sm font-bold min-h-12 transition-colors">
               Deactivate Account
             </button>
           </div>

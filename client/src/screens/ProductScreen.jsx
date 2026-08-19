@@ -190,7 +190,7 @@ const ProductScreen = () => {
         image={product.image}
         structuredData={structuredData} 
       />
-      <div className="max-w-7xl mx-auto px-4 py-4 md:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-4 md:mb-8 text-sm text-text-secondary font-medium">
@@ -213,7 +213,7 @@ const ProductScreen = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full md:w-3/4 md:h-3/4 bg-accent-gold/20 blur-[60px] md:blur-[120px] rounded-full pointer-events-none z-0"></div>
             
             <div className="sticky top-24 z-10">
-              <div className="bg-surface rounded-2xl shadow-md border border-accent-gold/20 overflow-hidden relative group aspect-[4/5]">
+              <div className="bg-surface rounded-2xl shadow-md border border-accent-gold/20 overflow-hidden relative group aspect-square md:aspect-[4/5]">
                 <OptimizedImage 
                   key={mainImage}
                   src={mainImage} 
@@ -413,7 +413,7 @@ const ProductScreen = () => {
       <RelatedProductsCarousel productId={product._id} />
 
       {/* REVIEWS SECTION */}
-      <div className="max-w-7xl mx-auto px-4 mt-16 pt-16 border-t border-accent-gold/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-16 border-t border-accent-gold/10">
         <h2 className="text-4xl font-serif font-extrabold text-text-primary text-center mb-12">Customer Reviews</h2>
         
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
@@ -433,7 +433,7 @@ const ProductScreen = () => {
                       required
                       value={rating}
                       onChange={(e) => setRating(e.target.value)}
-                      className="w-full px-4 py-3 border border-accent-gold/20 rounded-xl bg-bg-base focus:ring-2 focus:ring-accent-gold outline-none text-text-primary transition-all"
+                      className="w-full px-4 py-3 min-h-12 border border-accent-gold/20 rounded-xl bg-bg-base focus:ring-2 focus:ring-accent-gold outline-none text-text-primary transition-all"
                     >
                       <option value="">Select a rating...</option>
                       <option value="5">5 - Excellent</option>

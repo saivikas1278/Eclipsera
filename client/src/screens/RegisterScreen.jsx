@@ -77,6 +77,10 @@ const RegisterScreen = () => {
   return (
     <div className="flex justify-center items-center min-h-[70vh] animate-fade-in">
       <div className="w-full max-w-md bg-transparent p-8 sm:p-10 rounded-3xl shadow-sm border border-accent-gold/20">
+        <div className="flex flex-col items-center justify-center mb-6 gap-3">
+          <img src="/images/logo.jpg" alt="Logo" className="h-20 w-auto object-contain rounded-lg shadow-sm" />
+          <h2 className="text-2xl font-serif font-extrabold text-accent-gold tracking-widest uppercase">Eclipsera Premium</h2>
+        </div>
         <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8 text-center">Create Account</h1>
 
         {error && (

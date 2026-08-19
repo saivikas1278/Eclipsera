@@ -75,7 +75,7 @@ const RefundQueueScreen = () => {
   }
 
   return (
-    <div className="py-8 animate-fade-in relative">
+    <div className="py-8 animate-fade-in relative px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-[60] bg-accent-gold text-bg-base font-bold px-6 py-3 rounded-lg shadow-xl animate-fade-in">
@@ -102,11 +102,11 @@ const RefundQueueScreen = () => {
           <p className="text-text-secondary">There are no pending refunds in the queue.</p>
         </div>
       ) : (
-        <div className="bg-surface rounded-2xl shadow-xl border border-white/5 overflow-hidden">
+        <div className="bg-surface rounded-3xl shadow-sm border border-accent-gold/20 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead className="hidden md:table-header-group">
-                <tr className="bg-bg-secondary border-b border-white/5">
+                <tr className="bg-transparent border-b border-accent-gold/20">
                   <th className="p-4 text-xs uppercase tracking-widest font-bold text-text-secondary">Order ID / Date</th>
                   <th className="p-4 text-xs uppercase tracking-widest font-bold text-text-secondary">Customer</th>
                   <th className="p-4 text-xs uppercase tracking-widest font-bold text-text-secondary">Refund Amount</th>
@@ -114,7 +114,7 @@ const RefundQueueScreen = () => {
                   <th className="p-4 text-xs uppercase tracking-widest font-bold text-text-secondary text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-accent-gold/10">
                 {orders.map((order) => (
                   <tr key={order._id} className="grid grid-cols-2 md:table-row gap-y-1 p-3 mb-3 border border-accent-gold/20 md:border-none rounded-xl md:rounded-none bg-surface md:bg-transparent shadow-sm md:shadow-none md:p-0 relative hover:bg-bg-base/50 transition-colors">
                     

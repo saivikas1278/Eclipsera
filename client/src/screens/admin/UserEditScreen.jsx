@@ -74,7 +74,7 @@ const UserEditScreen = () => {
   };
 
   return (
-    <div className="animate-fade-in max-w-2xl mx-auto py-8">
+    <div className="animate-fade-in max-w-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <Link
         to="/admin/userlist"
         className="inline-flex items-center text-text-primary/60 hover:text-accent-gold font-medium mb-6 transition-colors"
@@ -85,7 +85,7 @@ const UserEditScreen = () => {
         Go Back
       </Link>
 
-      <div className="bg-transparent rounded-3xl shadow-sm border border-accent-gold/20 p-8">
+      <div className="bg-surface rounded-3xl shadow-sm border border-accent-gold/20 p-8">
         <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8">Edit User</h1>
 
         {loading ? (
@@ -110,7 +110,7 @@ const UserEditScreen = () => {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-surface border border-accent-gold/20 text-text-primary rounded-xl focus:ring-accent-gold focus:border-accent-gold block p-3 transition-colors outline-none"
+                className="w-full bg-surface border border-accent-gold/20 text-text-primary rounded-xl focus:ring-accent-gold focus:border-accent-gold block px-5 py-4 min-h-12 transition-colors outline-none"
                 required
               />
             </div>
@@ -124,7 +124,7 @@ const UserEditScreen = () => {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-surface border border-accent-gold/20 text-text-primary rounded-xl focus:ring-accent-gold focus:border-accent-gold block p-3 transition-colors outline-none"
+                className="w-full bg-surface border border-accent-gold/20 text-text-primary rounded-xl focus:ring-accent-gold focus:border-accent-gold block px-5 py-4 min-h-12 transition-colors outline-none"
                 required
               />
             </div>
@@ -145,7 +145,7 @@ const UserEditScreen = () => {
             <button
               type="submit"
               disabled={updateLoading}
-              className="w-full bg-accent-gold hover:bg-accent-gold-hover text-white font-bold text-lg py-4 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold text-lg py-4 min-h-12 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {updateLoading ? 'Processing...' : 'Update'}
             </button>

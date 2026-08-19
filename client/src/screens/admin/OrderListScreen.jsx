@@ -272,7 +272,7 @@ const OrderListScreen = () => {
   }
 
   return (
-    <div className="py-8 animate-fade-in relative">
+    <div className="py-8 animate-fade-in relative px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-[60] bg-accent-gold text-bg-base font-bold px-6 py-3 rounded-lg shadow-xl animate-fade-in">
@@ -354,12 +354,12 @@ const OrderListScreen = () => {
               value={bulkNote}
               onChange={(e) => setBulkNote(e.target.value)}
               placeholder="Optional Note..."
-              className="bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold placeholder:text-text-secondary/50"
+              className="bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-2 min-h-12 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold placeholder:text-text-secondary/50"
             />
             <button 
               onClick={handleBulkUpdate}
               disabled={bulkLoading}
-              className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-2 px-6 rounded-lg transition-colors flex items-center gap-2"
+              className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-2 min-h-12 px-6 rounded-lg transition-colors flex items-center gap-2"
             >
               {bulkLoading ? 'Applying...' : 'Apply to All'}
             </button>
@@ -450,7 +450,7 @@ const OrderListScreen = () => {
         <button 
           disabled={page === 1} 
           onClick={() => setPage(p => p - 1)}
-          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
+          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 min-h-12 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
         >
           Previous
         </button>
@@ -458,7 +458,7 @@ const OrderListScreen = () => {
         <button 
           disabled={page >= totalPages} 
           onClick={() => setPage(p => p + 1)}
-          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
+          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 min-h-12 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
         >
           Next
         </button>
@@ -476,7 +476,7 @@ const OrderListScreen = () => {
                   <span className="bg-red-900/30 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">COD</span>
                 )}
               </div>
-              <button onClick={closeModal} className="text-text-secondary hover:text-accent-gold text-2xl font-bold">&times;</button>
+              <button onClick={closeModal} className="text-text-secondary hover:text-accent-gold text-2xl font-bold min-h-12 min-w-12 flex items-center justify-center">&times;</button>
             </div>
 
             <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -494,8 +494,11 @@ const OrderListScreen = () => {
                   <h3 className="text-lg font-bold text-accent-gold mb-3">Shipping Address</h3>
                   <div className="bg-bg-base p-4 rounded-xl border border-walnut/10 text-text-primary">
                     <p>{selectedOrder.shippingAddress.address}</p>
-                    <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.postalCode}</p>
+                    <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} {selectedOrder.shippingAddress.postalCode}</p>
                     <p>{selectedOrder.shippingAddress.country}</p>
+                    {selectedOrder.shippingAddress.phone && (
+                      <p className="mt-2 text-text-secondary">Phone: {selectedOrder.shippingAddress.phone}</p>
+                    )}
                   </div>
                 </div>
 
@@ -550,14 +553,14 @@ const OrderListScreen = () => {
                                 <button 
                                   onClick={(e) => { e.preventDefault(); handleVerifyPayment(); }}
                                   disabled={updateLoading}
-                                  className="w-1/2 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-2 rounded-lg transition-colors"
+                                  className="w-1/2 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-2 min-h-12 rounded-lg transition-colors"
                                 >
                                   Approve
                                 </button>
                                 <button 
                                   onClick={(e) => { e.preventDefault(); setShowDeclineOptions(true); }}
                                   disabled={updateLoading}
-                                  className="w-1/2 bg-surface hover:bg-surface/80 border border-red-500 text-red-500 font-bold py-2 rounded-lg transition-colors"
+                                  className="w-1/2 bg-surface hover:bg-surface/80 border border-red-500 text-red-500 font-bold py-2 min-h-12 rounded-lg transition-colors"
                                 >
                                   Decline
                                 </button>
@@ -568,7 +571,7 @@ const OrderListScreen = () => {
                                 <select 
                                   value={declineReason}
                                   onChange={(e) => setDeclineReason(e.target.value)}
-                                  className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 focus:outline-none focus:border-accent-gold"
+                                  className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 min-h-12 focus:outline-none focus:border-accent-gold"
                                 >
                                   {predefinedReasons.map((r, idx) => (
                                     <option key={idx} value={r}>{r}</option>
@@ -588,14 +591,14 @@ const OrderListScreen = () => {
                                   <button 
                                     onClick={(e) => { e.preventDefault(); setShowDeclineOptions(false); }}
                                     disabled={updateLoading}
-                                    className="w-1/3 bg-surface hover:bg-surface/80 border border-walnut/20 text-text-primary font-bold py-2 rounded-lg transition-colors"
+                                    className="w-1/3 bg-surface hover:bg-surface/80 border border-walnut/20 text-text-primary font-bold py-2 min-h-12 rounded-lg transition-colors"
                                   >
                                     Cancel
                                   </button>
                                   <button 
                                     onClick={(e) => { e.preventDefault(); handleDeclineOrder(); }}
                                     disabled={updateLoading}
-                                    className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition-colors"
+                                    className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-2 min-h-12 rounded-lg transition-colors"
                                   >
                                     Confirm Decline
                                   </button>
@@ -621,7 +624,7 @@ const OrderListScreen = () => {
                           <button 
                             onClick={(e) => { e.preventDefault(); setShowDeclineOptions(true); }}
                             disabled={updateLoading}
-                            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm"
+                            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 min-h-12 rounded-lg transition-colors shadow-sm"
                           >
                             Decline COD Order
                           </button>
@@ -631,7 +634,7 @@ const OrderListScreen = () => {
                             <select 
                               value={declineReason}
                               onChange={(e) => setDeclineReason(e.target.value)}
-                              className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 focus:outline-none focus:border-accent-gold"
+                              className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 min-h-12 focus:outline-none focus:border-accent-gold"
                             >
                               {predefinedReasons.map((r, idx) => (
                                 <option key={idx} value={r}>{r}</option>
@@ -651,14 +654,14 @@ const OrderListScreen = () => {
                               <button 
                                 onClick={(e) => { e.preventDefault(); setShowDeclineOptions(false); }}
                                 disabled={updateLoading}
-                                className="w-1/3 bg-surface hover:bg-surface/80 border border-walnut/20 text-text-primary font-bold py-2 rounded-lg transition-colors"
+                                className="w-1/3 bg-surface hover:bg-surface/80 border border-walnut/20 text-text-primary font-bold py-2 min-h-12 rounded-lg transition-colors"
                               >
                                 Cancel
                               </button>
                               <button 
                                 onClick={(e) => { e.preventDefault(); handleDeclineOrder(); }}
                                 disabled={updateLoading}
-                                className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition-colors shadow-md"
+                                className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-2 min-h-12 rounded-lg transition-colors shadow-md"
                               >
                                 Confirm Decline
                               </button>
@@ -681,7 +684,7 @@ const OrderListScreen = () => {
                     <select 
                       value={fulfillmentStatus} 
                       onChange={(e) => setFulfillmentStatus(e.target.value)}
-                      className="w-full bg-surface border border-accent-gold/40 rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold"
+                      className="w-full bg-surface border border-accent-gold/40 rounded-lg px-4 py-3 min-h-12 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold"
                     >
                       <option value="PENDING">PENDING</option>
                       <option value="PROCESSING">PROCESSING</option>
@@ -698,7 +701,7 @@ const OrderListScreen = () => {
                       value={trackingNumber}
                       onChange={(e) => setTrackingNumber(e.target.value)}
                       placeholder="e.g. BLUEDART-123456"
-                      className="w-full bg-surface border border-accent-gold/40 rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold placeholder:text-text-secondary/50"
+                      className="w-full bg-surface border border-accent-gold/40 rounded-lg px-4 py-3 min-h-12 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold placeholder:text-text-secondary/50"
                     />
                   </div>
 
@@ -709,7 +712,7 @@ const OrderListScreen = () => {
                       onChange={(e) => setFulfillmentNote(e.target.value)}
                       placeholder="Optional note to send customer..."
                       rows="3"
-                      className="w-full bg-surface border border-accent-gold/40 rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold placeholder:text-text-secondary/50 resize-none"
+                      className="w-full bg-surface border border-accent-gold/40 rounded-lg px-4 py-3 min-h-12 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold placeholder:text-text-secondary/50 resize-none"
                     ></textarea>
                   </div>
 

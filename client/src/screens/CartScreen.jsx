@@ -28,7 +28,7 @@ const CartScreen = () => {
   }, [cartItems.length]);
 
   return (
-    <div className="py-12 animate-fade-in">
+    <div className="py-12 animate-fade-in px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <h1 className="text-4xl font-serif font-extrabold text-text-primary mb-8 tracking-tight">Shopping Cart</h1>
       
       {cartItems.length === 0 ? (
@@ -71,7 +71,7 @@ const CartScreen = () => {
                       <select 
                         value={item.qty} 
                         onChange={(e) => addToCart(item, Number(e.target.value), item.variant, item.personalization)}
-                        className="bg-transparent border border-accent-gold/20 text-text-primary rounded-lg min-h-[44px] min-w-[44px] px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-accent-gold outline-none cursor-pointer hover:bg-surface transition-colors"
+                        className="bg-transparent border border-accent-gold/20 text-text-primary rounded-lg min-h-12 min-w-12 px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-accent-gold outline-none cursor-pointer hover:bg-surface transition-colors"
                       >
                         {[...Array(item.countInStock).keys()].map((x) => (
                           <option key={x + 1} value={x + 1}>
@@ -89,14 +89,14 @@ const CartScreen = () => {
                   <div className="flex sm:flex-col gap-2 sm:ml-4 flex-shrink-0">
                     <button 
                       onClick={() => saveForLater(item.cartItemId || item._id)}
-                      className="min-h-[44px] min-w-[44px] p-2 sm:p-3 text-accent-gold bg-accent-gold/10 hover:bg-accent-gold hover:text-bg-base rounded-xl transition-colors shadow-sm text-sm font-semibold"
+                      className="min-h-12 min-w-12 p-2 sm:p-3 text-accent-gold bg-accent-gold/10 hover:bg-accent-gold hover:text-bg-base rounded-xl transition-colors shadow-sm text-sm font-semibold"
                       title="Save for Later"
                     >
                       Save
                     </button>
                     <button 
                       onClick={() => removeFromCart(item.cartItemId || item._id)}
-                      className="min-h-[44px] min-w-[44px] p-2 sm:p-3 text-red-500 bg-red-500/10 hover:bg-red-500 hover:text-white rounded-xl transition-colors shadow-sm flex items-center justify-center"
+                      className="min-h-12 min-w-12 p-2 sm:p-3 text-red-500 bg-red-500/10 hover:bg-red-500 hover:text-white rounded-xl transition-colors shadow-sm flex items-center justify-center"
                       title="Remove from Cart"
                     >
                       <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +129,7 @@ const CartScreen = () => {
                       
                       <button 
                         onClick={() => moveToCart(item.cartItemId || item._id)}
-                        className="min-h-[44px] min-w-[44px] w-full sm:w-auto px-6 py-2 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center"
+                        className="min-h-12 min-w-12 w-full sm:w-auto px-6 py-2 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center"
                       >
                         Move to Cart
                       </button>
@@ -158,7 +158,7 @@ const CartScreen = () => {
               <button 
                 onClick={checkoutHandler}
                 disabled={cartItems.length === 0}
-                className="w-full bg-accent-gold hover:bg-accent-gold-hover text-bg-base text-lg font-bold py-4 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-accent-gold hover:bg-accent-gold-hover text-bg-base text-lg font-bold min-h-12 py-4 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <span>Proceed To Checkout</span>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>

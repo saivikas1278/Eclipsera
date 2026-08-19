@@ -37,7 +37,7 @@ const ProductCard = ({ product }) => {
       {/* Wishlist Button */}
       <button 
         onClick={toggleWishlist}
-        className="absolute top-3 right-3 z-20 w-11 h-11 bg-black/40 hover:bg-black/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:text-accent-gold transition-colors focus:outline-none"
+        className="absolute top-3 right-3 z-20 w-12 h-12 bg-black/40 hover:bg-black/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:text-accent-gold transition-colors focus:outline-none"
         aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
       >
         <svg 
@@ -50,7 +50,7 @@ const ProductCard = ({ product }) => {
         </svg>
       </button>
 
-      <div className="overflow-hidden relative w-full aspect-square bg-white/5">
+      <div className="overflow-hidden relative w-full aspect-square md:aspect-[4/5] bg-white/5">
         <Link to={`/product/${product._id}`} className="absolute inset-0 z-10"></Link>
         <OptimizedImage 
           src={product.image} 
@@ -89,7 +89,7 @@ const ProductCard = ({ product }) => {
           <button 
             onClick={handleQuickAdd}
             disabled={product.countInStock === 0}
-            className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold min-h-[44px] min-w-[44px] px-2 py-1.5 sm:px-4 sm:py-2 rounded sm:rounded-md text-[11px] sm:text-sm transition-colors disabled:opacity-50 active:scale-95 shadow-sm whitespace-nowrap"
+            className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold min-h-12 min-w-12 px-2 py-1.5 sm:px-4 sm:py-2 rounded sm:rounded-md text-[11px] sm:text-sm transition-colors disabled:opacity-50 active:scale-95 shadow-sm whitespace-nowrap"
           >
             {product.countInStock === 0 ? 'Sold Out' : 'Add'}
           </button>

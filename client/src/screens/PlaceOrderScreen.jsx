@@ -125,25 +125,27 @@ const PlaceOrderScreen = () => {
   };
 
   return (
-    <div className="py-12 animate-fade-in max-w-6xl mx-auto">
+    <div className="py-12 animate-fade-in max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col lg:flex-row gap-8">
         
         {/* Left Side: Order Details */}
         <div className="lg:w-2/3 space-y-8">
           <div className="bg-surface p-8 rounded-3xl shadow-sm border border-accent-gold/20">
             <h2 className="text-2xl font-serif font-extrabold text-text-primary mb-4 border-b border-accent-gold/20 pb-4">Shipping Destination</h2>
-            <p className="text-text-primary/70 text-lg mb-2">
-              <span className="font-semibold text-text-primary mr-2">Name: </span>
-              {shippingAddress.name}
-            </p>
-            <p className="text-text-primary/70 text-lg mb-2">
-              <span className="font-semibold text-text-primary mr-2">Email: </span>
-              {shippingAddress.email}
-            </p>
-            <p className="text-text-primary/70 text-lg">
-              <span className="font-semibold text-text-primary mr-2">Address: </span>
-              {shippingAddress.address}, {shippingAddress.city} {shippingAddress.postalCode}, {shippingAddress.country}
-            </p>
+            <div className="text-text-secondary leading-relaxed">
+              <p className="font-medium text-text-primary mb-1">
+                {shippingAddress.name}
+              </p>
+              <p className="mb-1 text-sm text-text-secondary/70">
+                {shippingAddress.email}
+              </p>
+              <p className="text-sm">
+                {shippingAddress.address}, {shippingAddress.city}, {shippingAddress.state} {shippingAddress.postalCode}, {shippingAddress.country}
+              </p>
+              {shippingAddress.phone && (
+                <p className="text-sm mt-1 text-text-secondary/80">Phone: {shippingAddress.phone}</p>
+              )}
+            </div>
           </div>
 
           <div className="bg-surface p-8 rounded-3xl shadow-sm border border-accent-gold/20">
@@ -197,7 +199,7 @@ const PlaceOrderScreen = () => {
               <h3 className="text-xl font-bold text-text-primary mb-4 border-b border-accent-gold/20 pb-2">Payment Method</h3>
               
               <div className="space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer">
+                <label className="flex items-center gap-3 cursor-pointer min-h-12">
                   <input 
                     type="radio" 
                     name="paymentMethod" 
@@ -209,7 +211,7 @@ const PlaceOrderScreen = () => {
                   <span className="text-text-primary text-lg font-medium">Cash on Delivery (COD)</span>
                 </label>
                 
-                <label className="flex items-center gap-3 cursor-pointer">
+                <label className="flex items-center gap-3 cursor-pointer min-h-12">
                   <input 
                     type="radio" 
                     name="paymentMethod" 
@@ -237,7 +239,7 @@ const PlaceOrderScreen = () => {
                     type="file"
                     accept=".jpg,.jpeg,.png"
                     onChange={uploadReceiptHandler}
-                    className="w-full text-sm text-text-primary/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-gold/10 file:text-accent-gold hover:file:bg-accent-gold/20"
+                    className="w-full text-sm text-text-primary/70 min-h-12 file:mr-4 file:py-3 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-gold/10 file:text-accent-gold hover:file:bg-accent-gold/20"
                   />
                   {uploadingReceipt && <p className="text-accent-gold text-sm mt-2 font-medium animate-pulse">Uploading...</p>}
                   {uploadError && <p className="text-red-500 text-sm mt-2">{uploadError}</p>}
@@ -250,7 +252,7 @@ const PlaceOrderScreen = () => {
             <button
               onClick={placeOrderHandler}
               disabled={cartItems.length === 0 || loading || (paymentMethod === 'PHONEPE' && !paymentReceipt)}
-              className="w-full bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-4 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg"
+              className="w-full bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-4 min-h-12 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg"
             >
               {loading ? 'Processing...' : 'Confirm & Place Order'}
             </button>

@@ -10,6 +10,7 @@ const ProductEditScreen = () => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState(0);
   const [image, setImage] = useState('');
+  const [images, setImages] = useState([]);
   const [description, setDescription] = useState('');
   const [countInStock, setCountInStock] = useState(0);
   const [paymentQRCode, setPaymentQRCode] = useState('');
@@ -20,6 +21,8 @@ const ProductEditScreen = () => {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const [uploadingMultiple, setUploadingMultiple] = useState(false);
+  const [uploadMultipleError, setUploadMultipleError] = useState(null);
 
   const { userInfo } = useContext(StoreContext);
 
@@ -33,6 +36,7 @@ const ProductEditScreen = () => {
         setName(data.name);
         setPrice(data.price);
         setImage(data.image);
+        setImages(data.images || []);
         setDescription(data.description);
         setCountInStock(data.countInStock);
         setPaymentQRCode(data.paymentQRCode || '');
@@ -79,6 +83,46 @@ const ProductEditScreen = () => {
     }
   };
 
+  const uploadMultipleFilesHandler = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    setUploadingMultiple(true);
+    setUploadMultipleError(null);
+
+    const uploadedUrls = [];
+
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('image', file); // We use 'image' because backend upload.single expects it
+        const { data } = await axios.post('/api/upload', formData, config);
+        uploadedUrls.push(data);
+      }
+
+      setImages((prev) => [...prev, ...uploadedUrls]);
+      setUploadingMultiple(false);
+    } catch (err) {
+      setUploadMultipleError(
+        err.response && err.response.data.message
+          ? err.response.data.message
+          : err.message
+      );
+      setUploadingMultiple(false);
+    }
+  };
+
+  const removeImageHandler = (indexToRemove) => {
+    setImages(images.filter((_, index) => index !== indexToRemove));
+  };
+
   const uploadPaymentQRHandler = async (e) => {
     const file = e.target.files[0];
     const formData = new FormData();
@@ -121,7 +165,7 @@ const ProductEditScreen = () => {
 
       await axios.put(
         `/api/products/${productId}`,
-        { name, price, image, description, countInStock, paymentQRCode, upiId },
+        { name, price, image, images, description, countInStock, paymentQRCode, upiId },
         config
       );
 
@@ -140,7 +184,7 @@ const ProductEditScreen = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64 text-xl font-medium text-gray-500 animate-pulse">
+      <div className="flex justify-center items-center h-64 text-xl font-medium text-accent-gold/80 animate-pulse">
         Loading product details...
       </div>
     );
@@ -148,15 +192,15 @@ const ProductEditScreen = () => {
 
   if (error) {
     return (
-      <div className="bg-red-50 text-red-700 p-4 rounded-lg text-center mt-10">
+      <div className="bg-red-500/10 text-red-500 p-4 rounded-lg text-center mt-10 border border-red-500/20">
         {error}
       </div>
     );
   }
 
   return (
-    <div className="py-8 animate-fade-in max-w-2xl mx-auto">
-      <Link to="/admin/productlist" className="inline-block mb-8 text-text-primary/60 hover:text-accent-gold font-medium transition-colors">
+    <div className="py-8 animate-fade-in max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Link to="/admin/productlist" className="inline-flex items-center min-h-12 mb-8 text-text-primary/60 hover:text-accent-gold font-medium transition-colors">
         &larr; Back to Products
       </Link>
 
@@ -218,8 +262,8 @@ const ProductEditScreen = () => {
               type="file"
               accept=".jpg,.jpeg,.png,.webp"
               onChange={uploadFileHandler}
-              className="w-full text-sm text-text-primary/60
-                file:mr-4 file:py-2 file:px-4
+              className="w-full text-sm text-text-primary/60 min-h-12
+                file:mr-4 file:py-3 file:px-4 file:min-h-12
                 file:rounded-xl file:border-0
                 file:text-sm file:font-semibold
                 file:bg-accent-gold/10 file:text-accent-gold
@@ -240,6 +284,57 @@ const ProductEditScreen = () => {
                 {uploadError}
               </div>
             )}
+          </div>
+
+          <div className="pt-4 border-t border-accent-gold/10">
+            <label className="block text-sm font-semibold text-text-primary/80 mb-2">Additional Images Gallery (Optional)</label>
+            
+            {/* Gallery Preview */}
+            {images.length > 0 && (
+              <div className="flex flex-wrap gap-4 mb-4">
+                {images.map((imgUrl, index) => (
+                  <div key={index} className="relative w-24 h-24 rounded-lg overflow-hidden border border-accent-gold/20 group">
+                    <img src={imgUrl} alt={`gallery-${index}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImageHandler(index)}
+                      className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <input
+              type="file"
+              multiple
+              accept=".jpg,.jpeg,.png,.webp"
+              onChange={uploadMultipleFilesHandler}
+              className="w-full text-sm text-text-primary/60 min-h-12
+                file:mr-4 file:py-3 file:px-4 file:min-h-12
+                file:rounded-xl file:border-0
+                file:text-sm file:font-semibold
+                file:bg-accent-gold/10 file:text-accent-gold
+                hover:file:bg-accent-gold/20 transition-colors"
+            />
+            {uploadingMultiple && (
+              <div className="mt-2 text-sm text-accent-gold font-medium flex items-center">
+                <svg className="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Uploading multiple images to Cloudinary...
+              </div>
+            )}
+            
+            {uploadMultipleError && (
+              <div className="bg-red-500/10 text-red-500 p-3 rounded-lg mt-3 text-sm font-medium border border-red-500/20">
+                {uploadMultipleError}
+              </div>
+            )}
+            <p className="text-xs text-text-primary/40 mt-2">You can select multiple files at once. They will be uploaded and displayed on the product page gallery.</p>
           </div>
 
           <div>
@@ -266,8 +361,8 @@ const ProductEditScreen = () => {
               type="file"
               accept=".jpg,.jpeg,.png,.webp"
               onChange={uploadPaymentQRHandler}
-              className="w-full text-sm text-text-primary/60
-                file:mr-4 file:py-2 file:px-4
+              className="w-full text-sm text-text-primary/60 min-h-12
+                file:mr-4 file:py-3 file:px-4 file:min-h-12
                 file:rounded-xl file:border-0
                 file:text-sm file:font-semibold
                 file:bg-accent-gold/10 file:text-accent-gold
@@ -290,7 +385,7 @@ const ProductEditScreen = () => {
           <button
             type="submit"
             disabled={updateLoading}
-            className="w-full bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-4 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 mt-4"
+            className="w-full bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-4 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 mt-4"
           >
             {updateLoading ? 'Updating Product...' : 'Update Product'}
           </button>

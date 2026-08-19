@@ -47,7 +47,7 @@ const MiniCartDrawer = () => {
         {/* Header */}
         <div className="p-6 flex justify-between items-center border-b border-accent-gold/10">
           <h2 className="text-2xl font-serif text-text-primary">Your Cart</h2>
-          <button onClick={closeDrawer} aria-label="Close cart" className="text-text-secondary hover:text-accent-gold transition-colors">
+          <button onClick={closeDrawer} aria-label="Close cart" className="text-text-secondary hover:text-accent-gold transition-colors min-h-12 min-w-12 flex items-center justify-center">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -76,7 +76,7 @@ const MiniCartDrawer = () => {
                     <span className="text-sm text-text-secondary">Qty: {item.qty}</span>
                     <button
                       type="button"
-                      className="text-text-secondary hover:text-red-500 p-2 transition-colors ml-2 flex-shrink-0"
+                      className="text-text-secondary hover:text-red-500 transition-colors ml-2 flex-shrink-0 min-h-12 min-w-12 flex items-center justify-center"
                       onClick={() => removeFromCart(item.cartItemId || item._id)}
                       aria-label="Remove item"
                     >
@@ -99,7 +99,7 @@ const MiniCartDrawer = () => {
             <p className="text-xs text-text-secondary mb-4 text-center">Shipping & taxes calculated at checkout.</p>
             <button 
               onClick={checkoutHandler}
-              className="w-full bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-4 rounded-xl transition-colors shadow-lg"
+              className="w-full bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold min-h-12 rounded-xl transition-colors shadow-lg"
             >
               Proceed to Checkout
             </button>

@@ -93,7 +93,7 @@ const AdminStorefrontScreen = () => {
   if (loading) return <div className="p-8 text-center text-text-primary">Loading config...</div>;
 
   return (
-    <div className="max-w-4xl mx-auto pb-16">
+    <div className="max-w-4xl mx-auto pb-16 px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-serif font-black text-text-primary uppercase tracking-tight">Dynamic Storefront</h1>
@@ -102,7 +102,7 @@ const AdminStorefrontScreen = () => {
         <button
           onClick={submitHandler}
           disabled={saving}
-          className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-black px-6 py-3 rounded-lg shadow-md transition-all uppercase tracking-widest text-sm"
+          className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-black px-6 py-3 min-h-12 rounded-lg shadow-md transition-all uppercase tracking-widest text-sm"
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
@@ -117,7 +117,7 @@ const AdminStorefrontScreen = () => {
                 <button
                   type="button"
                   onClick={() => handleRemoveSlide(index)}
-                  className="text-red-400 hover:text-red-300 text-sm font-bold uppercase"
+                  className="text-red-400 hover:text-red-300 text-sm font-bold uppercase min-h-12 min-w-12"
                 >
                   Remove Slide
                 </button>
@@ -132,11 +132,11 @@ const AdminStorefrontScreen = () => {
                     type="text"
                     value={slide.image}
                     onChange={(e) => handleSlideChange(index, 'image', e.target.value)}
-                    className="w-full bg-bg-base border border-accent-gold/20 rounded-lg px-4 py-2 text-text-primary focus:border-accent-gold outline-none"
+                    className="w-full bg-bg-base border border-accent-gold/20 rounded-lg px-4 py-2 min-h-12 text-text-primary focus:border-accent-gold outline-none"
                     placeholder="/images/hero_banner.png"
                   />
                   <div className="mt-2">
-                    <label className="cursor-pointer text-xs font-bold bg-gray-800 text-white px-3 py-1.5 rounded hover:bg-gray-700 transition">
+                    <label className="cursor-pointer text-xs font-bold bg-accent-gold text-bg-base px-4 py-2 min-h-12 inline-flex items-center justify-center rounded hover:bg-accent-gold-hover transition">
                       {uploadingObj === index ? 'Uploading...' : 'Upload Image'}
                       <input type="file" onChange={(e) => uploadFileHandler(e, index)} className="hidden" accept="image/*" />
                     </label>
@@ -149,7 +149,7 @@ const AdminStorefrontScreen = () => {
                     type="text"
                     value={slide.heading}
                     onChange={(e) => handleSlideChange(index, 'heading', e.target.value)}
-                    className="w-full bg-bg-base border border-accent-gold/20 rounded-lg px-4 py-2 text-text-primary focus:border-accent-gold outline-none"
+                    className="w-full bg-bg-base border border-accent-gold/20 rounded-lg px-4 py-2 min-h-12 text-text-primary focus:border-accent-gold outline-none"
                     placeholder="Luxurious Handmade Goods"
                   />
                 </div>
@@ -159,7 +159,7 @@ const AdminStorefrontScreen = () => {
                   <textarea
                     value={slide.subheading}
                     onChange={(e) => handleSlideChange(index, 'subheading', e.target.value)}
-                    className="w-full bg-bg-base border border-accent-gold/20 rounded-lg px-4 py-2 text-text-primary focus:border-accent-gold outline-none h-24"
+                    className="w-full bg-bg-base border border-accent-gold/20 rounded-lg px-4 py-2 min-h-12 text-text-primary focus:border-accent-gold outline-none h-24"
                     placeholder="Curated with precision, crafted with passion."
                   />
                 </div>
@@ -171,7 +171,7 @@ const AdminStorefrontScreen = () => {
                       type="text"
                       value={slide.cta}
                       onChange={(e) => handleSlideChange(index, 'cta', e.target.value)}
-                      className="w-full bg-bg-base border border-accent-gold/20 rounded-lg px-4 py-2 text-text-primary focus:border-accent-gold outline-none"
+                      className="w-full bg-bg-base border border-accent-gold/20 rounded-lg px-4 py-2 min-h-12 text-text-primary focus:border-accent-gold outline-none"
                     />
                   </div>
                   <div>
@@ -180,7 +180,7 @@ const AdminStorefrontScreen = () => {
                       type="text"
                       value={slide.link}
                       onChange={(e) => handleSlideChange(index, 'link', e.target.value)}
-                      className="w-full bg-bg-base border border-accent-gold/20 rounded-lg px-4 py-2 text-text-primary focus:border-accent-gold outline-none"
+                      className="w-full bg-bg-base border border-accent-gold/20 rounded-lg px-4 py-2 min-h-12 text-text-primary focus:border-accent-gold outline-none"
                     />
                   </div>
                 </div>
@@ -210,7 +210,7 @@ const AdminStorefrontScreen = () => {
       <button
         type="button"
         onClick={handleAddSlide}
-        className="mt-8 w-full border-2 border-dashed border-accent-gold/30 hover:border-accent-gold/70 text-accent-gold font-bold py-4 rounded-xl transition-colors uppercase tracking-widest"
+        className="mt-8 w-full border-2 border-dashed border-accent-gold/30 hover:border-accent-gold/70 text-accent-gold font-bold py-4 min-h-12 rounded-xl transition-colors uppercase tracking-widest"
       >
         + Add New Slide
       </button>

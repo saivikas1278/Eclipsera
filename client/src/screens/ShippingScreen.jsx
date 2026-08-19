@@ -10,8 +10,10 @@ const shippingSchema = z.object({
   email: z.string().email('Invalid email address'),
   address: z.string().min(5, 'Address must be at least 5 characters'),
   city: z.string().min(2, 'City must be at least 2 characters'),
+  state: z.string().min(2, 'State must be at least 2 characters'),
   postalCode: z.string().min(4, 'Postal code must be at least 4 characters'),
   country: z.string().min(2, 'Country must be at least 2 characters'),
+  phone: z.string().min(10, 'Phone must be at least 10 digits'),
 });
 
 const ShippingScreen = () => {
@@ -32,8 +34,10 @@ const ShippingScreen = () => {
       email: shippingAddress.email || userInfo?.email || '',
       address: shippingAddress.address || '',
       city: shippingAddress.city || '',
+      state: shippingAddress.state || '',
       postalCode: shippingAddress.postalCode || '',
       country: shippingAddress.country || '',
+      phone: shippingAddress.phone || '',
     }
   });
 
@@ -92,6 +96,16 @@ const ShippingScreen = () => {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
+            <label className="block text-sm font-semibold text-text-primary/80 mb-2">State</label>
+            <input
+              type="text"
+              className={`w-full px-5 py-4 rounded-xl bg-surface border ${errors.state ? 'border-red-500 focus:ring-red-500' : 'border-accent-gold/20 focus:ring-accent-gold'} focus:ring-2 outline-none transition-all duration-300`}
+              placeholder="State/Province"
+              {...register('state')}
+            />
+            {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state.message}</p>}
+            </div>
+            <div>
             <label className="block text-sm font-semibold text-text-primary/80 mb-2">Postal Code</label>
             <input
               type="text"
@@ -101,6 +115,8 @@ const ShippingScreen = () => {
             />
             {errors.postalCode && <p className="text-red-500 text-sm mt-1">{errors.postalCode.message}</p>}
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div>
             <label className="block text-sm font-semibold text-text-primary/80 mb-2">Country</label>
             <input
@@ -111,7 +127,18 @@ const ShippingScreen = () => {
             />
             {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country.message}</p>}
             </div>
+            <div>
+            <label className="block text-sm font-semibold text-text-primary/80 mb-2">Phone</label>
+            <input
+              type="tel"
+              className={`w-full px-5 py-4 rounded-xl bg-surface border ${errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-accent-gold/20 focus:ring-accent-gold'} focus:ring-2 outline-none transition-all duration-300`}
+              placeholder="Phone number"
+              {...register('phone')}
+            />
+            {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
+            </div>
           </div>
+
           <button
             type="submit"
             disabled={!isValid}

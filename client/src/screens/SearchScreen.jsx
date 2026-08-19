@@ -93,7 +93,7 @@ const SearchScreen = () => {
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             placeholder="Search products..."
-            className="w-full bg-bg-base border border-accent-gold/30 rounded-lg pl-4 pr-10 py-3 text-text-primary focus:outline-none focus:border-accent-gold transition-colors text-sm"
+            className="w-full bg-bg-base border border-accent-gold/30 rounded-lg pl-4 pr-10 py-3 min-h-12 text-text-primary focus:outline-none focus:border-accent-gold transition-colors text-sm"
           />
           <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-accent-gold">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -109,7 +109,7 @@ const SearchScreen = () => {
             <li key={c}>
               <button
                 onClick={() => handleFilterApply(c)}
-                className={`text-sm transition-colors flex items-center justify-between w-full group ${
+                className={`text-sm transition-colors flex items-center justify-between w-full min-h-12 group ${
                   category === c ? 'text-accent-gold font-bold' : 'text-text-secondary hover:text-text-primary'
                 }`}
               >
@@ -126,7 +126,7 @@ const SearchScreen = () => {
   );
 
   return (
-    <div className="animate-fade-in py-8 px-4 md:px-8 max-w-7xl mx-auto min-h-screen flex flex-col">
+    <div className="animate-fade-in py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-screen flex flex-col">
       
       {/* Header & Mobile Filter Button */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-accent-gold/20 gap-4">
@@ -142,7 +142,7 @@ const SearchScreen = () => {
         {/* Mobile Filter Button */}
         <button 
           onClick={() => setIsMobileFiltersOpen(true)}
-          className="md:hidden flex items-center justify-center gap-2 bg-surface border border-accent-gold/40 text-text-primary px-4 py-2 rounded-lg font-bold focus:outline-none"
+          className="md:hidden flex items-center justify-center gap-2 bg-surface border border-accent-gold/40 text-text-primary px-4 py-2 min-h-12 rounded-lg font-bold focus:outline-none"
         >
           <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
           Filters & Search
@@ -182,7 +182,7 @@ const SearchScreen = () => {
                   setSearchKeyword('');
                   handleFilterApply('All');
                 }}
-                className="bg-surface border border-accent-gold text-accent-gold hover:bg-accent-gold hover:text-bg-base font-bold py-2 px-6 rounded-lg transition-colors"
+                className="bg-surface border border-accent-gold text-accent-gold hover:bg-accent-gold hover:text-bg-base font-bold py-2 px-6 min-h-12 rounded-lg transition-colors"
               >
                 Clear All Filters
               </button>
@@ -201,7 +201,7 @@ const SearchScreen = () => {
                   <button
                     onClick={() => fetchProducts(page - 1)}
                     disabled={page === 1}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg border border-accent-gold/30 text-accent-gold hover:bg-accent-gold hover:text-bg-base disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-accent-gold transition-colors"
+                    className="w-12 h-12 flex items-center justify-center rounded-lg border border-accent-gold/30 text-accent-gold hover:bg-accent-gold hover:text-bg-base disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-accent-gold transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
                   </button>
@@ -210,7 +210,7 @@ const SearchScreen = () => {
                     <button
                       key={i}
                       onClick={() => fetchProducts(i + 1)}
-                      className={`w-10 h-10 flex items-center justify-center rounded-lg border transition-colors ${
+                      className={`w-12 h-12 flex items-center justify-center rounded-lg border transition-colors ${
                         page === i + 1 
                           ? 'bg-accent-gold border-accent-gold text-bg-base font-bold' 
                           : 'border-accent-gold/30 text-text-secondary hover:text-accent-gold hover:border-accent-gold'
@@ -223,7 +223,7 @@ const SearchScreen = () => {
                   <button
                     onClick={() => fetchProducts(page + 1)}
                     disabled={page === totalPages}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg border border-accent-gold/30 text-accent-gold hover:bg-accent-gold hover:text-bg-base disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-accent-gold transition-colors"
+                    className="w-12 h-12 flex items-center justify-center rounded-lg border border-accent-gold/30 text-accent-gold hover:bg-accent-gold hover:text-bg-base disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-accent-gold transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
                   </button>
@@ -249,7 +249,7 @@ const SearchScreen = () => {
               <h2 className="text-xl font-serif font-bold text-accent-gold">Filters & Search</h2>
               <button 
                 onClick={() => setIsMobileFiltersOpen(false)}
-                className="p-2 text-text-secondary hover:text-text-primary bg-surface rounded-full"
+                className="p-2 min-w-12 min-h-12 flex items-center justify-center text-text-secondary hover:text-text-primary bg-surface rounded-full"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -259,7 +259,7 @@ const SearchScreen = () => {
             
             <button 
               onClick={() => setIsMobileFiltersOpen(false)}
-              className="w-full mt-8 bg-accent-gold text-bg-base font-bold py-4 rounded-xl shadow-lg"
+              className="w-full mt-8 bg-accent-gold text-bg-base font-bold py-4 min-h-12 rounded-xl shadow-lg"
             >
               Show Results
             </button>

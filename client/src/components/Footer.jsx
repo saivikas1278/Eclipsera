@@ -7,12 +7,15 @@ const Footer = () => {
 
   return (
     <footer className="bg-bg-secondary pt-8 md:pt-16 pb-24 md:pb-8 border-t border-accent-gold/10 mt-auto">
-      <div className="container mx-auto px-4 max-w-7xl">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-8 md:mb-16">
           {/* Brand Info */}
           <div className="col-span-2 lg:col-span-1">
-            <h3 className="text-xl font-serif text-accent-gold mb-6 tracking-widest uppercase">Eclipsera Premium</h3>
+            <div className="flex items-center gap-3 mb-6">
+              <img src="/images/logo.jpg" alt="Logo" className="h-12 w-auto object-contain rounded-md shadow-sm opacity-90" />
+              <h3 className="text-xl font-serif text-accent-gold tracking-widest uppercase">Eclipsera Premium</h3>
+            </div>
             <p className="text-text-secondary text-sm mb-6 leading-relaxed">
               Elevating everyday living through meticulously handcrafted goods. Designed for those who appreciate the finer things in life.
             </p>
@@ -38,11 +41,11 @@ const Footer = () => {
               SHOP
               <svg className={`w-5 h-5 md:hidden transition-transform ${openSection === 'shop' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
             </button>
-            <ul className={`space-y-3 overflow-hidden transition-all duration-300 ${openSection === 'shop' ? 'max-h-48 opacity-100 mt-4' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100 md:mt-0'}`}>
-              <li><Link to="/search" className="text-text-secondary hover:text-accent-gold transition-colors">All Products</Link></li>
-              <li><Link to="/search?category=New" className="text-text-secondary hover:text-accent-gold transition-colors">New Arrivals</Link></li>
-              <li><Link to="/search?category=BestSellers" className="text-text-secondary hover:text-accent-gold transition-colors">Bestsellers</Link></li>
-              <li><Link to="/search?category=Gifts" className="text-text-secondary hover:text-accent-gold transition-colors">Gifts</Link></li>
+            <ul className={`space-y-1 overflow-hidden transition-all duration-300 ${openSection === 'shop' ? 'max-h-60 opacity-100 mt-2' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100 md:mt-0'}`}>
+              <li><Link to="/search" className="block py-2 text-text-secondary hover:text-accent-gold transition-colors">All Products</Link></li>
+              <li><Link to="/search?category=New" className="block py-2 text-text-secondary hover:text-accent-gold transition-colors">New Arrivals</Link></li>
+              <li><Link to="/search?category=BestSellers" className="block py-2 text-text-secondary hover:text-accent-gold transition-colors">Bestsellers</Link></li>
+              <li><Link to="/search?category=Gifts" className="block py-2 text-text-secondary hover:text-accent-gold transition-colors">Gifts</Link></li>
             </ul>
           </div>
 
@@ -55,11 +58,11 @@ const Footer = () => {
               SUPPORT
               <svg className={`w-5 h-5 md:hidden transition-transform ${openSection === 'support' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
             </button>
-            <ul className={`space-y-3 overflow-hidden transition-all duration-300 ${openSection === 'support' ? 'max-h-48 opacity-100 mt-4' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100 md:mt-0'}`}>
-              <li><Link to="/faq" className="text-text-secondary hover:text-accent-gold transition-colors">FAQ</Link></li>
-              <li><Link to="/shipping-policy" className="text-text-secondary hover:text-accent-gold transition-colors">Shipping & Returns</Link></li>
-              <li><Link to="/contact" className="text-text-secondary hover:text-accent-gold transition-colors">Contact Us</Link></li>
-              <li><Link to="/care-guide" className="text-text-secondary hover:text-accent-gold transition-colors">Product Care</Link></li>
+            <ul className={`space-y-1 overflow-hidden transition-all duration-300 ${openSection === 'support' ? 'max-h-60 opacity-100 mt-2' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100 md:mt-0'}`}>
+              <li><Link to="/faq" className="block py-2 text-text-secondary hover:text-accent-gold transition-colors">FAQ</Link></li>
+              <li><Link to="/shipping-policy" className="block py-2 text-text-secondary hover:text-accent-gold transition-colors">Shipping & Returns</Link></li>
+              <li><Link to="/contact" className="block py-2 text-text-secondary hover:text-accent-gold transition-colors">Contact Us</Link></li>
+              <li><Link to="/care-guide" className="block py-2 text-text-secondary hover:text-accent-gold transition-colors">Product Care</Link></li>
             </ul>
           </div>
 
@@ -71,11 +74,11 @@ const Footer = () => {
               <input 
                 type="email" 
                 placeholder="Email address" 
-                className="w-full bg-bg-base border border-r-0 border-accent-gold/30 rounded-l-md px-4 py-2 text-text-primary focus:outline-none focus:border-accent-gold text-sm"
+                className="w-full bg-bg-base border border-r-0 border-accent-gold/30 rounded-l-md px-4 py-3 min-h-12 text-text-primary focus:outline-none focus:border-accent-gold text-sm"
               />
               <button 
                 type="submit" 
-                className="bg-surface border border-accent-gold/30 border-l-0 rounded-r-md px-4 py-2 text-accent-gold hover:text-accent-gold-hover hover:bg-bg-base transition-colors text-sm font-bold"
+                className="bg-surface border border-accent-gold/30 border-l-0 rounded-r-md px-6 py-3 min-h-12 text-accent-gold hover:text-accent-gold-hover hover:bg-bg-base transition-colors text-sm font-bold"
               >
                 JOIN
               </button>

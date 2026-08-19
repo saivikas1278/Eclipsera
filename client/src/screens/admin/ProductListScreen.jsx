@@ -196,7 +196,7 @@ const ProductListScreen = () => {
   }
 
   return (
-    <div className="py-8 animate-fade-in relative">
+    <div className="py-8 animate-fade-in relative px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-[60] bg-accent-gold text-bg-base font-bold px-6 py-3 rounded-lg shadow-xl animate-fade-in">
@@ -213,21 +213,21 @@ const ProductListScreen = () => {
             placeholder="Search products..."
             value={search}
             onChange={(e) => {setSearch(e.target.value); setPage(1);}}
-            className="bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold w-full sm:w-64 flex-1"
+            className="bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-3 min-h-12 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold w-full sm:w-64 flex-1"
           />
           <button 
             onClick={() => {
               setIsInlineEditMode(!isInlineEditMode);
               setModifiedProducts({});
             }}
-            className={`font-bold py-3 px-6 rounded-xl shadow-sm transition-all border ${isInlineEditMode ? 'bg-bg-base border-accent-gold text-accent-gold hover:bg-accent-gold/10' : 'bg-surface border-accent-gold/20 hover:border-accent-gold text-text-primary'}`}
+            className={`font-bold py-3 px-6 min-h-12 rounded-xl shadow-sm transition-all border ${isInlineEditMode ? 'bg-bg-base border-accent-gold text-accent-gold hover:bg-accent-gold/10' : 'bg-surface border-accent-gold/20 hover:border-accent-gold text-text-primary'}`}
           >
             {isInlineEditMode ? 'Cancel Edit' : 'Inline Edit Mode'}
           </button>
           <button 
             onClick={createProductHandler}
             disabled={actionLoading || isInlineEditMode}
-            className="bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
+            className="bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-3 px-6 min-h-12 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -272,7 +272,7 @@ const ProductListScreen = () => {
                   <td className="col-start-1 col-span-1 row-start-3 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-accent-gold/10">
                     <div>
                       {isInlineEditMode ? (
-                        <div className="flex items-center gap-1 bg-bg-base border border-accent-gold/40 rounded px-2 w-20 focus-within:ring-1 focus-within:ring-accent-gold">
+                        <div className="flex items-center gap-1 bg-bg-base border border-accent-gold/40 rounded px-2 w-20 min-h-12 focus-within:ring-1 focus-within:ring-accent-gold">
                           <span className="text-text-secondary text-xs">₹</span>
                           <input 
                             type="number"
@@ -293,7 +293,7 @@ const ProductListScreen = () => {
                       {isInlineEditMode ? (
                         <input 
                           type="number"
-                          className="bg-bg-base border border-accent-gold/40 rounded px-2 py-0.5 w-16 focus:outline-none focus:ring-1 focus:ring-accent-gold text-text-primary text-xs"
+                          className="bg-bg-base border border-accent-gold/40 rounded px-2 py-0.5 w-16 min-h-12 focus:outline-none focus:ring-1 focus:ring-accent-gold text-text-primary text-xs"
                           defaultValue={product.countInStock}
                           onChange={(e) => handleInputChange(product._id, 'stockQuantity', e.target.value)}
                         />
@@ -310,13 +310,13 @@ const ProductListScreen = () => {
                   {/* Actions */}
                   <td className="absolute top-3 right-3 md:static md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-accent-gold/10">
                     <div className="flex justify-end gap-2">
-                      <Link to={`/admin/product/${product._id}/edit`} className="bg-surface border border-accent-gold/20 hover:border-accent-gold hover:text-accent-gold text-text-primary/80 p-1.5 md:p-2 rounded-md transition-colors shadow-sm">
+                      <Link to={`/admin/product/${product._id}/edit`} className="bg-surface border border-accent-gold/20 hover:border-accent-gold hover:text-accent-gold text-text-primary/80 min-h-12 min-w-12 flex items-center justify-center rounded-md transition-colors shadow-sm">
                         <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                       </Link>
                       <button 
                         onClick={() => deleteHandler(product._id)}
                         disabled={actionLoading}
-                        className="bg-red-900/20 hover:bg-red-500 border border-red-500/30 hover:border-red-500 text-red-400 hover:text-white p-1.5 md:p-2 rounded-md transition-colors shadow-sm disabled:opacity-50"
+                        className="bg-red-900/20 hover:bg-red-500 border border-red-500/30 hover:border-red-500 text-red-400 hover:text-white min-h-12 min-w-12 flex items-center justify-center rounded-md transition-colors shadow-sm disabled:opacity-50"
                       >
                         <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                       </button>
@@ -331,7 +331,7 @@ const ProductListScreen = () => {
         <button 
           disabled={page === 1} 
           onClick={() => setPage(p => p - 1)}
-          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
+          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 min-h-12 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
         >
           Previous
         </button>
@@ -342,7 +342,7 @@ const ProductListScreen = () => {
             <select 
               value={limit} 
               onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-              className="bg-bg-base border border-accent-gold/40 rounded-lg px-2 py-1 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent-gold cursor-pointer"
+              className="bg-bg-base border border-accent-gold/40 rounded-lg px-2 py-1 min-h-12 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent-gold cursor-pointer"
             >
               <option value="10">10</option>
               <option value="50">50</option>
@@ -354,7 +354,7 @@ const ProductListScreen = () => {
         <button 
           disabled={page >= totalPages} 
           onClick={() => setPage(p => p + 1)}
-          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
+          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 min-h-12 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
         >
           Next
         </button>
@@ -368,7 +368,7 @@ const ProductListScreen = () => {
           <button
             onClick={handleBulkSave}
             disabled={bulkSaveLoading}
-            className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-2 px-6 rounded-full transition-colors flex items-center gap-2"
+            className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-2 min-h-12 px-6 rounded-full transition-colors flex items-center gap-2"
           >
             {bulkSaveLoading ? (
               <svg className="animate-spin h-5 w-5 text-bg-base" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

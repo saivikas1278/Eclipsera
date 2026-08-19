@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import HeroSlider from '../components/HeroSlider';
-import CategoryTiles from '../components/CategoryTiles';
 import ProductCarousel from '../components/ProductCarousel';
 import NewArrivals from '../components/NewArrivals';
 import SocialProofStrip from '../components/SocialProofStrip';
@@ -62,7 +61,7 @@ const HomeScreen = () => {
 
   if (isShopView) {
     return (
-      <div className="py-4 md:py-12 animate-fade-in min-h-screen px-3 md:px-0 flex flex-col md:flex-row gap-8">
+      <div className="py-8 md:py-16 animate-fade-in min-h-screen px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col md:flex-row gap-8">
         <SEO title={`Shop ${category || keyword || 'Collection'} | Eclipsera`} description="Browse our luxury handcrafts." />
         
         {/* Sidebar */}
@@ -113,7 +112,7 @@ const HomeScreen = () => {
                 placeholder="Min ₹" 
                 value={minPrice}
                 onChange={(e) => updateFilter('minPrice', e.target.value)}
-                className="w-1/2 bg-bg-base border border-accent-gold/20 rounded-lg px-3 py-2 outline-none focus:border-accent-gold text-sm text-text-primary"
+                className="w-1/2 bg-bg-base border border-accent-gold/20 rounded-lg px-3 py-3 min-h-12 outline-none focus:border-accent-gold text-sm text-text-primary"
               />
               <span className="text-text-primary/50">-</span>
               <input 
@@ -121,14 +120,14 @@ const HomeScreen = () => {
                 placeholder="Max ₹" 
                 value={maxPrice}
                 onChange={(e) => updateFilter('maxPrice', e.target.value)}
-                className="w-1/2 bg-bg-base border border-accent-gold/20 rounded-lg px-3 py-2 outline-none focus:border-accent-gold text-sm text-text-primary"
+                className="w-1/2 bg-bg-base border border-accent-gold/20 rounded-lg px-3 py-3 min-h-12 outline-none focus:border-accent-gold text-sm text-text-primary"
               />
             </div>
           </div>
           
           <button 
             onClick={clearFilters} 
-            className="w-full text-center text-sm font-bold text-bg-base bg-accent-gold hover:bg-accent-gold-hover rounded-xl py-3 transition-colors shadow-sm"
+            className="w-full text-center text-sm font-bold text-bg-base bg-accent-gold hover:bg-accent-gold-hover rounded-xl py-3 min-h-12 transition-colors shadow-sm"
           >
             Clear Filters
           </button>
@@ -193,7 +192,6 @@ const HomeScreen = () => {
         <TrustBadges />
         <SocialProofStrip />
         <NewsletterSignup />
-        <CategoryTiles />
       </div>
     </div>
   );

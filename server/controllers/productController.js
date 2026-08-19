@@ -92,7 +92,7 @@ const createProduct = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const updateProduct = asyncHandler(async (req, res) => {
-  const { name, price, description, image, countInStock, paymentQRCode, upiId } = req.body;
+  const { name, price, description, image, images, countInStock, paymentQRCode, upiId } = req.body;
 
   const product = await Product.findById(req.params.id);
 
@@ -101,6 +101,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.price = price;
     product.description = description;
     product.image = image;
+    if (images !== undefined) product.images = images;
     product.countInStock = countInStock;
     if (paymentQRCode !== undefined) product.paymentQRCode = paymentQRCode;
     if (upiId !== undefined) product.upiId = upiId;
