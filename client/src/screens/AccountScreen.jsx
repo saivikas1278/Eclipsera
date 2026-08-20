@@ -16,7 +16,6 @@ const AccountScreen = () => {
 
   // Profile Edit State
   const [nameProfile, setNameProfile] = useState('');
-  const [emailProfile, setEmailProfile] = useState('');
   const [loadingProfile, setLoadingProfile] = useState(false);
 
   const navigate = useNavigate();
@@ -60,7 +59,6 @@ const AccountScreen = () => {
   useEffect(() => {
     if (userInfo && activeTab === 'edit_profile') {
       setNameProfile(userInfo.name || '');
-      setEmailProfile(userInfo.email || '');
     }
   }, [userInfo, activeTab]);
 
@@ -79,8 +77,7 @@ const AccountScreen = () => {
       const { data } = await axios.put(
         '/api/users/profile',
         { 
-          name: nameProfile, 
-          email: emailProfile 
+          name: nameProfile
         },
         config
       );
@@ -472,15 +469,6 @@ const AccountScreen = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-text-primary mb-2">Email Address</label>
-                    <input
-                      type="email"
-                      value={emailProfile}
-                      onChange={(e) => setEmailProfile(e.target.value)}
-                      className="w-full px-5 py-4 rounded-xl bg-transparent border border-accent-gold/20 focus:bg-surface focus:ring-2 focus:ring-accent-gold outline-none transition-all"
-                      required
-                    />
                   </div>
 
                   <div className="pt-6 mt-6 border-t border-accent-gold/20">
