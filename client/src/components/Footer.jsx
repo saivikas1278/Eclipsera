@@ -9,9 +9,9 @@ const Footer = () => {
     <footer className="bg-bg-secondary pt-8 md:pt-16 pb-24 md:pb-8 border-t border-accent-gold/10 mt-auto">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-8 md:mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-8 md:mb-16">
           {/* Brand Info */}
-          <div className="col-span-2 lg:col-span-1">
+          <div className="col-span-1 md:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 mb-6">
               <img src="/images/logo.jpg" alt="Logo" className="h-12 w-auto object-contain rounded-md shadow-sm opacity-90" />
               <h3 className="text-xl font-serif text-accent-gold tracking-widest uppercase">Eclipsera Premium</h3>
@@ -33,7 +33,7 @@ const Footer = () => {
           </div>
 
           {/* Shop */}
-          <div className="col-span-2 md:col-span-1 border-b border-accent-gold/10 md:border-0 pb-4 md:pb-0">
+          <div className="col-span-1 border-b border-accent-gold/10 md:border-0 pb-4 md:pb-0">
             <button 
               onClick={() => setOpenSection(openSection === 'shop' ? null : 'shop')}
               className="w-full flex justify-between items-center text-text-primary font-bold md:mb-6 tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold md:pointer-events-none"
@@ -50,7 +50,7 @@ const Footer = () => {
           </div>
 
           {/* Support */}
-          <div className="col-span-2 md:col-span-1 border-b border-accent-gold/10 md:border-0 pb-4 md:pb-0">
+          <div className="col-span-1 border-b border-accent-gold/10 md:border-0 pb-4 md:pb-0">
             <button 
               onClick={() => setOpenSection(openSection === 'support' ? null : 'support')}
               className="w-full flex justify-between items-center text-text-primary font-bold md:mb-6 tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold md:pointer-events-none"
@@ -67,7 +67,7 @@ const Footer = () => {
           </div>
 
           {/* Newsletter */}
-          <div className="col-span-2 lg:col-span-1">
+          <div className="col-span-1 md:col-span-2 lg:col-span-1">
             <h4 className="text-text-primary font-bold mb-4 md:mb-6 tracking-wider">NEWSLETTER</h4>
             <p className="text-text-secondary text-sm mb-4">Subscribe for updates, access to exclusive deals, and more.</p>
             <form className="flex" onSubmit={(e) => e.preventDefault()}>

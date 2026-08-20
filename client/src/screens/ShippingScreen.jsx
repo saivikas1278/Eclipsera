@@ -63,12 +63,12 @@ const ShippingScreen = () => {
         {userInfo?.addresses?.length > 0 && (
           <div className="mb-8">
             <label className="block text-sm font-semibold text-text-primary/80 mb-3">Saved Addresses</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex gap-4 overflow-x-auto snap-x hide-scrollbar pb-2">
               {userInfo.addresses.map((addr) => (
                 <div 
                   key={addr._id}
                   onClick={() => autofillAddress(addr)}
-                  className="p-4 border border-accent-gold/20 rounded-xl cursor-pointer hover:border-accent-gold transition-colors bg-surface"
+                  className="p-4 border border-accent-gold/20 rounded-xl cursor-pointer hover:border-accent-gold transition-colors bg-surface min-w-[200px] snap-start flex-shrink-0"
                 >
                   <p className="font-bold text-sm font-serif">{addr.label}</p>
                   <p className="text-xs text-text-secondary mt-1 truncate">{addr.street}, {addr.city}</p>

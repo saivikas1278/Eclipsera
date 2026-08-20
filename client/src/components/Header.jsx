@@ -86,7 +86,7 @@ const Header = () => {
             </div>
 
             {/* Right: Icons */}
-            <div className="flex items-center space-x-6 flex-shrink-0">
+            <div className="flex items-center space-x-3 sm:space-x-4 lg:space-x-6 flex-shrink-0">
 
               {/* Notification Bell */}
               <NotificationBell />

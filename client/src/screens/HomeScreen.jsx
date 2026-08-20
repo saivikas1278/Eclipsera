@@ -64,8 +64,8 @@ const HomeScreen = () => {
       <div className="py-8 md:py-16 animate-fade-in min-h-screen px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col md:flex-row gap-8">
         <SEO title={`Shop ${category || keyword || 'Collection'} | Eclipsera`} description="Browse our luxury handcrafts." />
         
-        {/* Sidebar */}
-        <div className="w-full md:w-1/4 lg:w-1/5 bg-surface p-6 rounded-2xl border border-accent-gold/20 h-fit md:sticky top-24">
+        {/* Sidebar (Desktop Only) */}
+        <div className="hidden md:block w-full md:w-1/4 lg:w-1/5 bg-surface p-6 rounded-2xl border border-accent-gold/20 h-fit sticky top-24">
           <h2 className="text-xl font-serif font-bold mb-6 border-b border-accent-gold/20 pb-4 text-text-primary">Filters</h2>
           
           {/* Keyword active indicator */}

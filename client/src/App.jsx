@@ -63,7 +63,7 @@ function App() {
   }, [navigate, handleLogout]);
 
   return (
-    <div className="min-h-screen bg-transparent flex flex-col font-sans text-text-primary selection:bg-accent-gold/20 selection:text-accent-gold">
+    <div className="min-h-screen bg-transparent flex flex-col font-sans text-text-primary selection:bg-accent-gold/20 selection:text-accent-gold overflow-x-hidden max-w-[100vw]">
       <ScrollToTop />
       <Toaster
         position="bottom-center"
