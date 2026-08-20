@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import ProductCard from '../components/ProductCard';
 import SkeletonCard from '../components/SkeletonCard';
@@ -109,10 +110,10 @@ const SearchScreen = () => {
   };
 
   const FilterSidebar = () => (
-    <div className="space-y-8">
+    <div className="space-y-5">
       {/* Search Input */}
       <div>
-        <h3 className="text-lg font-bold text-accent-gold mb-4 uppercase tracking-wider text-sm">Search</h3>
+        <h3 className="text-sm font-bold text-accent-gold mb-3 uppercase tracking-wider">Search</h3>
         <form onSubmit={handleSearchChange} className="relative">
           <input
             type="text"
@@ -129,13 +130,13 @@ const SearchScreen = () => {
 
       {/* Categories */}
       <div>
-        <h3 className="text-lg font-bold text-accent-gold mb-4 uppercase tracking-wider text-sm">Categories</h3>
-        <ul className="space-y-3">
+        <h3 className="text-sm font-bold text-accent-gold mb-3 uppercase tracking-wider">Categories</h3>
+        <ul className="space-y-1">
           {categories.map((c) => (
             <li key={c}>
               <button
                 onClick={() => handleFilterApply(c)}
-                className={`text-sm transition-colors flex items-center justify-between w-full min-h-12 group ${
+                className={`text-sm transition-colors flex items-center justify-between w-full min-h-10 group ${
                   category === c ? 'text-accent-gold font-bold' : 'text-text-secondary hover:text-text-primary'
                 }`}
               >
@@ -151,7 +152,7 @@ const SearchScreen = () => {
 
       {/* Advanced Filters */}
       <div>
-        <h3 className="text-lg font-bold text-accent-gold mb-4 uppercase tracking-wider text-sm">Price & Availability</h3>
+        <h3 className="text-sm font-bold text-accent-gold mb-3 uppercase tracking-wider">Price & Availability</h3>
         
         <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -189,7 +190,7 @@ const SearchScreen = () => {
           
           <button 
             onClick={applyAllFilters}
-            className="w-full mt-4 bg-surface border border-accent-gold/50 text-accent-gold hover:bg-accent-gold hover:text-bg-base font-bold py-2 rounded-lg transition-colors"
+            className="w-full mt-2 bg-surface border border-accent-gold/50 text-accent-gold hover:bg-accent-gold hover:text-bg-base font-bold py-3 rounded-lg transition-colors text-sm"
           >
             Apply Filters
           </button>
@@ -308,8 +309,8 @@ const SearchScreen = () => {
       </div>
 
       {/* Mobile Filter Bottom Sheet Overlay */}
-      {isMobileFiltersOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+      {isMobileFiltersOpen && typeof document !== 'undefined' && createPortal(
+        <div className="md:hidden fixed inset-0 z-[100] flex flex-col justify-end">
           <div 
             className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
             onClick={() => setIsMobileFiltersOpen(false)}
@@ -337,7 +338,8 @@ const SearchScreen = () => {
               Show Results
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
