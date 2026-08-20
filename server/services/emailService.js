@@ -1,32 +1,4 @@
-const axios = require('axios');
-
-/**
- * Sends an email using EmailJS REST API from the Node.js backend.
- * @param {Object} templateParams - Object containing template variables (e.g., { to_email: 'user@example.com', subject: 'Welcome', message: 'Hello!' })
- */
-const sendEmailJS = async (templateParams) => {
-  try {
-    const data = {
-      service_id: process.env.EMAILJS_SERVICE_ID,
-      template_id: process.env.EMAILJS_TEMPLATE_ID,
-      user_id: process.env.EMAILJS_PUBLIC_KEY,
-      accessToken: process.env.EMAILJS_PRIVATE_KEY,
-      template_params: templateParams,
-    };
-
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    const response = await axios.post('https://api.emailjs.com/api/v1.0/email/send', data, config);
-    console.log('EmailJS Response:', response.data);
-    return response.data;
-  } catch (error) {
-    console.error('EmailJS Error:', error.response ? error.response.data : error.message);
-  }
-};
+const { sendEmail } = require('../utils/sendEmail');
 
 const sendOrderConfirmation = async (order, pdfBuffer) => {
   const customerName = order.user?.name || order.shippingAddress?.name || 'Guest';
@@ -36,19 +8,10 @@ const sendOrderConfirmation = async (order, pdfBuffer) => {
   const itemNames = order.orderItems?.map(item => `${item.qty || item.quantity || 1}x ${item.name}`).join(', ') || 'Items not specified';
 
   if (customerEmail) {
-    await sendEmailJS({
-      to_email: customerEmail,
-      email: customerEmail, 
-      to_name: customerName,
-      name: customerName,
+    sendEmail({
+      to: customerEmail,
       subject: `Order Confirmation - Eclipsera (${itemNames.substring(0, 30)}${itemNames.length > 30 ? '...' : ''})`,
-      message: `Thank you for your order! We've received your order for:
-
-${itemNames}
-
-Total: INR ${order.totalPrice}
-
-We are getting it ready to ship!`,
+      text: `Thank you for your order! We've received your order for:\n\n${itemNames}\n\nTotal: INR ${order.totalPrice}\n\nWe are getting it ready to ship!`,
     });
   } else {
     console.warn(`No email found for order ${order._id}, skipping order confirmation email.`);
@@ -71,25 +34,19 @@ Please check the admin dashboard to fulfill it.`;
 
   // Send New Order Notification to Admin
   const adminEmail = process.env.ADMIN_EMAIL || 'eclipserapremium@gmail.com';
-  await sendEmailJS({
-    to_email: adminEmail,
-    email: adminEmail,
-    to_name: 'Admin',
-    name: 'Admin',
+  sendEmail({
+    to: adminEmail,
     subject: `New Order Received! (${itemNames.substring(0, 30)}${itemNames.length > 30 ? '...' : ''})`,
-    message: adminMessage,
+    text: adminMessage,
   });
 };
 
 const sendAbandonedCartEmail = async (email, cartItems, discountCode) => {
-  await sendEmailJS({
-    to_email: email,
-    email: email,
-    to_name: 'Shopper',
-    name: 'Shopper',
+  sendEmail({
+    to: email,
     subject: `You left something beautiful behind!`,
-    message: `We noticed you left some beautiful items in your cart. Use code ${discountCode} at checkout for 10% off your entire order.`,
+    text: `We noticed you left some beautiful items in your cart. Use code ${discountCode} at checkout for 10% off your entire order.`,
   });
 };
 
-module.exports = { sendEmailJS, sendOrderConfirmation, sendAbandonedCartEmail };
+module.exports = { sendOrderConfirmation, sendAbandonedCartEmail };

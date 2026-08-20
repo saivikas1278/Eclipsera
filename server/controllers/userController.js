@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/userModel');
 const generateToken = require('../utils/generateToken');
-const { sendEmailJS } = require('../services/emailService');
+const { sendEmail } = require('../utils/sendEmail');
 
 /**
  * @desc    Register a new user
@@ -38,13 +38,10 @@ const registerUser = asyncHandler(async (req, res) => {
   // 4. If the user was successfully created, return their data and a JWT
   if (user) {
     // Send Welcome Email asynchronously
-    sendEmailJS({
-      to_email: user.email,
-      email: user.email,
-      to_name: user.name,
-      name: user.name,
-      subject: 'Welcome to Eclipsera Premium!',
-      message: 'Thank you for joining our exclusive community. Explore our latest handcrafted collections today.',
+    sendEmail({
+      to: user.email,
+      subject: `Welcome to Eclipsera, ${user.name}!`,
+      text: `Hi ${user.name},\n\nWelcome to Eclipsera! We're thrilled to have you here.\n\nShop our latest collections at https://eclipsera.com\n\nThanks,\nThe Eclipsera Team`,
     });
 
     res.status(201).json({
@@ -419,13 +416,10 @@ const googleAuth = asyncHandler(async (req, res) => {
     });
 
     // Send Welcome Email asynchronously
-    sendEmailJS({
-      to_email: user.email,
-      email: user.email,
-      to_name: user.name,
-      name: user.name,
-      subject: 'Welcome to Eclipsera Premium!',
-      message: 'Thank you for joining our exclusive community via Google. Explore our latest handcrafted collections today.',
+    sendEmail({
+      to: user.email,
+      subject: `Welcome to Eclipsera, ${user.name}!`,
+      text: `Hi ${user.name},\n\nWelcome to Eclipsera! We're thrilled to have you here (joined via Google).\n\nShop our latest collections at https://eclipsera.com\n\nThanks,\nThe Eclipsera Team`,
     });
   }
 
@@ -462,13 +456,10 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const message = `You are receiving this email because you (or someone else) requested a password reset. \n\nPlease click on the following link, or paste this into your browser to complete the process:\n\n${resetUrl}\n\nIf you did not request this, please ignore this email and your password will remain unchanged.`;
 
   try {
-    await sendEmailJS({
-      to_email: user.email,
-      email: user.email,
-      to_name: user.firstName || user.name,
-      name: user.firstName || user.name,
+    await sendEmail({
+      to: user.email,
       subject: 'Password Reset Request',
-      message: message,
+      text: message,
     });
 
     res.status(200).json({ message: 'If an account with that email exists, we sent a password reset link.' });
@@ -514,6 +505,13 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.resetPasswordExpire = undefined;
 
   await user.save();
+
+  // Send password changed confirmation
+  sendEmail({
+    to: user.email,
+    subject: 'Your Password has been Changed',
+    text: `Hello,\n\nThis is a confirmation that the password for your account ${user.email} has just been changed.\n\nIf you did not make this change, please contact support immediately.`,
+  });
 
   res.status(200).json({ message: 'Password successfully reset' });
 });

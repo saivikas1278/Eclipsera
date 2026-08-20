@@ -4,7 +4,7 @@ const { protect, admin } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-const { sendEmailJS } = require('../services/emailService');
+const { sendEmail } = require('../utils/sendEmail');
 
 router.route('/storefront')
   .get(getStorefrontConfig)
@@ -18,15 +18,11 @@ router.post('/contact', async (req, res) => {
   }
 
   try {
-    // Send email to admin using EmailJS
-    // EmailJS requires the variables to match your template
-    await sendEmailJS({
-      to_email: 'cheepusaivikas549@gmail.com', // The admin's email
-      email: email, // The customer's email (so we can reply to them)
-      to_name: 'Eclipsera Admin',
-      name: name,
+    const adminEmail = process.env.ADMIN_EMAIL || 'eclipserapremium@gmail.com';
+    sendEmail({
+      to: adminEmail,
       subject: `New Contact Form Submission: ${subject || 'General Inquiry'}`,
-      message: `You have received a new message from ${name} (${email}):\n\n${message}`,
+      text: `You have received a new message from ${name} (${email}):\n\n${message}`,
     });
 
     res.status(200).json({ message: 'Message sent successfully' });

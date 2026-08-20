@@ -219,12 +219,12 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
     const updatedOrder = await order.save();
 
     // Send admin alert asynchronously
-    const { sendEmailJS } = require('../services/emailService');
-    sendEmailJS({
-      to_email: 'admin@eclipsera.com', // Replace with actual admin email if needed
-      to_name: 'Admin',
-      subject: `New Order Received! #${updatedOrder._id}`,
-      message: `You have received a new order from ${updatedOrder.paymentResult.email_address} for a total of INR ${updatedOrder.totalPrice}. Please fulfill it as soon as possible.`,
+    const { sendEmail } = require('../utils/sendEmail');
+    const itemNames = updatedOrder.orderItems?.map(item => `${item.quantity || 1}x ${item.name}`).join(', ') || 'Items';
+    sendEmail({
+      to: process.env.ADMIN_EMAIL || 'eclipserapremium@gmail.com',
+      subject: `Payment Confirmed: ${itemNames.substring(0, 30)}${itemNames.length > 30 ? '...' : ''}`,
+      text: `Payment has been confirmed for: ${itemNames}. Total: INR ${updatedOrder.totalPrice}. Please check the dashboard to fulfill the order.`,
     });
 
     res.json(updatedOrder);
@@ -271,35 +271,43 @@ const updateOrderFulfillment = asyncHandler(async (req, res) => {
 
     const updatedOrder = await order.save();
 
+    const itemNames = order.orderItems?.map(item => `${item.quantity || 1}x ${item.name}`).join(', ') || 'Items';
+
     // Create a notification for the customer
-    let notificationMsg = `Your order ${order._id} status is now ${status}.`;
-    if (trackingNumber) {
-      notificationMsg += ` Tracking Number: ${trackingNumber}.`;
-    }
-    if (note) {
-      notificationMsg += ` Note: ${note}`;
+    let notificationMsg = '';
+    const customerFirstName = order.user?.name?.split(' ')[0] || order.shippingAddress?.name?.split(' ')[0] || 'Customer';
+
+    if (status === 'SHIPPED') {
+      notificationMsg = `Great news, ${customerFirstName}!\n\nThe items in your recent order (${itemNames}) have been officially shipped and are on their way to you!`;
+      if (trackingNumber) notificationMsg += `\n\nTracking Number: ${trackingNumber}`;
+      if (note) notificationMsg += `\nAdmin Note: ${note}`;
+      notificationMsg += `\n\nThank you for shopping with Eclipsera Premium. We hope you love your purchase!`;
+    } else if (status === 'DELIVERED') {
+      notificationMsg = `Your Eclipsera order has arrived!\n\nWe have marked your order containing (${itemNames}) as successfully delivered.\n\nWe hope you absolutely love your new items. If you have any questions or concerns, please reply directly to this email.`;
+    } else {
+      notificationMsg = `Your order containing '${itemNames}' status is now ${status}.`;
+      if (trackingNumber) notificationMsg += ` Tracking Number: ${trackingNumber}.`;
+      if (note) notificationMsg += ` Note: ${note}`;
     }
 
-    await Notification.create({
-      user: order.user._id,
-      title: 'Order Status Update',
-      message: notificationMsg,
-      type: 'order'
-    });
+    if (order.user) {
+      await Notification.create({
+        user: order.user._id,
+        title: 'Order Status Update',
+        message: notificationMsg,
+        type: 'order'
+      });
+    }
 
     // Send email to customer asynchronously
-    const { sendEmailJS } = require('../services/emailService');
+    const { sendEmail } = require('../utils/sendEmail');
     const customerEmail = order.user?.email || order.shippingAddress?.email;
-    const customerName = order.user?.name || order.shippingAddress?.name || 'Customer';
     
     if (customerEmail) {
-      sendEmailJS({
-        to_email: customerEmail,
-        email: customerEmail,
-        to_name: customerName,
-        name: customerName,
-        subject: `Order Status Update - Eclipsera #${order._id}`,
-        message: notificationMsg,
+      sendEmail({
+        to: customerEmail,
+        subject: `Order Status Update - Eclipsera (${itemNames.substring(0, 30)}${itemNames.length > 30 ? '...' : ''})`,
+        text: notificationMsg,
       });
     }
 
@@ -480,24 +488,23 @@ const cancelOrder = asyncHandler(async (req, res) => {
     await recordAuditLog(`Order ${order._id} cancelled. Reason: ${order.cancelReason}`, 'ORDER');
 
     // Send email to customer asynchronously
-    const { sendEmailJS } = require('../services/emailService');
+    const { sendEmail } = require('../utils/sendEmail');
     const customerEmail = order.user?.email || order.shippingAddress?.email;
-    const customerName = order.user?.name || order.shippingAddress?.name || 'Customer';
     
     if (customerEmail) {
-      let emailMessage = `Your order #${order._id} has been cancelled. Reason: ${order.cancelReason}`;
+      const itemNames = order.orderItems?.map(item => `${item.quantity || 1}x ${item.name}`).join(', ') || 'Items';
+      const customerFirstName = order.user?.name?.split(' ')[0] || order.shippingAddress?.name?.split(' ')[0] || 'Customer';
+      
+      let emailMessage = `Hello ${customerFirstName},\n\nWe are writing to let you know that your order containing (${itemNames}) has been cancelled.\n\nReason for cancellation: ${order.cancelReason}\n\nAny payments made have been refunded and should appear in your account within 5-7 business days. We sincerely apologize for any inconvenience this may cause.`;
       
       if (order.paymentMethod === 'Cash On Delivery') {
-        emailMessage = `We regret to inform you that we are unable to fulfill your Cash on Delivery order (#${order._id}) at this time. Your order has been declined. Reason: ${order.cancelReason}. If you wish to place the order again using a prepaid method, please visit our website.`;
+        emailMessage = `Hello ${customerFirstName},\n\nWe regret to inform you that we are currently unable to fulfill your Cash on Delivery (COD) order for (${itemNames}).\n\nReason: ${order.cancelReason}\n\nYour order has been cancelled. However, if you would still like to receive these items, please visit our website and place a new order using a prepaid method (Credit Card/UPI). We would love to fulfill it for you!`;
       }
       
-      sendEmailJS({
-        to_email: customerEmail,
-        email: customerEmail,
-        to_name: customerName,
-        name: customerName,
-        subject: `Order Cancelled - Eclipsera #${order._id}`,
-        message: emailMessage,
+      sendEmail({
+        to: customerEmail,
+        subject: `Order Cancelled - Eclipsera (${itemNames.substring(0, 30)}${itemNames.length > 30 ? '...' : ''})`,
+        text: emailMessage,
       });
     }
 

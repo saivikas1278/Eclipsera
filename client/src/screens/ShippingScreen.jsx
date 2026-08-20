@@ -26,7 +26,7 @@ const ShippingScreen = () => {
     }
   }, [cartItems, navigate]);
 
-  const { register, handleSubmit, formState: { errors, isValid } } = useForm({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(shippingSchema),
     mode: 'onTouched',
     defaultValues: {
@@ -46,11 +46,38 @@ const ShippingScreen = () => {
     navigate('/placeorder');
   };
 
+  const autofillAddress = (address) => {
+    setValue('address', address.street);
+    setValue('city', address.city);
+    setValue('state', address.state);
+    setValue('postalCode', address.postalCode);
+    setValue('country', address.country);
+    setValue('phone', address.phone);
+  };
+
   return (
     <div className="flex justify-center items-center min-h-[70vh] animate-fade-in">
-      <div className="w-full max-w-md bg-transparent p-8 sm:p-10 rounded-3xl shadow-sm border border-accent-gold/20">
+      <div className="w-full max-w-xl bg-transparent p-8 sm:p-10 rounded-3xl shadow-sm border border-accent-gold/20">
         <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8 text-center">Shipping</h1>
         
+        {userInfo?.addresses?.length > 0 && (
+          <div className="mb-8">
+            <label className="block text-sm font-semibold text-text-primary/80 mb-3">Saved Addresses</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {userInfo.addresses.map((addr) => (
+                <div 
+                  key={addr._id}
+                  onClick={() => autofillAddress(addr)}
+                  className="p-4 border border-accent-gold/20 rounded-xl cursor-pointer hover:border-accent-gold transition-colors bg-surface"
+                >
+                  <p className="font-bold text-sm font-serif">{addr.label}</p>
+                  <p className="text-xs text-text-secondary mt-1 truncate">{addr.street}, {addr.city}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit(submitHandler)} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

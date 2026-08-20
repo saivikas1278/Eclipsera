@@ -12,6 +12,9 @@ const SearchScreen = () => {
   const queryParams = new URLSearchParams(location.search);
   const initialCategory = queryParams.get('category') || 'All';
   const initialSearch = queryParams.get('search') || '';
+  const initialMinPrice = queryParams.get('minPrice') || '';
+  const initialMaxPrice = queryParams.get('maxPrice') || '';
+  const initialInStock = queryParams.get('inStock') === 'true';
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +26,9 @@ const SearchScreen = () => {
   // Filter States
   const [category, setCategory] = useState(initialCategory);
   const [searchKeyword, setSearchKeyword] = useState(initialSearch);
+  const [minPrice, setMinPrice] = useState(initialMinPrice);
+  const [maxPrice, setMaxPrice] = useState(initialMaxPrice);
+  const [inStock, setInStock] = useState(initialInStock);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const categories = ['All', 'Jewelry', 'Home Decor', 'Candles', 'New', 'BestSellers', 'Gifts'];
@@ -31,15 +37,21 @@ const SearchScreen = () => {
     // If URL changes via footer links, update local state
     const currentCategory = queryParams.get('category') || 'All';
     const currentSearch = queryParams.get('search') || '';
+    const currentMinPrice = queryParams.get('minPrice') || '';
+    const currentMaxPrice = queryParams.get('maxPrice') || '';
+    const currentInStock = queryParams.get('inStock') === 'true';
     
     if (currentCategory !== category) setCategory(currentCategory);
     if (currentSearch !== searchKeyword) setSearchKeyword(currentSearch);
+    if (currentMinPrice !== minPrice) setMinPrice(currentMinPrice);
+    if (currentMaxPrice !== maxPrice) setMaxPrice(currentMaxPrice);
+    if (currentInStock !== inStock) setInStock(currentInStock);
     
-    fetchProducts(1, currentCategory, currentSearch);
+    fetchProducts(1, currentCategory, currentSearch, currentMinPrice, currentMaxPrice, currentInStock);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
 
-  const fetchProducts = async (pageNumber = 1, cat = category, search = searchKeyword) => {
+  const fetchProducts = async (pageNumber = 1, cat = category, search = searchKeyword, min = minPrice, max = maxPrice, stock = inStock) => {
     try {
       setLoading(true);
       setError(null);
@@ -47,6 +59,9 @@ const SearchScreen = () => {
       let url = `/api/products?page=${pageNumber}&limit=12`;
       if (cat !== 'All') url += `&category=${cat}`;
       if (search) url += `&search=${search}`;
+      if (min) url += `&minPrice=${min}`;
+      if (max) url += `&maxPrice=${max}`;
+      if (stock) url += `&inStock=true`;
 
       const { data } = await axios.get(url);
       
@@ -62,24 +77,35 @@ const SearchScreen = () => {
 
   const handleFilterApply = (newCat) => {
     setCategory(newCat);
+    // We update the local state but do not instantly navigate. 
+    // Wait, the original behavior navigated instantly. I'll maintain that for categories.
     setPage(1);
-    
-    // Update URL so it can be shared or refreshed
     const params = new URLSearchParams();
     if (newCat !== 'All') params.set('category', newCat);
     if (searchKeyword) params.set('search', searchKeyword);
+    if (minPrice) params.set('minPrice', minPrice);
+    if (maxPrice) params.set('maxPrice', maxPrice);
+    if (inStock) params.set('inStock', 'true');
     navigate(`/search?${params.toString()}`);
-    
+    setIsMobileFiltersOpen(false);
+  };
+
+  const applyAllFilters = (e) => {
+    if (e) e.preventDefault();
+    setPage(1);
+    const params = new URLSearchParams();
+    if (category !== 'All') params.set('category', category);
+    if (searchKeyword) params.set('search', searchKeyword);
+    if (minPrice) params.set('minPrice', minPrice);
+    if (maxPrice) params.set('maxPrice', maxPrice);
+    if (inStock) params.set('inStock', 'true');
+    navigate(`/search?${params.toString()}`);
     setIsMobileFiltersOpen(false);
   };
 
   const handleSearchChange = (e) => {
     e.preventDefault();
-    setPage(1);
-    const params = new URLSearchParams();
-    if (category !== 'All') params.set('category', category);
-    if (searchKeyword) params.set('search', searchKeyword);
-    navigate(`/search?${params.toString()}`);
+    applyAllFilters();
   };
 
   const FilterSidebar = () => (
@@ -121,6 +147,53 @@ const SearchScreen = () => {
             </li>
           ))}
         </ul>
+      </div>
+
+      {/* Advanced Filters */}
+      <div>
+        <h3 className="text-lg font-bold text-accent-gold mb-4 uppercase tracking-wider text-sm">Price & Availability</h3>
+        
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <input 
+              type="number" 
+              placeholder="Min ₹"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+              className="w-1/2 bg-bg-base border border-accent-gold/30 rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-accent-gold transition-colors text-sm"
+            />
+            <span className="text-text-secondary">-</span>
+            <input 
+              type="number" 
+              placeholder="Max ₹"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              className="w-1/2 bg-bg-base border border-accent-gold/30 rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-accent-gold transition-colors text-sm"
+            />
+          </div>
+          
+          <label className="flex items-center gap-3 cursor-pointer mt-4">
+            <div className="relative flex items-center">
+              <input 
+                type="checkbox" 
+                checked={inStock}
+                onChange={(e) => setInStock(e.target.checked)}
+                className="peer sr-only"
+              />
+              <div className="w-5 h-5 border border-accent-gold/50 rounded flex items-center justify-center bg-bg-base peer-checked:bg-accent-gold peer-checked:border-accent-gold transition-colors">
+                <svg className={`w-3.5 h-3.5 text-bg-base ${inStock ? 'opacity-100' : 'opacity-0'} transition-opacity`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+              </div>
+            </div>
+            <span className="text-sm text-text-secondary hover:text-text-primary transition-colors">In Stock Only</span>
+          </label>
+          
+          <button 
+            onClick={applyAllFilters}
+            className="w-full mt-4 bg-surface border border-accent-gold/50 text-accent-gold hover:bg-accent-gold hover:text-bg-base font-bold py-2 rounded-lg transition-colors"
+          >
+            Apply Filters
+          </button>
+        </div>
       </div>
     </div>
   );

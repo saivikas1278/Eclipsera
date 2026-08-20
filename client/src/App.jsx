@@ -118,12 +118,14 @@ function App() {
             <Route path="/register" element={<RegisterScreen />} />
             <Route path="/wishlist" element={<WishlistScreen />} />
 
+            {/* --- CHECKOUT ROUTES (GUESTS + LOGGED IN) --- */}
+            <Route path="/shipping" element={<ShippingScreen />} />
+            <Route path="/placeorder" element={<PlaceOrderScreen />} />
+            <Route path="/order/:id" element={<OrderScreen />} />
+
             {/* --- PRIVATE ROUTES (LOGGED IN USERS) --- */}
             <Route path="" element={<PrivateRoute />}>
-              <Route path="/shipping" element={<ShippingScreen />} />
-              <Route path="/placeorder" element={<PlaceOrderScreen />} />
               <Route path="/account" element={<AccountScreen />} />
-              <Route path="/order/:id" element={<OrderScreen />} />
             </Route>
 
             {/* --- ADMIN ROUTES --- */}

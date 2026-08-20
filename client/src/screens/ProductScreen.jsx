@@ -5,6 +5,7 @@ import { StoreContext } from '../context/StoreContext';
 import RelatedProductsCarousel from '../components/RelatedProductsCarousel';
 import SkeletonProduct from '../components/SkeletonProduct';
 import OptimizedImage from '../components/OptimizedImage';
+import ImageZoom from '../components/ImageZoom';
 import SEO from '../components/SEO';
 import toast from 'react-hot-toast';
 
@@ -214,12 +215,11 @@ const ProductScreen = () => {
             
             <div className="sticky top-24 z-10">
               <div className="bg-surface rounded-2xl shadow-md border border-accent-gold/20 overflow-hidden relative group aspect-square md:aspect-[4/5]">
-                <OptimizedImage 
+                <ImageZoom 
                   key={mainImage}
                   src={mainImage} 
                   alt={product.name} 
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-110 cursor-zoom-in animate-fade-in"
-                  loading="eager"
+                  className="w-full h-full animate-fade-in"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
                 

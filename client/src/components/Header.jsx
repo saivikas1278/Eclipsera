@@ -4,6 +4,7 @@ import { StoreContext } from '../context/StoreContext';
 import MiniCartDrawer from './MiniCartDrawer';
 import MobileNavDrawer from './MobileNavDrawer';
 import InlineSearchBox from './InlineSearchBox';
+import NotificationBell from './NotificationBell';
 
 const Header = () => {
   const { cartItems, userInfo, handleLogout, wishlistItems, setIsCartDrawerOpen } = useContext(StoreContext);
@@ -86,6 +87,9 @@ const Header = () => {
 
             {/* Right: Icons */}
             <div className="flex items-center space-x-6 flex-shrink-0">
+
+              {/* Notification Bell */}
+              <NotificationBell />
 
               {/* Account (Desktop only) */}
               <div className="hidden lg:block relative">
