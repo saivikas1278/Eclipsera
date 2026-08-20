@@ -10,7 +10,7 @@ import './index.css'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
-      <GoogleOAuthProvider clientId="818572600848-nodk0lagg4s0dkmnor5j0kt5883ab3r4.apps.googleusercontent.com">
+      <GoogleOAuthProvider clientId="624217171436-dtp8qe6j94pmsrme269v3vnsjhagsc9q.apps.googleusercontent.com">
         <StoreProvider>
           <BrowserRouter>
             <App />
