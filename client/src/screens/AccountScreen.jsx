@@ -17,9 +17,6 @@ const AccountScreen = () => {
   // Profile Edit State
   const [nameProfile, setNameProfile] = useState('');
   const [emailProfile, setEmailProfile] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [loadingProfile, setLoadingProfile] = useState(false);
 
   const navigate = useNavigate();
@@ -64,19 +61,11 @@ const AccountScreen = () => {
     if (userInfo && activeTab === 'edit_profile') {
       setNameProfile(userInfo.name || '');
       setEmailProfile(userInfo.email || '');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
     }
   }, [userInfo, activeTab]);
 
   const updateProfileHandler = async (e) => {
     e.preventDefault();
-
-    if (newPassword && newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
 
     try {
       setLoadingProfile(true);
@@ -91,9 +80,7 @@ const AccountScreen = () => {
         '/api/users/profile',
         { 
           name: nameProfile, 
-          email: emailProfile, 
-          currentPassword, 
-          password: newPassword 
+          email: emailProfile 
         },
         config
       );
@@ -101,9 +88,6 @@ const AccountScreen = () => {
       updateSession(data);
       toast.success('Account updated successfully!');
       setLoadingProfile(false);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
     } catch (error) {
       toast.error(
         error.response && error.response.data.message
@@ -500,43 +484,18 @@ const AccountScreen = () => {
                   </div>
 
                   <div className="pt-6 mt-6 border-t border-accent-gold/20">
-                    <h3 className="text-lg font-bold text-text-primary mb-4">Password Management</h3>
-                    
-                    <div className="space-y-6">
+                    <div className="bg-surface rounded-xl p-5 border border-accent-gold/10 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
                       <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">Current Password</label>
-                        <input
-                          type="password"
-                          placeholder="Required only if changing password"
-                          value={currentPassword}
-                          onChange={(e) => setCurrentPassword(e.target.value)}
-                          className="w-full px-5 py-4 rounded-xl bg-transparent border border-accent-gold/20 focus:bg-surface focus:ring-2 focus:ring-accent-gold outline-none transition-all"
-                        />
+                        <h3 className="text-lg font-bold text-text-primary mb-1">Account Security</h3>
+                        <p className="text-sm text-text-secondary">Password resets are handled securely via email.</p>
                       </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-sm font-semibold text-text-primary mb-2">New Password</label>
-                          <input
-                            type="password"
-                            placeholder="Leave blank to keep current"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full px-5 py-4 rounded-xl bg-transparent border border-accent-gold/20 focus:bg-surface focus:ring-2 focus:ring-accent-gold outline-none transition-all"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-semibold text-text-primary mb-2">Confirm New Password</label>
-                          <input
-                            type="password"
-                            placeholder="Confirm new password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full px-5 py-4 rounded-xl bg-transparent border border-accent-gold/20 focus:bg-surface focus:ring-2 focus:ring-accent-gold outline-none transition-all"
-                          />
-                        </div>
-                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => { logoutHandler(); navigate('/login'); }}
+                        className="px-6 py-2 rounded-lg border-2 border-accent-gold text-accent-gold font-bold hover:bg-accent-gold hover:text-white transition-colors flex-shrink-0"
+                      >
+                        Reset Password
+                      </button>
                     </div>
                   </div>
 
