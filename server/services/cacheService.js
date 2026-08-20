@@ -6,8 +6,14 @@ let isRedisConnected = false;
 // Initialize Redis client gracefully
 const initRedis = async () => {
   try {
+    const redisUrl = process.env.REDIS_URI;
+    if (!redisUrl) {
+      console.log('No REDIS_URI found in environment variables. Caching will be disabled.');
+      return;
+    }
+
     redisClient = redis.createClient({
-      url: process.env.REDIS_URI || 'redis://localhost:6379'
+      url: redisUrl
     });
 
     redisClient.on('error', (err) => {
