@@ -86,7 +86,16 @@ const MobileNavDrawer = ({ isOpen, onClose }) => {
         <div className="p-6 bg-bg-base border-t border-accent-gold/10">
           {userInfo ? (
             <div className="space-y-4">
-              <div className="text-accent-gold font-bold mb-2">Hello, {userInfo.name}</div>
+              <div className="flex items-center gap-3 mb-4">
+                {userInfo.avatar ? (
+                  <img src={userInfo.avatar} alt="Profile" className="w-10 h-10 rounded-full border border-accent-gold/50 object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-accent-gold/20 flex items-center justify-center text-accent-gold">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                  </div>
+                )}
+                <div className="text-accent-gold font-bold">Hello, {userInfo.firstName || userInfo.name}</div>
+              </div>
               <Link to="/account" onClick={onClose} className="block text-text-primary hover:text-accent-gold min-h-12 flex items-center">My Account</Link>
               {userInfo.isAdmin && (
                 <Link to="/admin/orderlist" onClick={onClose} className="block text-text-primary hover:text-accent-gold min-h-12 flex items-center">Admin Dashboard</Link>

@@ -28,11 +28,16 @@ const registerUser = asyncHandler(async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
+  // Generate Gravatar based on email
+  const avatarHash = crypto.createHash('md5').update(email.toLowerCase().trim()).digest('hex');
+  const avatar = `https://www.gravatar.com/avatar/${avatarHash}?d=mp&s=150`;
+
   // 3. Create the user with the hashed password
   const user = await User.create({
     name,
     email,
     password: hashedPassword,
+    avatar,
   });
 
   // 4. If the user was successfully created, return their data and a JWT
@@ -49,6 +54,7 @@ const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
+      avatar: user.avatar,
       token: generateToken(user._id),
     });
   } else {
@@ -82,6 +88,7 @@ const authUser = asyncHandler(async (req, res) => {
       mobile: user.mobile,
       email: user.email,
       isAdmin: user.isAdmin,
+      avatar: user.avatar,
       token: generateToken(user._id),
     });
   } else {
@@ -108,6 +115,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       mobile: user.mobile,
       email: user.email,
       isAdmin: user.isAdmin,
+      avatar: user.avatar,
     });
   } else {
     res.status(404);
@@ -158,6 +166,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       mobile: updatedUser.mobile,
       email: updatedUser.email,
       isAdmin: updatedUser.isAdmin,
+      avatar: updatedUser.avatar,
       token: generateToken(updatedUser._id),
       addresses: updatedUser.addresses,
     });
@@ -390,17 +399,23 @@ const googleAuth = asyncHandler(async (req, res) => {
     throw new Error('Invalid Google Token');
   }
 
-  const { email, name, sub: googleId } = payload;
+  const { email, name, sub: googleId, picture } = payload;
 
   // Check if user exists
   let user = await User.findOne({ email });
 
   if (user) {
     // Merge accounts
+    let updated = false;
     if (!user.googleId) {
       user.googleId = googleId;
-      await user.save();
+      updated = true;
     }
+    if (picture && user.avatar !== picture) {
+      user.avatar = picture;
+      updated = true;
+    }
+    if (updated) await user.save();
   } else {
     // Create new user with random strong password
     const crypto = require('crypto');
@@ -413,6 +428,7 @@ const googleAuth = asyncHandler(async (req, res) => {
       email,
       password: hashedPassword,
       googleId,
+      avatar: picture || '',
     });
 
     // Send Welcome Email asynchronously
@@ -428,6 +444,7 @@ const googleAuth = asyncHandler(async (req, res) => {
     name: user.name,
     email: user.email,
     isAdmin: user.isAdmin,
+    avatar: user.avatar,
     token: generateToken(user._id),
   });
 });

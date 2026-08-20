@@ -243,9 +243,13 @@ const AccountScreen = () => {
                 <div className="block md:hidden animate-fade-in space-y-4">
                   {/* User Header */}
                   <div className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-accent-gold/20 shadow-sm">
-                    <div className="w-14 h-14 rounded-full bg-accent-gold text-white flex items-center justify-center text-xl font-bold uppercase shadow-inner">
-                      {userInfo.name.charAt(0)}
-                    </div>
+                    {userInfo.avatar ? (
+                      <img src={userInfo.avatar} alt="Profile" className="w-14 h-14 rounded-full border-2 border-accent-gold/50 object-cover shadow-inner" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full bg-accent-gold text-white flex items-center justify-center text-xl font-bold uppercase shadow-inner">
+                        {userInfo.name.charAt(0)}
+                      </div>
+                    )}
                     <div>
                       <h2 className="text-xl font-bold text-text-primary leading-tight">{userInfo.name}</h2>
                       <p className="text-text-secondary text-sm">{userInfo.email}</p>
@@ -316,7 +320,10 @@ const AccountScreen = () => {
                 <div className="hidden md:block animate-fade-in space-y-6">
                   
                   {/* Header Card */}
-                <div className="bg-accent-gold text-white rounded-2xl p-8 shadow-md relative overflow-hidden">
+                <div className="bg-accent-gold text-white rounded-2xl p-8 shadow-md relative overflow-hidden flex items-center gap-6">
+                  {userInfo.avatar && (
+                    <img src={userInfo.avatar} alt="Profile" className="w-20 h-20 rounded-full border-4 border-white/30 object-cover shadow-lg relative z-10" />
+                  )}
                   <div className="relative z-10">
                     <h2 className="text-3xl font-bold mb-2">Welcome back, {userInfo.name.split(' ')[0]}!</h2>
                     <p className="text-white/80 font-medium">Artisan Member since {new Date(userInfo.createdAt || Date.now()).getFullYear()}</p>

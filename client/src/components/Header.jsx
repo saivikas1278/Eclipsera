@@ -100,7 +100,11 @@ const Header = () => {
                     className="py-2"
                   >
                     <button aria-label="Account menu" aria-expanded={isAccountMenuOpen} className="text-text-primary hover:text-accent-gold transition-colors flex items-center justify-center min-h-12 min-w-12">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                      {userInfo.avatar ? (
+                        <img src={userInfo.avatar} alt="Profile" className="w-8 h-8 rounded-full border border-accent-gold/50 object-cover" />
+                      ) : (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                      )}
                     </button>
                     {isAccountMenuOpen && (
                       <div className="absolute top-full right-0 mt-2 w-48 bg-surface border border-accent-gold/20 shadow-xl rounded-md overflow-hidden z-50 animate-fade-in">
