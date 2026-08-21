@@ -38,7 +38,8 @@ const getProducts = asyncHandler(async (req, res) => {
   const products = await Product.find(filter)
     .skip(limit * (page - 1))
     .limit(limit)
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
 
   res.json({
     data: products,
@@ -55,7 +56,7 @@ const getProducts = asyncHandler(async (req, res) => {
  */
 const getProductById = asyncHandler(async (req, res) => {
   // Find the product by the ID passed in the URL (req.params.id)
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id).lean();
 
   if (product) {
     res.json(product);
@@ -198,7 +199,7 @@ const createProductReview = asyncHandler(async (req, res) => {
  */
 const getTopProducts = asyncHandler(async (req, res) => {
   // Get top 4 rated products
-  const products = await Product.find({}).sort({ rating: -1 }).limit(4);
+  const products = await Product.find({}).sort({ rating: -1 }).limit(4).lean();
   res.json(products);
 });
 
@@ -209,7 +210,7 @@ const getTopProducts = asyncHandler(async (req, res) => {
  */
 const getUserReviews = asyncHandler(async (req, res) => {
   // Find all products where the reviews array contains an object with the user's ID
-  const products = await Product.find({ 'reviews.user': req.user._id });
+  const products = await Product.find({ 'reviews.user': req.user._id }).lean();
   
   // Format the response to just return a flat list of the user's reviews
   // along with the product info they belong to

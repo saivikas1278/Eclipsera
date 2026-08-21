@@ -104,6 +104,10 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.index({ name: 'text', description: 'text', category: 'text' });
+productSchema.index({ category: 1 });
+productSchema.index({ price: 1 });
+productSchema.index({ countInStock: 1 });
+productSchema.index({ rating: -1 });
 
 const Product = mongoose.model('Product', productSchema);
 module.exports = Product;

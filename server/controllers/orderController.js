@@ -131,7 +131,8 @@ const getOrders = asyncHandler(async (req, res) => {
     .populate('orderItems.product', 'image')
     .skip(limit * (page - 1))
     .limit(limit)
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
   
   res.json({
     data: orders,
@@ -147,14 +148,15 @@ const getOrders = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const getMyOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ user: req.user._id }).populate('orderItems.product', 'image');
+  const orders = await Order.find({ user: req.user._id }).populate('orderItems.product', 'image').lean();
   res.json(orders);
 });
 
 const getOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id)
     .populate('user', 'name email')
-    .populate('orderItems.product', 'image');
+    .populate('orderItems.product', 'image')
+    .lean();
 
   if (order) {
     if (order.user) {

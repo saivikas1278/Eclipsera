@@ -1,6 +1,7 @@
 // 1. Import necessary packages
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const dotenv = require('dotenv');
 
 // 3. Load environment variables from the .env file
@@ -30,6 +31,9 @@ const app = express();
 
 // Apply global rate limiter
 app.use('/api', globalLimiter);
+
+// Compress all HTTP responses
+app.use(compression());
 
 // Enable CORS (Cross-Origin Resource Sharing)
 app.use(cors({
