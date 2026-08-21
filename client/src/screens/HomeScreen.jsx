@@ -15,6 +15,7 @@ const HomeScreen = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -64,9 +65,31 @@ const HomeScreen = () => {
       <div className="py-8 md:py-16 animate-fade-in min-h-screen px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col md:flex-row gap-8">
         <SEO title={`Shop ${category || keyword || 'Collection'} | Eclipsera`} description="Browse our luxury handcrafts." />
         
-        {/* Sidebar (Desktop Only) */}
-        <div className="hidden md:block w-full md:w-1/4 lg:w-1/5 bg-surface p-6 rounded-2xl border border-accent-gold/20 h-fit sticky top-24">
-          <h2 className="text-xl font-serif font-bold mb-6 border-b border-accent-gold/20 pb-4 text-text-primary">Filters</h2>
+        {/* Mobile Filter Button */}
+        <button 
+          onClick={() => setShowMobileFilters(true)}
+          className="md:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-40 bg-accent-gold text-bg-base px-6 py-3 rounded-full font-bold shadow-[0_4px_20px_rgba(212,175,55,0.4)] flex items-center gap-2 transition-transform active:scale-95"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filters
+        </button>
+
+        {/* Mobile Filter Backdrop */}
+        {showMobileFilters && (
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden animate-fade-in"
+            onClick={() => setShowMobileFilters(false)}
+          ></div>
+        )}
+
+        {/* Sidebar / Mobile Drawer */}
+        <div className={`fixed inset-y-0 left-0 z-50 w-4/5 max-w-sm bg-surface p-6 overflow-y-auto transition-transform duration-300 md:static md:translate-x-0 md:w-1/4 md:max-w-none lg:w-1/5 rounded-r-3xl md:rounded-2xl border-r md:border border-accent-gold/20 md:h-fit md:sticky md:top-24 shadow-2xl md:shadow-none ${showMobileFilters ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="flex justify-between items-center mb-6 border-b border-accent-gold/20 pb-4">
+            <h2 className="text-xl font-serif font-bold text-text-primary">Filters</h2>
+            <button onClick={() => setShowMobileFilters(false)} className="md:hidden text-text-primary/70 hover:text-accent-gold p-2 bg-zinc-800 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
           
           {/* Keyword active indicator */}
           {keyword && (
@@ -126,7 +149,7 @@ const HomeScreen = () => {
           </div>
           
           <button 
-            onClick={clearFilters} 
+            onClick={() => { clearFilters(); setShowMobileFilters(false); }} 
             className="w-full text-center text-sm font-bold text-bg-base bg-accent-gold hover:bg-accent-gold-hover rounded-xl py-3 min-h-12 transition-colors shadow-sm"
           >
             Clear Filters

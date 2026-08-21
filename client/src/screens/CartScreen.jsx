@@ -57,9 +57,9 @@ const CartScreen = () => {
           <div className="lg:w-2/3">
             <div className="bg-surface rounded-3xl shadow-sm border border-accent-gold/20 overflow-hidden mb-8">
               {cartItems.map((item) => (
-                <div key={item.cartItemId || item._id} className="flex flex-col sm:flex-row items-center justify-between p-6 border-b border-accent-gold/20 last:border-b-0 gap-4 hover:bg-transparent/50 transition-colors group">
+                <div key={item.cartItemId || item._id} className="flex flex-row items-center justify-between p-4 sm:p-6 border-b border-accent-gold/20 last:border-b-0 gap-3 sm:gap-4 hover:bg-transparent/50 transition-colors group">
                   
-                  <div className="w-full sm:w-28 aspect-square flex-shrink-0 relative overflow-hidden rounded-xl border border-accent-gold/20">
+                  <div className="w-20 sm:w-28 aspect-square flex-shrink-0 relative overflow-hidden rounded-xl border border-accent-gold/20">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                   </div>
                   
@@ -82,11 +82,11 @@ const CartScreen = () => {
                     </div>
                   </div>
                   
-                  <div className="text-2xl font-bold text-text-primary w-32 text-right">
+                  <div className="text-lg sm:text-2xl font-bold text-text-primary w-24 sm:w-32 text-right hidden sm:block">
                     ₹{(item.price * item.qty).toFixed(2)}
                   </div>
                   
-                  <div className="flex sm:flex-col gap-2 sm:ml-4 flex-shrink-0">
+                  <div className="flex flex-col gap-2 flex-shrink-0">
                     <button 
                       onClick={() => saveForLater(item.cartItemId || item._id)}
                       className="min-h-12 min-w-12 p-2 sm:p-3 text-accent-gold bg-accent-gold/10 hover:bg-accent-gold hover:text-bg-base rounded-xl transition-colors shadow-sm text-sm font-semibold"
@@ -166,6 +166,25 @@ const CartScreen = () => {
             </div>
           </div>
           
+        </div>
+      )}
+
+      {/* Sticky Mobile Checkout Bar */}
+      {cartItems.length > 0 && (
+        <div className="fixed bottom-[72px] md:bottom-0 left-0 right-0 p-4 bg-surface/90 backdrop-blur-xl border-t border-accent-gold/20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] md:hidden z-50 animate-slide-up">
+          <div className="flex justify-between items-center max-w-lg mx-auto gap-4">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Subtotal</span>
+              <span className="font-bold text-accent-gold text-xl">₹{subtotalPrice}</span>
+            </div>
+            <button 
+              onClick={checkoutHandler}
+              disabled={cartItems.length === 0}
+              className="flex-1 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-3.5 px-6 rounded-xl shadow-lg uppercase tracking-wider disabled:opacity-50 active:scale-95 transition-transform"
+            >
+              Checkout
+            </button>
+          </div>
         </div>
       )}
     </div>

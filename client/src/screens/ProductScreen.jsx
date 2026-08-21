@@ -214,7 +214,7 @@ const ProductScreen = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full md:w-3/4 md:h-3/4 bg-accent-gold/20 blur-[60px] md:blur-[120px] rounded-full pointer-events-none z-0"></div>
             
             <div className="sticky top-24 z-10">
-              <div className="bg-surface rounded-2xl shadow-md border border-accent-gold/20 overflow-hidden relative group aspect-square md:aspect-[4/5]">
+              <div className="bg-surface rounded-2xl shadow-md border border-accent-gold/20 overflow-hidden relative group aspect-square md:aspect-[4/5] max-h-[55vh] md:max-h-none">
                 <ImageZoom 
                   key={mainImage}
                   src={mainImage} 
@@ -513,8 +513,8 @@ const ProductScreen = () => {
       
       {/* Sticky Mobile Add-to-Cart Bar */}
       <div 
-        className={`fixed bottom-0 left-0 right-0 p-4 bg-surface/80 backdrop-blur-xl border-t border-accent-gold/20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] transition-transform duration-300 md:hidden z-50 ${
-          showStickyBar && !isOutOfStock ? 'translate-y-0' : 'translate-y-full'
+        className={`fixed bottom-[72px] md:bottom-0 left-0 right-0 p-4 bg-surface/80 backdrop-blur-xl border-t border-accent-gold/20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] transition-transform duration-300 md:hidden z-50 ${
+          showStickyBar && !isOutOfStock ? 'translate-y-0' : 'translate-y-[200%]'
         }`}
       >
         <div className="flex gap-4 items-center max-w-lg mx-auto">

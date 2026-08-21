@@ -85,7 +85,7 @@ function App() {
         }}
       />
       {!isAuthPage && <Header />}
-      <main className={`flex-grow container mx-auto px-4 sm:px-6 lg:px-8 w-full max-w-7xl ${isAuthPage ? '' : 'py-8'}`}>
+      <main className={`flex-grow container mx-auto px-4 sm:px-6 lg:px-8 w-full max-w-7xl pb-24 md:pb-8 ${isAuthPage ? '' : 'pt-8'}`}>
         <Suspense fallback={
           <div className="w-full flex flex-col gap-8 p-4 md:p-8 animate-fade-in">
             <div className="w-full h-12 bg-zinc-800/50 animate-pulse rounded-xl mb-8"></div>

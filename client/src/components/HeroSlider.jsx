@@ -83,7 +83,7 @@ const HeroSlider = () => {
 
   if (loading) {
     return (
-      <div className="w-full h-[60vh] md:h-[80vh] min-h-[60vh] md:min-h-[80vh] mb-16 bg-zinc-900 animate-pulse flex flex-col items-center justify-center">
+      <div className="w-full h-[55vh] md:h-[80vh] min-h-[55vh] md:min-h-[80vh] mb-12 md:mb-16 bg-zinc-900 animate-pulse flex flex-col items-center justify-center">
         <div className="w-16 h-16 border-4 border-accent-gold/20 border-t-accent-gold rounded-full animate-spin mb-4"></div>
         <div className="text-accent-gold font-serif tracking-widest text-sm uppercase">Loading Storefront</div>
       </div>
@@ -92,7 +92,7 @@ const HeroSlider = () => {
 
   return (
     <div 
-      className="relative w-full h-[60vh] md:h-[80vh] min-h-[60vh] md:min-h-[80vh] overflow-hidden group mb-16 flex flex-col items-center justify-center text-center"
+      className="relative w-full h-[55vh] md:h-[80vh] min-h-[55vh] md:min-h-[80vh] overflow-hidden group mb-12 md:mb-16 flex flex-col items-center justify-center text-center"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
