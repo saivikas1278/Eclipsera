@@ -18,7 +18,7 @@ router.post('/contact', async (req, res) => {
   }
 
   try {
-    const adminEmail = process.env.ADMIN_EMAIL || 'eclipserapremium@gmail.com';
+    const adminEmail = 'eclipserapremium@gmail.com';
     sendEmail({
       to: adminEmail,
       subject: `New Contact Form Submission: ${subject || 'General Inquiry'}`,

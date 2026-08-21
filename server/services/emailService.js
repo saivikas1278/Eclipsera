@@ -33,7 +33,7 @@ ${address}
 Please check the admin dashboard to fulfill it.`;
 
   // Send New Order Notification to Admin
-  const adminEmail = process.env.ADMIN_EMAIL || 'eclipserapremium@gmail.com';
+  const adminEmail = 'eclipserapremium@gmail.com';
   sendEmail({
     to: adminEmail,
     subject: `New Order Received! (${itemNames.substring(0, 30)}${itemNames.length > 30 ? '...' : ''})`,
