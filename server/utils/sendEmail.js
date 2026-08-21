@@ -24,7 +24,7 @@ const sendEmail = async (options) => {
 
     // 2. Define the email options
     const mailOptions = {
-      from: `${process.env.FROM_NAME || 'Eclipsera Premium'} <${process.env.FROM_EMAIL || process.env.SMTP_USER}>`,
+      from: `"${process.env.FROM_NAME || 'Eclipsera Premium'}" <${process.env.SMTP_USER}>`,
       to: options.to,
       subject: options.subject,
       text: options.text,
