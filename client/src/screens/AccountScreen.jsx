@@ -469,7 +469,7 @@ const AccountScreen = () => {
                     />
                   </div>
 
-                  </div>
+
 
                   <div className="pt-6 mt-6 border-t border-accent-gold/20">
                     <div className="bg-surface rounded-xl p-5 border border-accent-gold/10 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">

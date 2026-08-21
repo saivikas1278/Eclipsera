@@ -29,6 +29,9 @@ const app = express();
 
 // --- Middlewares ---
 
+// Configure express to trust the proxy (important for Render/Vercel load balancers to get true client IP)
+app.set('trust proxy', 1);
+
 // Apply global rate limiter
 app.use('/api', globalLimiter);
 
