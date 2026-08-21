@@ -249,7 +249,6 @@ const ProductListScreen = () => {
           }}
           fixedHeaderContent={() => (
             <tr className="bg-bg-base/95 backdrop-blur-sm border-b border-accent-gold/20 shadow-sm hidden md:table-row">
-                <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">ID</th>
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">Name</th>
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">Price</th>
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">Stock</th>
@@ -258,18 +257,13 @@ const ProductListScreen = () => {
           )}
           itemContent={(index, product) => (
             <>
-                  {/* ID */}
-                  <td className="col-start-1 col-span-1 row-start-1 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-accent-gold/10">
-                    <span className="text-xs font-black text-text-primary/70 block truncate pr-4">#{product._id}</span>
-                  </td>
-                  
                   {/* Name */}
-                  <td className="col-start-1 col-span-2 row-start-2 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-accent-gold/10">
+                  <td className="col-start-1 col-span-2 row-start-1 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-accent-gold/10">
                     <span className="text-sm font-bold text-text-primary block truncate pr-20">{product.name}</span>
                   </td>
                   
                   {/* Price */}
-                  <td className="col-start-1 col-span-1 row-start-3 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-accent-gold/10">
+                  <td className="col-start-1 col-span-1 row-start-2 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-accent-gold/10">
                     <div>
                       {isInlineEditMode ? (
                         <div className="flex items-center gap-1 bg-bg-base border border-accent-gold/40 rounded px-2 w-20 min-h-12 focus-within:ring-1 focus-within:ring-accent-gold">
@@ -288,7 +282,7 @@ const ProductListScreen = () => {
                   </td>
                   
                   {/* Stock */}
-                  <td className="col-start-2 col-span-1 row-start-3 flex justify-end items-center md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-accent-gold/10">
+                  <td className="col-start-2 col-span-1 row-start-2 flex justify-end items-center md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-accent-gold/10">
                     <div className="text-right md:text-left w-full flex justify-end md:justify-start">
                       {isInlineEditMode ? (
                         <input 

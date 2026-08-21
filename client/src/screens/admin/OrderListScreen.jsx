@@ -385,7 +385,7 @@ const OrderListScreen = () => {
                     onChange={handleSelectAll}
                   />
                 </th>
-                <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">Order ID</th>
+                <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">Order Summary</th>
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">User</th>
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">Date</th>
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">Total</th>
@@ -406,9 +406,9 @@ const OrderListScreen = () => {
                     </div>
                   </td>
                   
-                  {/* Order ID */}
+                  {/* Order Summary */}
                   <td className="col-start-1 col-span-2 row-start-1 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
-                    <span className="text-sm md:text-sm font-black text-text-primary pr-10 block truncate">#{order._id}</span>
+                    <span className="text-sm md:text-sm font-black text-text-primary pr-10 block truncate">{order.orderItems?.map(i => i.name).join(', ') || 'Custom Order'}</span>
                   </td>
                   
                   {/* User */}
@@ -471,7 +471,7 @@ const OrderListScreen = () => {
             
             <div className="sticky top-0 bg-surface/95 backdrop-blur z-10 px-6 py-4 border-b border-accent-gold/20 flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-serif font-bold text-text-primary">Order #{selectedOrder._id}</h2>
+                <h2 className="text-2xl font-serif font-bold text-text-primary">Order for {selectedOrder.user?.name || 'Customer'}</h2>
                 {selectedOrder.paymentMethod === 'Cash On Delivery' && (
                   <span className="bg-red-900/30 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">COD</span>
                 )}

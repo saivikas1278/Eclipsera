@@ -107,7 +107,7 @@ const RefundQueueScreen = () => {
             <table className="w-full text-left border-collapse">
               <thead className="hidden md:table-header-group">
                 <tr className="bg-transparent border-b border-accent-gold/20">
-                  <th className="p-4 text-xs uppercase tracking-widest font-bold text-text-secondary">Order ID / Date</th>
+                  <th className="p-4 text-xs uppercase tracking-widest font-bold text-text-secondary">Order Summary / Date</th>
                   <th className="p-4 text-xs uppercase tracking-widest font-bold text-text-secondary">Customer</th>
                   <th className="p-4 text-xs uppercase tracking-widest font-bold text-text-secondary">Refund Amount</th>
                   <th className="p-4 text-xs uppercase tracking-widest font-bold text-text-secondary">Cancel Reason</th>
@@ -121,7 +121,7 @@ const RefundQueueScreen = () => {
                     {/* Order ID / Date */}
                     <td className="col-start-1 col-span-2 row-start-1 flex justify-between items-center md:table-cell p-0 md:p-4 align-top md:border-b md:border-accent-gold/10">
                       <div className="flex justify-between items-center w-full md:block">
-                        <div className="font-black text-sm text-text-primary">#{order._id.substring(order._id.length - 8).toUpperCase()}</div>
+                        <div className="font-black text-sm text-text-primary truncate pr-4">{order.orderItems?.map(i => i.name).join(', ') || 'Custom Order'}</div>
                         <div className="text-xs font-bold text-text-secondary md:mt-1">{new Date(order.createdAt).toLocaleDateString()}</div>
                       </div>
                     </td>

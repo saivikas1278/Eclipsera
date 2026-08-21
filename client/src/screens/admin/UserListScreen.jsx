@@ -89,7 +89,6 @@ const UserListScreen = () => {
           <table className="w-full text-left border-collapse">
             <thead className="hidden md:table-header-group">
               <tr className="bg-transparent text-text-primary/80 text-sm uppercase tracking-wider border-b border-accent-gold/20">
-                <th className="p-4 font-semibold">ID</th>
                 <th className="p-4 font-semibold">Name</th>
                 <th className="p-4 font-semibold">Email</th>
                 <th className="p-4 font-semibold text-center">Admin</th>
@@ -100,25 +99,20 @@ const UserListScreen = () => {
               {users.map((user) => (
                 <tr key={user._id} className="grid grid-cols-2 md:table-row gap-y-1 p-3 mb-3 border border-accent-gold/20 md:border-none rounded-xl md:rounded-none bg-surface md:bg-transparent shadow-sm md:shadow-none md:p-0 relative hover:bg-bg-base/50 transition-colors cursor-pointer">
                   
-                  {/* ID */}
-                  <td className="col-start-1 col-span-1 row-start-1 block md:table-cell p-0 md:p-4 text-sm md:border-b md:border-accent-gold/10">
-                    <span className="text-xs font-black text-text-primary/70 block truncate pr-4">#{user._id}</span>
-                  </td>
-                  
                   {/* Name */}
-                  <td className="col-start-1 col-span-2 row-start-2 block md:table-cell p-0 md:p-4 md:border-b md:border-accent-gold/10">
+                  <td className="col-start-1 col-span-2 row-start-1 block md:table-cell p-0 md:p-4 md:border-b md:border-accent-gold/10">
                     <span className="text-sm font-bold text-text-primary block truncate pr-20">{user.name}</span>
                   </td>
                   
                   {/* Email */}
-                  <td className="col-start-1 col-span-1 row-start-3 block md:table-cell p-0 md:p-4 md:border-b md:border-accent-gold/10">
+                  <td className="col-start-1 col-span-1 row-start-2 block md:table-cell p-0 md:p-4 md:border-b md:border-accent-gold/10">
                     <a href={`mailto:${user.email}`} className="text-xs font-medium text-text-primary/70 hover:text-accent-gold transition-colors truncate block pr-2">
                       {user.email}
                     </a>
                   </td>
                   
                   {/* Admin Status */}
-                  <td className="col-start-2 col-span-1 row-start-3 flex justify-end items-center md:table-cell p-0 md:p-4 md:border-b md:border-accent-gold/10">
+                  <td className="col-start-2 col-span-1 row-start-2 flex justify-end items-center md:table-cell p-0 md:p-4 md:border-b md:border-accent-gold/10">
                     <div className="flex justify-end md:justify-center w-full">
                       {user.isAdmin ? (
                         <div className="flex items-center justify-center bg-green-900/30 border border-green-500/30 rounded-full px-2 py-0.5 md:bg-transparent md:border-none md:p-0">

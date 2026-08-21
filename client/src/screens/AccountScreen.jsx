@@ -392,7 +392,7 @@ const AccountScreen = () => {
                       <table className="w-full text-left">
                         <thead>
                           <tr className="border-b border-accent-gold/20 text-text-secondary text-sm">
-                            <th className="pb-3 font-semibold">Order ID</th>
+                            <th className="pb-3 font-semibold">Order Summary</th>
                             <th className="pb-3 font-semibold">Date</th>
                             <th className="pb-3 font-semibold">Total</th>
                             <th className="pb-3 font-semibold">Status</th>
@@ -402,7 +402,7 @@ const AccountScreen = () => {
                         <tbody className="divide-y divide-[#EFEBE4]">
                           {orders.map((order) => (
                             <tr key={order._id} className="hover:bg-transparent transition-colors">
-                              <td className="py-4 font-medium text-sm text-text-primary">#{order._id.substring(0, 8)}</td>
+                              <td className="py-4 font-medium text-sm text-text-primary truncate max-w-[200px]">{order.orderItems?.map(i => i.name).join(', ') || 'Custom Order'}</td>
                               <td className="py-4 text-sm text-text-secondary">{order.createdAt.substring(0, 10)}</td>
                               <td className="py-4 font-semibold">₹{order.totalPrice.toFixed(2)}</td>
                               <td className="py-4">

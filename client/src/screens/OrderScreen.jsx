@@ -138,7 +138,7 @@ const OrderScreen = () => {
 
   return (
     <div className="py-12 animate-fade-in max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8">Order <span className="text-text-primary/60 font-sans text-xl">#{order._id}</span></h1>
+      <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8">Order Details: <span className="text-accent-gold font-sans text-xl">{order.orderItems?.[0]?.name || 'Custom Item'} {order.orderItems?.length > 1 ? `(+${order.orderItems.length - 1} items)` : ''}</span></h1>
       
       {order.isCancelled && (
         <div className="mb-8 bg-red-900/20 border border-red-800/50 p-6 rounded-2xl flex items-start gap-4 animate-fade-in shadow-sm">
