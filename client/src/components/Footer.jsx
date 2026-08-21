@@ -1,9 +1,37 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { StoreContext } from '../context/StoreContext';
 
 const Footer = () => {
   const [openSection, setOpenSection] = useState(null);
+  const { userInfo } = useContext(StoreContext);
+  const [feedback, setFeedback] = useState('');
+  const [loading, setLoading] = useState(false);
+  
   const currentYear = new Date().getFullYear();
+
+  const submitFeedbackHandler = async (e) => {
+    e.preventDefault();
+    if (!feedback.trim()) return;
+
+    try {
+      setLoading(true);
+      await axios.post('/api/config/contact', {
+        name: userInfo?.name || 'Anonymous User',
+        email: userInfo?.email || 'anonymous@eclipsera.com',
+        subject: 'Store Feedback / Suggestions',
+        message: feedback
+      });
+      toast.success('Thank you! Your feedback has been sent directly to the admins.', { icon: '✨' });
+      setFeedback('');
+    } catch (err) {
+      toast.error('Failed to send feedback. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <footer className="bg-bg-secondary pt-8 md:pt-16 pb-24 md:pb-8 border-t border-accent-gold/10 mt-auto">
@@ -66,21 +94,24 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* Feedback & Suggestions */}
           <div className="col-span-1 md:col-span-2 lg:col-span-1">
-            <h4 className="text-text-primary font-bold mb-4 md:mb-6 tracking-wider">NEWSLETTER</h4>
-            <p className="text-text-secondary text-sm mb-4">Subscribe for updates, access to exclusive deals, and more.</p>
-            <form className="flex" onSubmit={(e) => e.preventDefault()}>
-              <input 
-                type="email" 
-                placeholder="Email address" 
-                className="w-full bg-bg-base border border-r-0 border-accent-gold/30 rounded-l-md px-4 py-3 min-h-12 text-text-primary focus:outline-none focus:border-accent-gold text-sm"
-              />
+            <h4 className="text-text-primary font-bold mb-4 md:mb-6 tracking-wider">FEEDBACK & SUGGESTIONS</h4>
+            <p className="text-text-secondary text-sm mb-4">Help us improve. What products do you want to see? Any suggestions?</p>
+            <form className="flex flex-col gap-3" onSubmit={submitFeedbackHandler}>
+              <textarea 
+                rows="2"
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Write your suggestions here..." 
+                className="w-full bg-bg-base border border-accent-gold/30 rounded-md px-4 py-3 text-text-primary focus:outline-none focus:border-accent-gold focus:ring-1 focus:ring-accent-gold text-sm resize-none"
+              ></textarea>
               <button 
                 type="submit" 
-                className="bg-surface border border-accent-gold/30 border-l-0 rounded-r-md px-6 py-3 min-h-12 text-accent-gold hover:text-accent-gold-hover hover:bg-bg-base transition-colors text-sm font-bold"
+                disabled={loading || !feedback.trim()}
+                className="bg-surface border border-accent-gold/30 rounded-md px-6 py-2.5 text-accent-gold hover:text-accent-gold-hover hover:bg-bg-base transition-colors text-sm font-bold disabled:opacity-50 self-end w-full sm:w-auto active:scale-95"
               >
-                JOIN
+                {loading ? 'SENDING...' : 'SEND MESSAGE'}
               </button>
             </form>
           </div>
