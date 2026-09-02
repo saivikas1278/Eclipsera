@@ -46,6 +46,8 @@ const Footer = () => {
             </div>
             <p className="text-text-secondary text-sm mb-6 leading-relaxed">
               Elevating everyday living through meticulously handcrafted goods. Designed for those who appreciate the finer things in life.
+              <br/>
+              <Link to="/about" className="text-accent-gold hover:underline mt-2 inline-block font-medium">Read Our Story &rarr;</Link>
             </p>
             <div className="flex space-x-4 text-accent-gold">
               {/* Social Icons (using simple text/SVG for now) */}

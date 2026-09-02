@@ -26,7 +26,7 @@ const ShippingScreen = () => {
     }
   }, [cartItems, navigate]);
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, formState: { errors, isValid } } = useForm({
     resolver: zodResolver(shippingSchema),
     mode: 'onTouched',
     defaultValues: {
@@ -56,9 +56,10 @@ const ShippingScreen = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-[70vh] animate-fade-in">
-      <div className="w-full max-w-xl bg-transparent p-8 sm:p-10 rounded-3xl shadow-sm border border-accent-gold/20">
-        <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8 text-center">Shipping</h1>
+    <div className="flex justify-center items-center min-h-[70vh] animate-fade-in py-8">
+      <div className="w-full max-w-xl bg-surface/50 backdrop-blur-md p-8 sm:p-10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-accent-gold/20">
+        <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-2 text-center">Shipping Details</h1>
+        <p className="text-text-secondary text-sm text-center mb-8">Where should we send your luxury pieces?</p>
         
         {userInfo?.addresses?.length > 0 && (
           <div className="mb-8">
@@ -169,10 +170,26 @@ const ShippingScreen = () => {
           <button
             type="submit"
             disabled={!isValid}
-            className="w-full bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-4 rounded-xl shadow-md transition-all hover:shadow-lg mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-4 rounded-xl shadow-[0_8px_20px_rgba(212,175,55,0.3)] transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_25px_rgba(212,175,55,0.4)] mt-4 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest text-sm"
           >
-            Continue to Checkout
+            Continue to Payment
           </button>
+          
+          {/* Trust Badges */}
+          <div className="flex flex-wrap justify-center items-center gap-6 mt-8 pt-6 border-t border-accent-gold/10 text-text-secondary">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+              <span className="text-xs font-medium uppercase tracking-wider">SSL Secure</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+              <span className="text-xs font-medium uppercase tracking-wider">Verified</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+              <span className="text-xs font-medium uppercase tracking-wider">Easy Returns</span>
+            </div>
+          </div>
         </form>
       </div>
     </div>

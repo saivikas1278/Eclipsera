@@ -32,17 +32,16 @@ const MiniCartDrawer = () => {
     <>
       {/* Backdrop */}
       {isCartDrawerOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-50 transition-opacity backdrop-blur-sm"
           onClick={closeDrawer}
         />
       )}
 
       {/* Drawer */}
-      <div 
-        className={`fixed top-0 right-0 h-full w-full md:w-96 bg-surface shadow-2xl z-50 transform transition-transform duration-300 ease-in-out md:border-l border-accent-gold/20 flex flex-col ${
-          isCartDrawerOpen ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:translate-x-full'
-        }`}
+      <div
+        className={`fixed top-0 right-0 h-full w-full md:w-96 bg-surface shadow-2xl z-50 transform transition-transform duration-300 ease-in-out md:border-l border-accent-gold/20 flex flex-col ${isCartDrawerOpen ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:translate-x-full'
+          }`}
       >
         {/* Header */}
         <div className="p-6 flex justify-between items-center border-b border-accent-gold/10">
@@ -92,14 +91,38 @@ const MiniCartDrawer = () => {
         {/* Footer */}
         {cartItems.length > 0 && (
           <div className="p-6 border-t border-accent-gold/10 bg-bg-base">
+            {/* Free Shipping Progress Bar */}
+            <div className="mb-6">
+              {subtotal >= 2000 ? (
+                <div className="flex items-center gap-2 text-green-500 font-bold text-sm mb-2 justify-center">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                  You've unlocked FREE Shipping!
+                </div>
+              ) : (
+                <>
+                  <div className="text-text-secondary text-sm mb-2 text-center">
+                    Add <span className="text-accent-gold font-bold font-serif">₹{(2000 - subtotal).toFixed(2)}</span> more for <span className="font-bold text-text-primary">FREE Shipping</span>
+                  </div>
+                  <div className="w-full bg-surface/50 rounded-full h-2 overflow-hidden border border-accent-gold/10">
+                    <div 
+                      className="bg-accent-gold h-2 rounded-full transition-all duration-500 ease-out relative overflow-hidden" 
+                      style={{ width: `${Math.min((subtotal / 2000) * 100, 100)}%` }}
+                    >
+                      <div className="absolute top-0 left-0 w-full h-full bg-white/20 animate-pulse"></div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             <div className="flex justify-between items-center mb-6">
               <span className="text-lg text-text-primary font-bold">Subtotal</span>
               <span className="text-2xl text-accent-gold font-bold font-serif">₹{subtotal}</span>
             </div>
-            <p className="text-xs text-text-secondary mb-4 text-center">Shipping & taxes calculated at checkout.</p>
-            <button 
+            <p className="text-xs text-text-secondary mb-4 text-center">Taxes calculated at checkout.</p>
+            <button
               onClick={checkoutHandler}
-              className="w-full bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold min-h-12 rounded-xl transition-colors shadow-lg"
+              className="w-full bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-extrabold min-h-[56px] rounded-xl transition-colors shadow-lg text-base uppercase tracking-wider"
             >
               Proceed to Checkout
             </button>

@@ -27,13 +27,15 @@ const WishlistScreen = () => {
           </div>
 
           {wishlistItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <svg className="w-24 h-24 text-accent-gold/30 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              <h3 className="text-xl font-bold text-text-primary mb-2">Your wishlist is empty</h3>
-              <p className="text-text-secondary max-w-md mb-8">Save items you love to your wishlist. Review them anytime and easily move them to your cart.</p>
-              <Link to="/" className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-3 px-8 rounded transition-colors uppercase tracking-widest text-sm">
+            <div className="flex flex-col items-center justify-center py-12 md:py-16 text-center animate-fade-in">
+              <div className="w-20 h-20 bg-surface rounded-full flex items-center justify-center border border-accent-gold/20 mb-6 text-accent-gold/50 shadow-inner">
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-serif font-bold text-text-primary mb-2">Your wishlist is empty</h3>
+              <p className="text-text-secondary text-sm max-w-md mb-8">Save items you love to your wishlist. Review them anytime and easily move them to your cart.</p>
+              <Link to="/" className="inline-block bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-3 px-8 rounded-xl transition-all shadow-md hover:shadow-lg uppercase tracking-wider text-sm">
                 Continue Shopping
               </Link>
             </div>

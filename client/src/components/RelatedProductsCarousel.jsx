@@ -38,12 +38,12 @@ const RelatedProductsCarousel = ({ productId }) => {
   }
 
   return (
-    <div className="py-16 mt-16 border-t border-accent-gold/10">
-      <h2 className="text-3xl font-serif font-extrabold text-text-primary text-center mb-10">You May Also Like</h2>
+    <div className="py-12 mt-12 border-t border-accent-gold/10 overflow-hidden">
+      <h2 className="text-xl md:text-2xl font-bold text-text-primary mb-6 px-4 max-w-7xl mx-auto">You May Also Like</h2>
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto px-4">
+      <div className="flex overflow-x-auto gap-4 px-4 pb-6 snap-x snap-mandatory hide-scrollbar max-w-7xl mx-auto">
         {products.map((product) => (
-          <div key={product._id} className="w-full">
+          <div key={product._id} className="w-[160px] md:w-[220px] flex-shrink-0 snap-start">
             <ProductCard product={product} />
           </div>
         ))}

@@ -134,7 +134,38 @@ const AccountScreen = () => {
         <h1 className="text-4xl font-extrabold tracking-tight mb-8">My Account</h1>
         
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Sidebar Navigation */}
+          {/* Mobile Swipeable Navigation */}
+          <div className="md:hidden flex overflow-x-auto gap-3 snap-x snap-mandatory hide-scrollbar mb-4 pb-2 border-b border-accent-gold/20 -mx-4 px-4 sm:mx-0 sm:px-0">
+            {[{id: 'overview', label: 'Overview'}, {id: 'edit_profile', label: 'Edit Profile'}, {id: 'addresses', label: 'Addresses'}, {id: 'track_orders', label: 'Orders'}, {id: 'reviews', label: 'Reviews'}, {id: 'notifications', label: 'Notifications'}].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`snap-start whitespace-nowrap min-h-[48px] px-4 font-bold text-sm rounded-full border transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-accent-gold text-white border-accent-gold shadow-md'
+                    : 'bg-transparent text-text-primary border-accent-gold/20'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+            {userInfo.isAdmin && (
+              <Link
+                to="/admin/orderlist"
+                className="snap-start whitespace-nowrap min-h-[48px] px-4 flex items-center font-bold text-sm rounded-full border border-accent-gold/50 text-accent-gold transition-all bg-accent-gold/10"
+              >
+                Admin Dashboard
+              </Link>
+            )}
+            <button
+              onClick={logoutHandler}
+              className="snap-start whitespace-nowrap min-h-[48px] px-4 font-bold text-sm rounded-full border border-red-500/30 text-red-500 bg-red-500/10 transition-all"
+            >
+              Logout
+            </button>
+          </div>
+
+          {/* Sidebar Navigation (Desktop) */}
           <div className="hidden md:block w-full md:w-64 flex-shrink-0">
             <div className="bg-surface rounded-2xl shadow-sm border border-accent-gold/20 overflow-hidden">
               <nav className="flex flex-col">
@@ -381,62 +412,111 @@ const AccountScreen = () => {
                       {errorOrders}
                     </div>
                   ) : orders.length === 0 ? (
-                    <div className="text-center py-8 bg-transparent rounded-xl">
-                      <p className="text-text-secondary font-medium mb-4">You haven't placed any orders yet.</p>
-                      <Link to="/" className="inline-block bg-surface hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-md hover:shadow-lg">
+                    <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
+                      <div className="w-20 h-20 bg-surface rounded-full flex items-center justify-center border border-accent-gold/20 mb-6 text-accent-gold/50 shadow-inner">
+                        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                      </div>
+                      <h3 className="text-2xl font-serif font-bold text-text-primary mb-2">No orders yet</h3>
+                      <p className="text-text-secondary text-sm mb-6 max-w-xs">Your luxury journey awaits. Discover our handcrafted collections.</p>
+                      <Link to="/" className="inline-block bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-3 px-8 rounded-xl transition-all shadow-md hover:shadow-lg uppercase tracking-wider text-sm">
                         Start Shopping
                       </Link>
                     </div>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left">
-                        <thead>
-                          <tr className="border-b border-accent-gold/20 text-text-secondary text-sm">
-                            <th className="pb-3 font-semibold">Order Summary</th>
-                            <th className="pb-3 font-semibold">Date</th>
-                            <th className="pb-3 font-semibold">Total</th>
-                            <th className="pb-3 font-semibold">Status</th>
-                            <th className="pb-3 font-semibold text-right">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#EFEBE4]">
-                          {orders.map((order) => (
-                            <tr key={order._id} className="hover:bg-transparent transition-colors">
-                              <td className="py-4 font-medium text-sm text-text-primary truncate max-w-[200px]">{order.orderItems?.map(i => i.name).join(', ') || 'Custom Order'}</td>
-                              <td className="py-4 text-sm text-text-secondary">{order.createdAt.substring(0, 10)}</td>
-                              <td className="py-4 font-semibold">₹{order.totalPrice.toFixed(2)}</td>
-                              <td className="py-4">
-                                {order.isDelivered ? (
-                                  <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full border border-green-200">
-                                    Delivered
-                                  </span>
-                                ) : (
-                                  <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-200">
-                                    Processing
-                                  </span>
-                                )}
-                              </td>
-                              <td className="py-4 text-right flex justify-end gap-2">
-                                <button
-                                  onClick={() => downloadInvoiceHandler(order._id)}
-                                  className="text-sm font-semibold text-text-primary bg-surface border border-accent-gold/20 hover:border-accent-gold/50 px-3 py-2 rounded-lg transition-colors flex items-center"
-                                  title="Download Invoice"
-                                >
-                                  <svg className="w-4 h-4 mr-1 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                  PDF
-                                </button>
-                                <Link 
-                                  to={`/order/${order._id}`} 
-                                  className="text-sm font-semibold text-accent-gold hover:text-accent-gold bg-accent-gold/10 hover:bg-accent-gold/20 px-4 py-2 rounded-lg transition-colors"
-                                >
-                                  View
-                                </Link>
-                              </td>
+                    <>
+                      {/* Desktop Table */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-left">
+                          <thead>
+                            <tr className="border-b border-accent-gold/20 text-text-secondary text-sm">
+                              <th className="pb-3 font-semibold">Order Summary</th>
+                              <th className="pb-3 font-semibold">Date</th>
+                              <th className="pb-3 font-semibold">Total</th>
+                              <th className="pb-3 font-semibold">Status</th>
+                              <th className="pb-3 font-semibold text-right">Action</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody className="divide-y divide-[#EFEBE4]">
+                            {orders.map((order) => (
+                              <tr key={order._id} className="hover:bg-transparent transition-colors">
+                                <td className="py-4 font-medium text-sm text-text-primary truncate max-w-[200px]">{order.orderItems?.map(i => i.name).join(', ') || 'Custom Order'}</td>
+                                <td className="py-4 text-sm text-text-secondary">{order.createdAt.substring(0, 10)}</td>
+                                <td className="py-4 font-semibold">₹{order.totalPrice.toFixed(2)}</td>
+                                <td className="py-4">
+                                  {order.isDelivered ? (
+                                    <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full border border-green-200">
+                                      Delivered
+                                    </span>
+                                  ) : (
+                                    <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-200">
+                                      Processing
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-4 text-right flex justify-end gap-2">
+                                  <button
+                                    onClick={() => downloadInvoiceHandler(order._id)}
+                                    className="text-sm font-semibold text-text-primary bg-surface border border-accent-gold/20 hover:border-accent-gold/50 px-3 py-2 rounded-lg transition-colors flex items-center"
+                                    title="Download Invoice"
+                                  >
+                                    <svg className="w-4 h-4 mr-1 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                    PDF
+                                  </button>
+                                  <Link 
+                                    to={`/order/${order._id}`} 
+                                    className="text-sm font-semibold text-accent-gold hover:text-accent-gold bg-accent-gold/10 hover:bg-accent-gold/20 px-4 py-2 rounded-lg transition-colors"
+                                  >
+                                    View
+                                  </Link>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                      {/* Mobile Cards */}
+                      <div className="md:hidden flex flex-col gap-4">
+                        {orders.map((order) => (
+                          <div key={order._id} className="bg-surface/50 border border-accent-gold/20 rounded-xl p-4 flex flex-col gap-3 shadow-sm">
+                            <div className="flex justify-between items-start border-b border-accent-gold/10 pb-3">
+                               <div className="flex-1 pr-2">
+                                 <p className="font-bold text-text-primary text-sm line-clamp-2">{order.orderItems?.map(i => i.name).join(', ') || 'Custom Order'}</p>
+                                 <p className="text-text-secondary text-xs mt-1">{order.createdAt.substring(0, 10)}</p>
+                               </div>
+                               <div>
+                                 {order.isDelivered ? (
+                                    <span className="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-1 rounded-full border border-green-200 whitespace-nowrap">
+                                      Delivered
+                                    </span>
+                                  ) : (
+                                    <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-1 rounded-full border border-amber-200 whitespace-nowrap">
+                                      Processing
+                                    </span>
+                                  )}
+                               </div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                               <p className="font-bold text-text-primary text-base">₹{order.totalPrice.toFixed(2)}</p>
+                               <div className="flex gap-2">
+                                  <button
+                                    onClick={() => downloadInvoiceHandler(order._id)}
+                                    className="min-h-[40px] px-3 text-xs font-bold text-text-primary bg-surface border border-accent-gold/20 hover:border-accent-gold/50 rounded-lg flex items-center shadow-sm"
+                                  >
+                                    PDF
+                                  </button>
+                                  <Link 
+                                    to={`/order/${order._id}`} 
+                                    className="min-h-[40px] px-5 flex items-center justify-center text-xs font-bold text-accent-gold bg-accent-gold/10 hover:bg-accent-gold/20 rounded-lg shadow-sm"
+                                  >
+                                    View
+                                  </Link>
+                               </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
 

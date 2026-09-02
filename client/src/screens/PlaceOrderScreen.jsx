@@ -125,7 +125,7 @@ const PlaceOrderScreen = () => {
   };
 
   return (
-    <div className="py-12 animate-fade-in max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="py-12 pb-40 md:pb-32 animate-fade-in max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col lg:flex-row gap-8">
         
         {/* Left Side: Order Details */}
@@ -248,15 +248,44 @@ const PlaceOrderScreen = () => {
               </div>
             )}
 
+            {/* Trust Badges */}
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-6 p-4 bg-surface/50 rounded-xl border border-accent-gold/10 text-text-secondary">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                <span className="text-xs font-medium uppercase tracking-wider text-center">100% Secure SSL</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                <span className="text-xs font-medium uppercase tracking-wider text-center">Authenticity Guaranteed</span>
+              </div>
+            </div>
 
-            <button
-              onClick={placeOrderHandler}
-              disabled={cartItems.length === 0 || loading || (paymentMethod === 'PHONEPE' && !paymentReceipt)}
-              className="w-full bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-4 min-h-12 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg"
-            >
-              {loading ? 'Processing...' : 'Confirm & Place Order'}
-            </button>
           </div>
+        </div>
+      </div>
+
+      {/* Sticky Bottom Call to Action */}
+      <div className="fixed bottom-[64px] md:bottom-0 left-0 right-0 p-4 bg-surface/95 backdrop-blur-xl border-t border-accent-gold/20 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.15)]">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="hidden sm:block">
+            <p className="text-sm text-text-secondary">Total Amount</p>
+            <p className="text-xl font-bold text-accent-gold">₹{totalPrice}</p>
+          </div>
+          <button
+            onClick={placeOrderHandler}
+            disabled={cartItems.length === 0 || loading || (paymentMethod === 'PHONEPE' && !paymentReceipt)}
+            className="flex-1 sm:flex-none sm:w-64 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-extrabold py-4 min-h-[56px] rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg uppercase tracking-wide"
+          >
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </div>
+              ) : 'Place Order'}
+          </button>
         </div>
       </div>
     </div>

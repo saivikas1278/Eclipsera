@@ -74,7 +74,7 @@ const UserEditScreen = () => {
   };
 
   return (
-    <div className="animate-fade-in max-w-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="animate-fade-in max-w-2xl mx-auto py-8 pb-32 px-4 sm:px-6 lg:px-8">
       <Link
         to="/admin/userlist"
         className="inline-flex items-center text-text-primary/60 hover:text-accent-gold font-medium mb-6 transition-colors"
@@ -142,13 +142,18 @@ const UserEditScreen = () => {
               </label>
             </div>
 
-            <button
-              type="submit"
-              disabled={updateLoading}
-              className="w-full bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold text-lg py-4 min-h-12 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {updateLoading ? 'Processing...' : 'Update'}
-            </button>
+            {/* Sticky Save Bar */}
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-surface/90 backdrop-blur-xl border-t border-accent-gold/20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={updateLoading}
+                  className="w-full md:w-auto md:min-w-[250px] bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-black uppercase tracking-widest py-4 md:py-3 px-8 rounded-xl shadow-[0_4px_14px_rgba(212,175,55,0.4)] transition-all hover:-translate-y-1 hover:shadow-[0_6px_20px_rgba(212,175,55,0.5)] disabled:opacity-50 disabled:hover:translate-y-0"
+                >
+                  {updateLoading ? 'Processing...' : 'Update'}
+                </button>
+              </div>
+            </div>
           </form>
         )}
       </div>

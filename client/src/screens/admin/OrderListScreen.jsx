@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { StoreContext } from '../../context/StoreContext';
 import { TableVirtuoso } from 'react-virtuoso';
 import { useDebounce } from '../../hooks/useDebounce';
+import OrderKanbanBoard from './OrderKanbanBoard';
 
 const OrderListScreen = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [viewMode, setViewMode] = useState('LIST'); // 'LIST' | 'KANBAN'
 
   // Pagination & Search
   const [page, setPage] = useState(1);
@@ -144,7 +146,7 @@ const OrderListScreen = () => {
       };
 
       await axios.put('/api/orders/bulk-fulfillment', payload, config);
-      
+
       // Update local state instantly
       const updatedOrders = orders.map(order => {
         if (selectedOrders.includes(order._id)) {
@@ -162,6 +164,45 @@ const OrderListScreen = () => {
     } catch (err) {
       setBulkLoading(false);
       alert(err.response?.data?.message || err.message);
+    }
+  };
+
+  const handleDragEnd = async (result) => {
+    if (!result.destination) return;
+    const { source, destination, draggableId } = result;
+
+    if (source.droppableId === destination.droppableId) return;
+
+    const newStatus = destination.droppableId;
+    const orderId = draggableId;
+
+    // Optimistic update
+    const previousOrders = [...orders];
+    const updatedOrders = orders.map(o => 
+      o._id === orderId ? { ...o, fulfillmentStatus: newStatus } : o
+    );
+    setOrders(updatedOrders);
+
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+      
+      const payload = {
+        orderIds: [orderId],
+        status: newStatus,
+        note: `Moved to ${newStatus} via Kanban Board`
+      };
+
+      await axios.put('/api/orders/bulk-fulfillment', payload, config);
+      showToast(`Order status updated to ${newStatus}`);
+    } catch (err) {
+       // Revert on error
+       setOrders(previousOrders);
+       alert(err.response?.data?.message || 'Failed to update status');
     }
   };
 
@@ -191,7 +232,7 @@ const OrderListScreen = () => {
 
       // Instantly update the order list in background
       setOrders(orders.map((o) => (o._id === updatedOrder._id ? updatedOrder : o)));
-      
+
       setUpdateLoading(false);
       showToast(`Order status updated to ${fulfillmentStatus} and customer notified.`);
       closeModal();
@@ -212,7 +253,7 @@ const OrderListScreen = () => {
         {},
         config
       );
-      
+
       setOrders(orders.map((o) => (o._id === updatedOrder._id ? updatedOrder : o)));
       setSelectedOrder(updatedOrder);
       setUpdateLoading(false);
@@ -243,7 +284,7 @@ const OrderListScreen = () => {
         { reason },
         config
       );
-      
+
       setOrders(orders.map((o) => (o._id === updatedOrder._id ? updatedOrder : o)));
       setSelectedOrder(updatedOrder);
       setShowDeclineOptions(false);
@@ -281,23 +322,46 @@ const OrderListScreen = () => {
       )}
 
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <h1 className="text-4xl font-serif font-extrabold text-text-primary tracking-tight">Customer Orders</h1>
-        <input 
-          type="text" 
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          <h1 className="text-4xl font-serif font-extrabold text-text-primary tracking-tight">Customer Orders</h1>
+          {/* View Toggle */}
+          <div className="flex items-center bg-surface border border-accent-gold/20 rounded-xl p-1 shadow-inner">
+            <button
+              onClick={() => setViewMode('LIST')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                viewMode === 'LIST' ? 'bg-accent-gold text-bg-base shadow-md' : 'text-text-secondary hover:text-accent-gold'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+              List
+            </button>
+            <button
+              onClick={() => setViewMode('KANBAN')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                viewMode === 'KANBAN' ? 'bg-accent-gold text-bg-base shadow-md' : 'text-text-secondary hover:text-accent-gold'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" /></svg>
+              Board
+            </button>
+          </div>
+        </div>
+        <input
+          type="text"
           placeholder="Search Order ID or Name..."
           value={search}
-          onChange={(e) => {setSearch(e.target.value); setPage(1);}}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           className="bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold w-full sm:w-72"
         />
       </div>
-      
+
       {/* Filters Bar */}
       <div className="flex flex-col md:flex-row gap-4 mb-6 bg-surface p-4 rounded-xl border border-accent-gold/20 shadow-sm animate-fade-in">
         <div className="flex-1">
           <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Status</label>
-          <select 
+          <select
             value={statusFilter}
-            onChange={(e) => {setStatusFilter(e.target.value); setPage(1);}}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             className="w-full bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold min-h-[44px]"
           >
             <option value="">All Statuses</option>
@@ -311,24 +375,24 @@ const OrderListScreen = () => {
         </div>
         <div className="flex-1">
           <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Start Date</label>
-          <input 
+          <input
             type="date"
             value={startDate}
-            onChange={(e) => {setStartDate(e.target.value); setPage(1);}}
+            onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
             className="w-full bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold min-h-[44px]"
           />
         </div>
         <div className="flex-1">
           <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">End Date</label>
-          <input 
+          <input
             type="date"
             value={endDate}
-            onChange={(e) => {setEndDate(e.target.value); setPage(1);}}
+            onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
             className="w-full bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold min-h-[44px]"
           />
         </div>
       </div>
-      
+
       {/* Bulk Action Bar */}
       {selectedOrders.length > 0 && (
         <div className="bg-surface border border-accent-gold/40 rounded-xl p-4 mb-6 shadow-md flex flex-wrap items-center justify-between gap-4 animate-fade-in">
@@ -349,14 +413,14 @@ const OrderListScreen = () => {
               <option value="RETURN_APPROVED">RETURN_APPROVED</option>
               <option value="REFUNDED">REFUNDED</option>
             </select>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={bulkNote}
               onChange={(e) => setBulkNote(e.target.value)}
               placeholder="Optional Note..."
               className="bg-bg-base border border-accent-gold/40 rounded-lg px-4 py-2 min-h-12 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold placeholder:text-text-secondary/50"
             />
-            <button 
+            <button
               onClick={handleBulkUpdate}
               disabled={bulkLoading}
               className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-2 min-h-12 px-6 rounded-lg transition-colors flex items-center gap-2"
@@ -367,19 +431,22 @@ const OrderListScreen = () => {
         </div>
       )}
 
-      <div className="bg-surface rounded-3xl shadow-sm border border-accent-gold/20 overflow-hidden h-[600px]">
-        <TableVirtuoso
-          data={orders}
-          useWindowScroll={false}
-          components={{
-            Table: (props) => <table {...props} className="w-full border-collapse" />,
-            TableRow: (props) => <tr {...props} className="grid grid-cols-2 md:table-row gap-y-1 p-3 mb-3 border border-accent-gold/20 md:border-none rounded-xl md:rounded-none bg-surface md:bg-transparent shadow-sm md:shadow-none md:p-0 relative hover:bg-bg-base/50 transition-colors cursor-pointer" />
-          }}
-          fixedHeaderContent={() => (
-            <tr className="bg-bg-base/95 backdrop-blur-sm border-b border-accent-gold/20 shadow-sm hidden md:table-row">
+      {viewMode === 'KANBAN' ? (
+        <OrderKanbanBoard orders={orders} onDragEnd={handleDragEnd} onOrderClick={openModal} />
+      ) : (
+        <div className="bg-surface rounded-3xl shadow-sm border border-accent-gold/20 overflow-hidden h-[600px]">
+          <TableVirtuoso
+            data={orders}
+            useWindowScroll={false}
+            components={{
+              Table: (props) => <table {...props} className="w-full border-collapse" />,
+              TableRow: (props) => <tr {...props} className="grid grid-cols-2 md:table-row gap-y-1 p-3 mb-3 border border-accent-gold/20 md:border-none rounded-xl md:rounded-none bg-surface md:bg-transparent shadow-sm md:shadow-none md:p-0 relative hover:bg-bg-base/50 transition-colors cursor-pointer" />
+            }}
+            fixedHeaderContent={() => (
+              <tr className="bg-bg-base/95 backdrop-blur-sm border-b border-accent-gold/20 shadow-sm hidden md:table-row">
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider w-12 z-10">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     className="w-4 h-4 rounded text-accent-gold focus:ring-accent-gold bg-bg-base border-accent-gold/40 cursor-pointer"
                     checked={orders.length > 0 && selectedOrders.length === orders.length}
                     onChange={handleSelectAll}
@@ -390,73 +457,73 @@ const OrderListScreen = () => {
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">Date</th>
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">Total</th>
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10">Status</th>
-            </tr>
-          )}
-          itemContent={(index, order) => (
-            <>
-                  {/* Checkbox: Top right absolute on mobile */}
-                  <td className="absolute top-3 right-3 md:static md:table-cell md:px-6 md:py-4 md:border-b md:border-white/5" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-center">
-                      <input 
-                        type="checkbox" 
-                        className="w-5 h-5 md:w-4 md:h-4 rounded text-accent-gold focus:ring-accent-gold bg-bg-base border-accent-gold/40 cursor-pointer shadow-sm"
-                        checked={selectedOrders.includes(order._id)}
-                        onChange={() => handleSelectOrder(order._id)}
-                      />
-                    </div>
-                  </td>
-                  
-                  {/* Order Summary */}
-                  <td className="col-start-1 col-span-2 row-start-1 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
-                    <span className="text-sm md:text-sm font-black text-text-primary pr-10 block truncate">{order.orderItems?.map(i => i.name).join(', ') || 'Custom Order'}</span>
-                  </td>
-                  
-                  {/* User */}
-                  <td className="col-start-1 col-span-1 row-start-2 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
-                    <span className="text-sm font-bold text-text-primary/90 truncate block">{order.user?.name || 'Deleted'}</span>
-                  </td>
-                  
-                  {/* Date */}
-                  <td className="col-start-1 col-span-1 row-start-3 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
-                    <span className="text-xs font-semibold text-text-secondary">{order.createdAt.substring(0, 10)}</span>
-                  </td>
-                  
-                  {/* Total */}
-                  <td className="col-start-2 col-span-1 row-start-2 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
-                    <div className="text-right pr-10 md:pr-0 md:text-left">
-                      <span className="text-sm font-black text-accent-gold block">₹{order.totalPrice.toFixed(2)}</span>
-                    </div>
-                  </td>
-                  
-                  {/* Status */}
-                  <td className="col-start-2 col-span-1 row-start-3 flex items-center justify-end pr-10 md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
-                    <div className="flex justify-end md:justify-start w-full">
-                      <span className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-black tracking-wide shadow-sm border ${
-                        order.fulfillmentStatus === 'DELIVERED' ? 'bg-green-900/30 text-green-400 border-green-500/30' :
+              </tr>
+            )}
+            itemContent={(index, order) => (
+              <>
+                {/* Checkbox: Top right absolute on mobile */}
+                <td className="absolute top-3 right-3 md:static md:table-cell md:px-6 md:py-4 md:border-b md:border-white/5" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      className="w-5 h-5 md:w-4 md:h-4 rounded text-accent-gold focus:ring-accent-gold bg-bg-base border-accent-gold/40 cursor-pointer shadow-sm"
+                      checked={selectedOrders.includes(order._id)}
+                      onChange={() => handleSelectOrder(order._id)}
+                    />
+                  </div>
+                </td>
+
+                {/* Order Summary */}
+                <td className="col-start-1 col-span-2 row-start-1 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
+                  <span className="text-sm md:text-sm font-black text-text-primary pr-10 block truncate">{order.orderItems?.map(i => i.name).join(', ') || 'Custom Order'}</span>
+                </td>
+
+                {/* User */}
+                <td className="col-start-1 col-span-1 row-start-2 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
+                  <span className="text-sm font-bold text-text-primary/90 truncate block">{order.user?.name || 'Deleted'}</span>
+                </td>
+
+                {/* Date */}
+                <td className="col-start-1 col-span-1 row-start-3 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
+                  <span className="text-xs font-semibold text-text-secondary">{order.createdAt.substring(0, 10)}</span>
+                </td>
+
+                {/* Total */}
+                <td className="col-start-2 col-span-1 row-start-2 block md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
+                  <div className="text-right pr-10 md:pr-0 md:text-left">
+                    <span className="text-sm font-black text-accent-gold block">₹{order.totalPrice.toFixed(2)}</span>
+                  </div>
+                </td>
+
+                {/* Status */}
+                <td className="col-start-2 col-span-1 row-start-3 flex items-center justify-end pr-10 md:table-cell p-0 md:px-6 md:py-4 md:border-b md:border-white/5" onClick={() => openModal(order)}>
+                  <div className="flex justify-end md:justify-start w-full">
+                    <span className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-black tracking-wide shadow-sm border ${order.fulfillmentStatus === 'DELIVERED' ? 'bg-green-900/30 text-green-400 border-green-500/30' :
                         order.fulfillmentStatus === 'SHIPPED' ? 'bg-blue-900/30 text-blue-400 border-blue-500/30' :
-                        order.fulfillmentStatus === 'CANCELLED' ? 'bg-red-900/30 text-red-400 border-red-500/30' :
-                        'bg-accent-gold/20 text-accent-gold border-accent-gold/30'
+                          order.fulfillmentStatus === 'CANCELLED' ? 'bg-red-900/30 text-red-400 border-red-500/30' :
+                            'bg-accent-gold/20 text-accent-gold border-accent-gold/30'
                       }`}>
-                        {order.fulfillmentStatus || 'PENDING'}
-                      </span>
-                    </div>
-                  </td>
-            </>
-          )}
-        />
-      </div>
+                      {order.fulfillmentStatus || 'PENDING'}
+                    </span>
+                  </div>
+                </td>
+              </>
+            )}
+          />
+        </div>
+      )}
 
       <div className="flex justify-between items-center mt-6 px-4">
-        <button 
-          disabled={page === 1} 
+        <button
+          disabled={page === 1}
           onClick={() => setPage(p => p - 1)}
           className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 min-h-12 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
         >
           Previous
         </button>
         <span className="text-text-primary font-medium">Page {page} of {totalPages} <span className="text-text-primary/50 text-sm ml-2">(Total: {totalCount})</span></span>
-        <button 
-          disabled={page >= totalPages} 
+        <button
+          disabled={page >= totalPages}
           onClick={() => setPage(p => p + 1)}
           className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 min-h-12 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
         >
@@ -468,7 +535,7 @@ const OrderListScreen = () => {
       {isModalOpen && selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
           <div className="bg-surface border border-accent-gold/20 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col relative">
-            
+
             <div className="sticky top-0 bg-surface/95 backdrop-blur z-10 px-6 py-4 border-b border-accent-gold/20 flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-serif font-bold text-text-primary">Order for {selectedOrder.user?.name || 'Customer'}</h2>
@@ -516,7 +583,7 @@ const OrderListScreen = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-bold text-accent-gold mb-3">Financial Summary</h3>
                   <div className="bg-bg-base p-4 rounded-xl border border-walnut/10">
@@ -525,7 +592,7 @@ const OrderListScreen = () => {
                       <span className="text-accent-gold">₹{selectedOrder.totalPrice.toFixed(2)}</span>
                     </div>
                     <p className="text-sm text-text-secondary mt-2">
-                      Payment Status: {selectedOrder.isPaid ? `Paid on ${selectedOrder.paidAt.substring(0,10)}` : 'Unpaid'}
+                      Payment Status: {selectedOrder.isPaid ? `Paid on ${selectedOrder.paidAt.substring(0, 10)}` : 'Unpaid'}
                     </p>
                     <p className="text-sm text-text-secondary mt-1">
                       Payment Method: <span className="font-bold text-accent-gold">{selectedOrder.paymentMethod || 'N/A'}</span>
@@ -545,19 +612,19 @@ const OrderListScreen = () => {
                         ) : (
                           <p className="text-sm text-red-400 mb-4">No receipt uploaded</p>
                         )}
-                        
+
                         {!selectedOrder.isVerifiedByAdmin && selectedOrder.paymentReceipt && !selectedOrder.isCancelled && (
                           <div className="w-full mt-4 bg-bg-base p-4 rounded-xl border border-walnut/10">
                             {!showDeclineOptions ? (
                               <div className="flex gap-2 w-full">
-                                <button 
+                                <button
                                   onClick={(e) => { e.preventDefault(); handleVerifyPayment(); }}
                                   disabled={updateLoading}
                                   className="w-1/2 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-2 min-h-12 rounded-lg transition-colors"
                                 >
                                   Approve
                                 </button>
-                                <button 
+                                <button
                                   onClick={(e) => { e.preventDefault(); setShowDeclineOptions(true); }}
                                   disabled={updateLoading}
                                   className="w-1/2 bg-surface hover:bg-surface/80 border border-red-500 text-red-500 font-bold py-2 min-h-12 rounded-lg transition-colors"
@@ -568,7 +635,7 @@ const OrderListScreen = () => {
                             ) : (
                               <div className="flex flex-col gap-3 w-full animate-fade-in">
                                 <label className="text-sm font-bold text-red-500">Select Decline Reason:</label>
-                                <select 
+                                <select
                                   value={declineReason}
                                   onChange={(e) => setDeclineReason(e.target.value)}
                                   className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 min-h-12 focus:outline-none focus:border-accent-gold"
@@ -577,25 +644,25 @@ const OrderListScreen = () => {
                                     <option key={idx} value={r}>{r}</option>
                                   ))}
                                 </select>
-                                
+
                                 {declineReason === 'Other (Custom Reason)' && (
-                                  <textarea 
+                                  <textarea
                                     value={customReason}
                                     onChange={(e) => setCustomReason(e.target.value)}
                                     placeholder="Type your exact reason here..."
                                     className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 h-20 resize-none focus:outline-none focus:border-accent-gold"
                                   />
                                 )}
-                                
+
                                 <div className="flex gap-2 w-full mt-2">
-                                  <button 
+                                  <button
                                     onClick={(e) => { e.preventDefault(); setShowDeclineOptions(false); }}
                                     disabled={updateLoading}
                                     className="w-1/3 bg-surface hover:bg-surface/80 border border-walnut/20 text-text-primary font-bold py-2 min-h-12 rounded-lg transition-colors"
                                   >
                                     Cancel
                                   </button>
-                                  <button 
+                                  <button
                                     onClick={(e) => { e.preventDefault(); handleDeclineOrder(); }}
                                     disabled={updateLoading}
                                     className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-2 min-h-12 rounded-lg transition-colors"
@@ -615,13 +682,13 @@ const OrderListScreen = () => {
                         )}
                       </div>
                     )}
-                    
+
                     {/* Cash On Delivery Decline Block */}
                     {selectedOrder.paymentMethod === 'Cash On Delivery' && !selectedOrder.isCancelled && !selectedOrder.isDelivered && (
                       <div className="w-full mt-4 bg-bg-base p-4 rounded-xl border border-red-500/30">
                         <p className="font-bold text-red-400 mb-3">Cash On Delivery Order</p>
                         {!showDeclineOptions ? (
-                          <button 
+                          <button
                             onClick={(e) => { e.preventDefault(); setShowDeclineOptions(true); }}
                             disabled={updateLoading}
                             className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 min-h-12 rounded-lg transition-colors shadow-sm"
@@ -631,7 +698,7 @@ const OrderListScreen = () => {
                         ) : (
                           <div className="flex flex-col gap-3 w-full animate-fade-in">
                             <label className="text-sm font-bold text-red-500">Select Decline Reason:</label>
-                            <select 
+                            <select
                               value={declineReason}
                               onChange={(e) => setDeclineReason(e.target.value)}
                               className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 min-h-12 focus:outline-none focus:border-accent-gold"
@@ -640,25 +707,25 @@ const OrderListScreen = () => {
                                 <option key={idx} value={r}>{r}</option>
                               ))}
                             </select>
-                            
+
                             {declineReason === 'Other (Custom Reason)' && (
-                              <textarea 
+                              <textarea
                                 value={customReason}
                                 onChange={(e) => setCustomReason(e.target.value)}
                                 placeholder="Type your exact reason here..."
                                 className="w-full bg-surface border border-walnut/20 text-text-primary text-sm rounded-lg p-2 h-20 resize-none focus:outline-none focus:border-accent-gold"
                               />
                             )}
-                            
+
                             <div className="flex gap-2 w-full mt-2">
-                              <button 
+                              <button
                                 onClick={(e) => { e.preventDefault(); setShowDeclineOptions(false); }}
                                 disabled={updateLoading}
                                 className="w-1/3 bg-surface hover:bg-surface/80 border border-walnut/20 text-text-primary font-bold py-2 min-h-12 rounded-lg transition-colors"
                               >
                                 Cancel
                               </button>
-                              <button 
+                              <button
                                 onClick={(e) => { e.preventDefault(); handleDeclineOrder(); }}
                                 disabled={updateLoading}
                                 className="w-2/3 bg-red-600 hover:bg-red-700 text-white font-bold py-2 min-h-12 rounded-lg transition-colors shadow-md"
@@ -678,11 +745,11 @@ const OrderListScreen = () => {
               <div>
                 <h3 className="text-lg font-bold text-accent-gold mb-3">Fulfillment Control Panel</h3>
                 <form onSubmit={handleUpdateStatus} className="bg-bg-base p-6 rounded-xl border border-accent-gold/30 shadow-inner">
-                  
+
                   <div className="mb-4">
                     <label className="block text-sm font-bold text-text-primary mb-2">Order Status</label>
-                    <select 
-                      value={fulfillmentStatus} 
+                    <select
+                      value={fulfillmentStatus}
                       onChange={(e) => setFulfillmentStatus(e.target.value)}
                       className="w-full bg-surface border border-accent-gold/40 rounded-lg px-4 py-3 min-h-12 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-gold"
                     >
@@ -696,8 +763,8 @@ const OrderListScreen = () => {
 
                   <div className="mb-4">
                     <label className="block text-sm font-bold text-text-primary mb-2">Tracking / AWB Number</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={trackingNumber}
                       onChange={(e) => setTrackingNumber(e.target.value)}
                       placeholder="e.g. BLUEDART-123456"
@@ -707,7 +774,7 @@ const OrderListScreen = () => {
 
                   <div className="mb-6">
                     <label className="block text-sm font-bold text-text-primary mb-2">Update Note to Customer</label>
-                    <textarea 
+                    <textarea
                       value={fulfillmentNote}
                       onChange={(e) => setFulfillmentNote(e.target.value)}
                       placeholder="Optional note to send customer..."
@@ -716,8 +783,8 @@ const OrderListScreen = () => {
                     ></textarea>
                   </div>
 
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={updateLoading}
                     className="w-full bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-3 px-6 rounded-lg transition-colors flex justify-center items-center h-12"
                   >

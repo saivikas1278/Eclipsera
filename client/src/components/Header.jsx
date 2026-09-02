@@ -29,14 +29,30 @@ const Header = () => {
     accountMenuTimeoutRef.current = setTimeout(() => setIsAccountMenuOpen(false), 200);
   };
 
-  // Handle sticky nav blur on scroll
+  // Handle sticky nav blur and smart scroll-hide
+  const [isHidden, setIsHidden] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const currentScrollY = window.scrollY;
+      
+      // Determine if scrolled down enough for styling
+      setIsScrolled(currentScrollY > 20);
+      
+      // Smart scroll hide/show logic
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsHidden(true); // Scrolling down
+      } else {
+        setIsHidden(false); // Scrolling up
+      }
+      
+      setLastScrollY(currentScrollY);
     };
-    window.addEventListener('scroll', handleScroll);
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   const logoutHandler = () => {
     handleLogout();
@@ -51,8 +67,9 @@ const Header = () => {
 
 
       <header
-        className={`sticky top-0 z-40 transition-all duration-300 ${isScrolled ? 'bg-surface/90 backdrop-blur-md shadow-md py-4' : 'bg-surface py-4'
-          }`}
+        className={`sticky top-0 z-40 transition-all duration-300 transform ${isHidden ? '-translate-y-full' : 'translate-y-0'} ${
+          isScrolled ? 'bg-surface/90 backdrop-blur-md shadow-sm py-4' : 'bg-surface py-4'
+        }`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           {/* Main Top Row (Desktop + Mobile) */}
@@ -162,12 +179,9 @@ const Header = () => {
 
           {/* Desktop Navigation Row (Secondary) */}
           <div className="hidden lg:flex items-center justify-center gap-10 border-t border-accent-gold/10 pt-4 pb-2 mt-4">
-
-
-
             <Link to="/search?category=New" className="text-sm font-bold uppercase tracking-widest hover:text-accent-gold transition-colors">New Arrivals</Link>
             <Link to="/search?category=BestSellers" className="text-sm font-bold uppercase tracking-widest hover:text-accent-gold transition-colors">Bestsellers</Link>
-
+            <Link to="/about" className="text-sm font-bold uppercase tracking-widest hover:text-accent-gold transition-colors">Our Story</Link>
           </div>
 
           {/* Mobile Overlay Search Bar */}

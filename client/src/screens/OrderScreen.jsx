@@ -181,15 +181,67 @@ const OrderScreen = () => {
               </p>
             )}
             
-            {order.isDelivered ? (
-              <div className="bg-green-900/30 text-green-400 p-4 rounded-xl border border-green-800/50 font-medium">
-                Delivered on {new Date(order.deliveredAt).toLocaleString()}
+            {/* Visual Order Tracking Timeline */}
+            <div className="mt-8 relative">
+              <div className="absolute top-1/2 left-0 w-full h-1 bg-surface-hover -translate-y-1/2 rounded-full z-0"></div>
+              
+              <div 
+                className="absolute top-1/2 left-0 h-1 bg-accent-gold -translate-y-1/2 rounded-full z-0 transition-all duration-1000"
+                style={{ width: order.isDelivered ? '100%' : '33%' }}
+              ></div>
+
+              <div className="relative z-10 flex justify-between items-center w-full">
+                {/* Step 1: Order Placed */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-accent-gold text-bg-base flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.4)]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                  <span className="text-xs font-bold text-accent-gold uppercase tracking-wider text-center">Placed</span>
+                </div>
+
+                {/* Step 2: Processing */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md ${order.isDelivered ? 'bg-accent-gold text-bg-base' : 'bg-surface border-2 border-accent-gold text-accent-gold animate-pulse'}`}>
+                    {order.isDelivered ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                    ) : (
+                      <span className="w-2.5 h-2.5 rounded-full bg-accent-gold"></span>
+                    )}
+                  </div>
+                  <span className={`text-xs font-bold uppercase tracking-wider text-center ${order.isDelivered ? 'text-accent-gold' : 'text-text-primary'}`}>Processing</span>
+                </div>
+
+                {/* Step 3: Shipped */}
+                <div className="flex flex-col items-center gap-2 opacity-50">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${order.isDelivered ? 'bg-accent-gold text-bg-base shadow-[0_0_15px_rgba(212,175,55,0.4)]' : 'bg-surface-hover border border-text-secondary/30 text-text-secondary'}`}>
+                    {order.isDelivered ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                    )}
+                  </div>
+                  <span className={`text-xs font-bold uppercase tracking-wider text-center ${order.isDelivered ? 'text-accent-gold' : 'text-text-secondary'}`}>Shipped</span>
+                </div>
+
+                {/* Step 4: Delivered */}
+                <div className={`flex flex-col items-center gap-2 ${order.isDelivered ? 'opacity-100' : 'opacity-50'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${order.isDelivered ? 'bg-green-500 text-bg-base shadow-[0_0_15px_rgba(34,197,94,0.4)]' : 'bg-surface-hover border border-text-secondary/30 text-text-secondary'}`}>
+                    {order.isDelivered ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                    )}
+                  </div>
+                  <span className={`text-xs font-bold uppercase tracking-wider text-center ${order.isDelivered ? 'text-green-500' : 'text-text-secondary'}`}>Delivered</span>
+                </div>
               </div>
-            ) : (
-              <div className="bg-accent-gold/10 text-accent-gold p-4 rounded-xl border border-accent-gold/20 font-medium">
-                Not Delivered
-              </div>
-            )}
+              
+              {order.isDelivered && (
+                <p className="text-center text-sm text-green-500 font-medium mt-6 bg-green-500/10 py-2 rounded-lg">
+                  Successfully Delivered on {new Date(order.deliveredAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="bg-surface p-8 rounded-3xl shadow-sm border border-accent-gold/20">

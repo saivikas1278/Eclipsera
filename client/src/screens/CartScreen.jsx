@@ -28,7 +28,7 @@ const CartScreen = () => {
   }, [cartItems.length]);
 
   return (
-    <div className="py-12 animate-fade-in px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="pb-32 lg:pb-12 pt-12 animate-fade-in px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <h1 className="text-4xl font-serif font-extrabold text-text-primary mb-8 tracking-tight">Shopping Cart</h1>
       
       {cartItems.length === 0 ? (
@@ -112,24 +112,24 @@ const CartScreen = () => {
             {savedForLaterItems && savedForLaterItems.length > 0 && (
               <div className="mt-12 animate-fade-in">
                 <h2 className="text-2xl font-serif font-bold text-text-primary mb-6">Saved for Later ({savedForLaterItems.length})</h2>
-                <div className="bg-surface/50 rounded-3xl shadow-sm border border-accent-gold/20 overflow-hidden">
+                <div className="flex overflow-x-auto gap-4 snap-x snap-mandatory hide-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
                   {savedForLaterItems.map((item) => (
-                    <div key={item.cartItemId || item._id} className="flex flex-col sm:flex-row items-center justify-between p-6 border-b border-accent-gold/20 last:border-b-0 gap-4 opacity-75 hover:opacity-100 transition-opacity">
+                    <div key={item.cartItemId || item._id} className="flex flex-col bg-surface/50 rounded-2xl shadow-sm border border-accent-gold/20 p-4 gap-4 opacity-75 hover:opacity-100 transition-opacity min-w-[200px] snap-center">
                       
-                      <div className="w-full sm:w-20 aspect-square flex-shrink-0 relative overflow-hidden rounded-xl border border-accent-gold/20">
+                      <div className="w-full aspect-square relative overflow-hidden rounded-xl border border-accent-gold/20">
                         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                       </div>
                       
-                      <div className="flex-grow min-w-0 px-2 sm:px-4">
-                        <Link to={`/product/${item._id}`} className="text-lg font-serif font-semibold text-text-primary hover:text-accent-gold truncate block transition-colors">
+                      <div className="flex-grow min-w-0 text-center">
+                        <Link to={`/product/${item._id}`} className="text-sm font-serif font-semibold text-text-primary hover:text-accent-gold truncate block transition-colors">
                           {item.name}
                         </Link>
-                        <div className="text-accent-gold font-bold">₹{item.price.toFixed(2)}</div>
+                        <div className="text-accent-gold font-bold text-sm mt-1">₹{item.price.toFixed(2)}</div>
                       </div>
                       
                       <button 
                         onClick={() => moveToCart(item.cartItemId || item._id)}
-                        className="min-h-12 min-w-12 w-full sm:w-auto px-6 py-2 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center"
+                        className="min-h-[48px] w-full px-4 py-2 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold text-xs rounded-xl transition-colors shadow-sm flex items-center justify-center uppercase tracking-wider"
                       >
                         Move to Cart
                       </button>

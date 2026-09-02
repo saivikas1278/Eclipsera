@@ -96,9 +96,13 @@ const TrackOrderScreen = ({ setActiveTab }) => {
             ) : error ? (
               <div className="bg-red-900/30 text-red-400 p-4 rounded-lg">{error}</div>
             ) : orders.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-text-secondary mb-4">You have no active or past orders to track.</p>
-                <Link to="/" className="inline-block bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-3 px-8 rounded transition-colors shadow-md">
+              <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
+                <div className="w-20 h-20 bg-surface rounded-full flex items-center justify-center border border-accent-gold/20 mb-6 text-accent-gold/50 shadow-inner">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                </div>
+                <h3 className="text-2xl font-serif font-bold text-text-primary mb-2">No orders yet</h3>
+                <p className="text-text-secondary text-sm mb-6 max-w-xs">Your luxury journey awaits. Discover our handcrafted collections.</p>
+                <Link to="/" className="inline-block bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold py-3 px-8 rounded-xl transition-all shadow-md hover:shadow-lg uppercase tracking-wider text-sm">
                   Start Shopping
                 </Link>
               </div>

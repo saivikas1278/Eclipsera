@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import ProductCard from './ProductCard';
+import SkeletonCard from './SkeletonCard';
 
 const ProductCarousel = () => {
   const [products, setProducts] = useState([]);
@@ -37,9 +38,21 @@ const ProductCarousel = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-32 text-xl font-medium text-text-secondary animate-pulse">
-        Loading bestsellers...
-      </div>
+      <section className="mb-24 px-3 md:px-0">
+        <div className="flex justify-between items-end mb-8 md:mb-10">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">Trending Now</h2>
+            <div className="w-16 h-1 bg-accent-gold opacity-80"></div>
+          </div>
+        </div>
+        <div className="flex overflow-x-hidden gap-3 md:gap-5 pb-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="w-[175px] sm:w-[200px] md:w-[220px] lg:w-[260px] flex-shrink-0">
+              <SkeletonCard />
+            </div>
+          ))}
+        </div>
+      </section>
     );
   }
 

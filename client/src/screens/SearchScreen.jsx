@@ -114,7 +114,7 @@ const SearchScreen = () => {
       {/* Search Input */}
       <div>
         <h3 className="text-sm font-bold text-accent-gold mb-3 uppercase tracking-wider">Search</h3>
-        <form onSubmit={handleSearchChange} className="relative">
+        <form onSubmit={handleSearchChange} className="relative mb-3">
           <input
             type="text"
             value={searchKeyword}
@@ -126,6 +126,23 @@ const SearchScreen = () => {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </button>
         </form>
+        
+        {/* Popular Searches Pills */}
+        <div className="flex flex-wrap gap-2">
+          {['Rings', 'Gold', 'Gift', 'Necklace'].map((term) => (
+            <button
+              key={term}
+              onClick={(e) => {
+                e.preventDefault();
+                setSearchKeyword(term);
+                // We don't automatically submit here, but we could by wrapping in a timeout or relying on a dedicated function
+              }}
+              className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border border-accent-gold/20 text-text-secondary hover:bg-accent-gold hover:text-bg-base hover:border-accent-gold transition-colors"
+            >
+              {term}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Categories */}

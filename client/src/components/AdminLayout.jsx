@@ -33,9 +33,8 @@ const AdminLayout = () => {
 
       {/* Sidebar */}
       <aside
-        className={`${
-          isSidebarOpen ? 'block' : 'hidden'
-        } md:block w-full md:w-64 bg-surface border-r border-accent-gold/10 text-text-secondary flex-shrink-0 transition-all duration-300 z-10`}
+        className={`${isSidebarOpen ? 'block' : 'hidden'
+          } md:block w-full md:w-64 bg-surface border-r border-accent-gold/10 text-text-secondary flex-shrink-0 transition-all duration-300 z-10`}
       >
         <div className="p-6 hidden md:block border-b border-accent-gold/10">
           <h2 className="text-lg font-extrabold tracking-widest text-accent-gold uppercase">Back Office</h2>
@@ -47,10 +46,9 @@ const AdminLayout = () => {
               to={link.path}
               onClick={() => setIsSidebarOpen(false)} // Close on mobile click
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 min-h-12 rounded-xl transition-all duration-200 font-medium ${
-                  isActive
-                    ? 'bg-accent-gold/10 text-accent-gold border border-accent-gold/20 shadow-sm'
-                    : 'hover:bg-accent-gold/5 hover:text-accent-gold text-text-secondary'
+                `flex items-center gap-3 px-4 py-3 min-h-12 rounded-xl transition-all duration-200 font-medium ${isActive
+                  ? 'bg-accent-gold/10 text-accent-gold border border-accent-gold/20 shadow-sm'
+                  : 'hover:bg-accent-gold/5 hover:text-accent-gold text-text-secondary'
                 }`
               }
             >

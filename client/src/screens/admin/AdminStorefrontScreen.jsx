@@ -70,6 +70,18 @@ const AdminStorefrontScreen = () => {
     }
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e, index) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const mockEvent = { target: { files: e.dataTransfer.files } };
+      uploadFileHandler(mockEvent, index);
+    }
+  };
+
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
@@ -93,54 +105,72 @@ const AdminStorefrontScreen = () => {
   if (loading) return <div className="p-8 text-center text-text-primary">Loading config...</div>;
 
   return (
-    <div className="max-w-4xl mx-auto pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-6xl mx-auto pb-16 px-4 sm:px-6 lg:px-8 animate-fade-in">
+      <div className="flex justify-between items-center mb-8 bg-surface/80 backdrop-blur-md p-6 rounded-3xl border border-accent-gold/20 shadow-sm mt-8">
         <div>
-          <h1 className="text-3xl font-serif font-black text-text-primary uppercase tracking-tight">Dynamic Storefront</h1>
-          <p className="text-text-secondary mt-1 text-sm">Manage the Hero Slider on the Home Page</p>
+          <h1 className="text-3xl font-serif font-black text-text-primary uppercase tracking-tight flex items-center gap-3">
+            <svg className="w-8 h-8 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            Dynamic Storefront
+          </h1>
+          <p className="text-text-secondary mt-1 text-sm font-medium">Manage the Hero Slider on the Home Page.</p>
         </div>
         <button
           onClick={submitHandler}
           disabled={saving}
-          className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-black px-6 py-3 min-h-12 rounded-lg shadow-md transition-all uppercase tracking-widest text-sm"
+          className="bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-black px-8 py-4 rounded-xl shadow-[0_4px_14px_rgba(212,175,55,0.4)] transition-all hover:-translate-y-1 hover:shadow-[0_6px_20px_rgba(212,175,55,0.5)] uppercase tracking-widest text-sm"
         >
-          {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? 'Saving...' : 'Publish Changes'}
         </button>
       </div>
 
       <div className="space-y-8">
         {slides.map((slide, index) => (
-          <div key={index} className="bg-surface border border-accent-gold/20 rounded-xl p-6 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-text-primary">Slide {index + 1}</h3>
+          <div key={index} className="bg-surface/80 backdrop-blur-md border border-accent-gold/20 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+            <div className="flex justify-between items-center mb-8 pb-4 border-b border-accent-gold/10">
+              <h3 className="text-2xl font-serif font-bold text-text-primary">Slide {index + 1}</h3>
               {slides.length > 1 && (
                 <button
                   type="button"
                   onClick={() => handleRemoveSlide(index)}
-                  className="text-red-400 hover:text-red-300 text-sm font-bold uppercase min-h-12 min-w-12"
+                  className="text-red-500 hover:text-bg-base hover:bg-red-500 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 border border-red-500/20"
                 >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   Remove Slide
                 </button>
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Image URL</label>
+                  <label className="block text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Slide Image</label>
+                  
+                  <div 
+                    className="border-2 border-dashed border-accent-gold/30 hover:border-accent-gold/70 bg-bg-base/50 rounded-2xl p-6 text-center transition-colors relative cursor-pointer flex flex-col items-center justify-center min-h-[120px]"
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                  >
+                    <input type="file" onChange={(e) => uploadFileHandler(e, index)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" />
+                    {uploadingObj === index ? (
+                      <div className="flex flex-col items-center">
+                        <svg className="animate-spin h-6 w-6 text-accent-gold mb-2" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span className="text-accent-gold text-xs font-bold">Uploading...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <svg className="w-8 h-8 text-accent-gold/50 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                        <span className="text-text-primary font-bold text-sm">Drag and drop image here</span>
+                      </>
+                    )}
+                  </div>
+                  
                   <input
                     type="text"
                     value={slide.image}
                     onChange={(e) => handleSlideChange(index, 'image', e.target.value)}
-                    className="w-full bg-bg-base border border-accent-gold/20 rounded-lg px-4 py-2 min-h-12 text-text-primary focus:border-accent-gold outline-none"
-                    placeholder="/images/hero_banner.png"
+                    className="w-full bg-bg-base/50 border border-accent-gold/20 rounded-xl px-4 py-3 text-text-primary focus:border-accent-gold outline-none mt-3 text-sm"
+                    placeholder="Or paste image url directly"
                   />
-                  <div className="mt-2">
-                    <label className="cursor-pointer text-xs font-bold bg-accent-gold text-bg-base px-4 py-2 min-h-12 inline-flex items-center justify-center rounded hover:bg-accent-gold-hover transition">
-                      {uploadingObj === index ? 'Uploading...' : 'Upload Image'}
-                      <input type="file" onChange={(e) => uploadFileHandler(e, index)} className="hidden" accept="image/*" />
-                    </label>
-                  </div>
                 </div>
 
                 <div>

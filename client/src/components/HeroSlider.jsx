@@ -83,7 +83,7 @@ const HeroSlider = () => {
 
   if (loading) {
     return (
-      <div className="w-full h-[55vh] md:h-[80vh] min-h-[55vh] md:min-h-[80vh] mb-12 md:mb-16 bg-zinc-900 animate-pulse flex flex-col items-center justify-center">
+      <div className="w-full h-[60vh] md:h-[80vh] min-h-[60vh] md:min-h-[80vh] mb-16 bg-zinc-900 animate-pulse flex flex-col items-center justify-center">
         <div className="w-16 h-16 border-4 border-accent-gold/20 border-t-accent-gold rounded-full animate-spin mb-4"></div>
         <div className="text-accent-gold font-serif tracking-widest text-sm uppercase">Loading Storefront</div>
       </div>
@@ -91,52 +91,48 @@ const HeroSlider = () => {
   }
 
   return (
-    <div 
-      className="relative w-full h-[55vh] md:h-[80vh] min-h-[55vh] md:min-h-[80vh] overflow-hidden group mb-12 md:mb-16 flex flex-col items-center justify-center text-center"
+    <div
+      className="relative w-full h-[60vh] md:h-[80vh] min-h-[60vh] md:min-h-[80vh] overflow-hidden group mb-16 flex flex-col items-center justify-center text-center"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Slides */}
       {slides.map((slide, index) => (
-        <div 
+        <div
           key={slide._id || index}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-          }`}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+            }`}
         >
           {/* Background Image with Parallax */}
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center bg-fixed transition-transform duration-[10000ms] ease-linear"
-            style={{ 
+            style={{
               backgroundImage: `url(${slide.image})`,
               transform: index === currentSlide ? 'scale(1.05)' : 'scale(1)'
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent"></div>
           </div>
-          
+
           {/* Content */}
           <div className="relative h-full flex flex-col justify-center items-start text-left px-6 md:px-16 lg:px-32 w-full z-20">
             <div className="max-w-2xl">
-              <h1 
-                className={`text-4xl md:text-6xl lg:text-8xl font-serif font-light text-text-primary mb-6 drop-shadow-md transition-all duration-1000 delay-300 transform ${
-                  index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
-                }`}
+              <h1
+                className={`text-4xl md:text-6xl lg:text-8xl font-serif font-light text-text-primary mb-6 drop-shadow-md transition-all duration-1000 delay-300 transform ${index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
+                  }`}
               >
                 {slide.heading}
               </h1>
-              <p 
-                className={`text-lg md:text-xl text-text-primary/90 mb-12 font-light tracking-wide drop-shadow-sm transition-all duration-1000 delay-500 transform ${
-                  index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
-                }`}
+              <p
+                className={`text-lg md:text-xl text-text-primary/90 mb-12 font-light tracking-wide drop-shadow-sm transition-all duration-1000 delay-500 transform ${index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
+                  }`}
               >
                 {slide.subheading}
               </p>
-              <Link 
-                to={slide.link} 
-                className={`inline-flex items-center justify-center border border-accent-gold text-accent-gold hover:bg-accent-gold hover:text-bg-base font-medium h-14 px-10 rounded-sm text-sm transition-all duration-500 transform hover:scale-105 delay-700 uppercase tracking-[0.2em] ${
-                  index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
-                }`}
+              <Link
+                to={slide.link}
+                className={`inline-flex items-center justify-center border border-accent-gold text-accent-gold hover:bg-accent-gold hover:text-bg-base font-medium h-14 px-10 rounded-sm text-sm transition-all duration-500 transform hover:scale-105 delay-700 uppercase tracking-[0.2em] ${index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
+                  }`}
               >
                 {slide.cta || 'Discover Collection'}
               </Link>
@@ -146,19 +142,19 @@ const HeroSlider = () => {
       ))}
 
       {/* Navigation Arrows */}
-      <button 
+      <button
         onClick={prevSlide}
         className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-bg-base/30 hover:bg-accent-gold/80 text-text-primary p-3 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-x-4 group-hover:translate-x-0"
         aria-label="Previous Slide"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
       </button>
-      <button 
+      <button
         onClick={nextSlide}
         className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-bg-base/30 hover:bg-accent-gold/80 text-text-primary p-3 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0"
         aria-label="Next Slide"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
       </button>
 
       {/* Pagination Dots */}
@@ -170,11 +166,10 @@ const HeroSlider = () => {
             className={`min-w-[44px] min-h-[44px] flex items-center justify-center transition-all duration-300`}
             aria-label={`Go to slide ${index + 1}`}
           >
-            <span className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              index === currentSlide 
-                ? 'bg-accent-gold scale-125' 
+            <span className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide
+                ? 'bg-accent-gold scale-125'
                 : 'bg-text-primary/40 hover:bg-text-primary/80'
-            }`}></span>
+              }`}></span>
           </button>
         ))}
       </div>
