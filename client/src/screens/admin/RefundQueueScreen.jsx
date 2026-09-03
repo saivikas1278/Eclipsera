@@ -94,7 +94,7 @@ const RefundQueueScreen = () => {
       </div>
 
       {orders.length === 0 ? (
-        <div className="bg-surface border border-accent-gold/20 rounded-xl p-12 text-center text-text-primary">
+        <div className="bg-[#111111] border border-accent-gold/10 p-12 text-center text-text-primary">
           <svg className="w-16 h-16 mx-auto text-accent-gold/50 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -102,7 +102,7 @@ const RefundQueueScreen = () => {
           <p className="text-text-secondary">There are no pending refunds in the queue.</p>
         </div>
       ) : (
-        <div className="bg-surface rounded-3xl shadow-sm border border-accent-gold/20 overflow-hidden">
+        <div className="bg-[#111111] shadow-sm border border-accent-gold/10 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead className="hidden md:table-header-group">
@@ -116,7 +116,7 @@ const RefundQueueScreen = () => {
               </thead>
               <tbody className="divide-y divide-accent-gold/10">
                 {orders.map((order) => (
-                  <tr key={order._id} className="grid grid-cols-2 md:table-row gap-y-1 p-3 mb-3 border border-accent-gold/20 md:border-none rounded-xl md:rounded-none bg-surface md:bg-transparent shadow-sm md:shadow-none md:p-0 relative hover:bg-bg-base/50 transition-colors">
+                  <tr key={order._id} className="grid grid-cols-2 md:table-row gap-y-1 p-3 mb-3 border border-accent-gold/10 md:border-none bg-[#111111] md:bg-transparent shadow-sm md:shadow-none md:p-0 relative hover:bg-bg-base/50 transition-colors">
                     
                     {/* Order ID / Date */}
                     <td className="col-start-1 col-span-2 row-start-1 flex justify-between items-center md:table-cell p-0 md:p-4 align-top md:border-b md:border-accent-gold/10">

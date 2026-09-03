@@ -220,7 +220,7 @@ const ProductListScreen = () => {
               setIsInlineEditMode(!isInlineEditMode);
               setModifiedProducts({});
             }}
-            className={`font-bold py-3 px-6 min-h-12 rounded-xl shadow-sm transition-all border ${isInlineEditMode ? 'bg-bg-base border-accent-gold text-accent-gold hover:bg-accent-gold/10' : 'bg-surface border-accent-gold/20 hover:border-accent-gold text-text-primary'}`}
+            className={`font-bold py-3 px-6 min-h-12 shadow-sm transition-all border ${isInlineEditMode ? 'bg-bg-base border-accent-gold text-accent-gold hover:bg-accent-gold/10' : 'bg-[#111111] border-accent-gold/10 hover:border-accent-gold text-text-primary'}`}
           >
             {isInlineEditMode ? 'Cancel Edit' : 'Inline Edit Mode'}
           </button>
@@ -241,7 +241,7 @@ const ProductListScreen = () => {
 
       {/* Inventory Heatmap */}
       {!loading && products.length > 0 && (
-        <div className="mb-6 bg-surface p-6 rounded-3xl border border-accent-gold/20 shadow-sm animate-fade-in">
+        <div className="mb-6 bg-[#111111] p-6 border border-accent-gold/10 shadow-sm animate-fade-in">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-serif font-bold text-text-primary flex items-center gap-2">
               <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
@@ -271,7 +271,7 @@ const ProductListScreen = () => {
         </div>
       )}
 
-      <div className="bg-surface rounded-3xl shadow-sm border border-accent-gold/20 overflow-hidden h-[600px] flex flex-col">
+      <div className="bg-[#111111] shadow-sm border border-accent-gold/10 overflow-hidden h-[600px] flex flex-col">
         {/* Desktop Table */}
         <div className="hidden md:block flex-1 h-full">
           <TableVirtuoso
@@ -282,7 +282,7 @@ const ProductListScreen = () => {
               TableRow: (props) => <tr {...props} className="hover:bg-bg-base/50 transition-colors border-b border-accent-gold/10" />
             }}
             fixedHeaderContent={() => (
-              <tr className="bg-bg-base/95 backdrop-blur-sm border-b border-accent-gold/20 shadow-sm">
+              <tr className="bg-[#111111] border-b border-accent-gold/10 shadow-sm">
                   <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10 text-left">Name</th>
                   <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10 text-left">Price</th>
                   <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider z-10 text-left">Stock</th>
@@ -358,7 +358,7 @@ const ProductListScreen = () => {
         {/* Mobile Stacked Cards */}
         <div className="md:hidden flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-4 p-4 bg-bg-base/30">
           {products.map((product) => (
-            <div key={product._id} className="bg-surface border border-accent-gold/20 rounded-xl p-4 flex flex-col gap-3 shadow-sm relative overflow-hidden">
+            <div key={product._id} className="bg-[#111111] border border-accent-gold/10 p-4 flex flex-col gap-3 shadow-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 p-2">
                  {product.countInStock > 0 ? (
                    <span className="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-1 rounded-full border border-green-200">
@@ -400,7 +400,7 @@ const ProductListScreen = () => {
                 </div>
                 
                 <div className="flex justify-end gap-2">
-                  <Link to={`/admin/product/${product._id}/edit`} className="bg-surface border border-accent-gold/20 hover:border-accent-gold hover:text-accent-gold text-text-primary/80 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg transition-colors shadow-sm">
+                  <Link to={`/admin/product/${product._id}/edit`} className="bg-[#111111] border border-accent-gold/10 hover:border-accent-gold hover:text-accent-gold text-text-primary/80 min-h-[40px] min-w-[40px] flex items-center justify-center transition-colors shadow-sm">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                   </Link>
                   <button 
@@ -421,7 +421,7 @@ const ProductListScreen = () => {
         <button 
           disabled={page === 1} 
           onClick={() => setPage(p => p - 1)}
-          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 min-h-12 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
+          className="bg-[#111111] border border-accent-gold/20 text-text-primary font-bold py-2 min-h-12 px-6 transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
         >
           Previous
         </button>
@@ -444,7 +444,7 @@ const ProductListScreen = () => {
         <button 
           disabled={page >= totalPages} 
           onClick={() => setPage(p => p + 1)}
-          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 min-h-12 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
+          className="bg-[#111111] border border-accent-gold/20 text-text-primary font-bold py-2 min-h-12 px-6 transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
         >
           Next
         </button>

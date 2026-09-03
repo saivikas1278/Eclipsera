@@ -356,7 +356,7 @@ const OrderListScreen = () => {
       </div>
 
       {/* Filters Bar */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6 bg-surface p-4 rounded-xl border border-accent-gold/20 shadow-sm animate-fade-in">
+      <div className="flex flex-col md:flex-row gap-4 mb-6 bg-[#111111] p-4 border border-accent-gold/10 shadow-sm animate-fade-in">
         <div className="flex-1">
           <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Status</label>
           <select
@@ -395,7 +395,7 @@ const OrderListScreen = () => {
 
       {/* Bulk Action Bar */}
       {selectedOrders.length > 0 && (
-        <div className="bg-surface border border-accent-gold/40 rounded-xl p-4 mb-6 shadow-md flex flex-wrap items-center justify-between gap-4 animate-fade-in">
+        <div className="bg-[#111111] border border-accent-gold/10 p-4 mb-6 shadow-md flex flex-wrap items-center justify-between gap-4 animate-fade-in">
           <div className="text-accent-gold font-bold text-lg">
             [{selectedOrders.length}] Orders Selected
           </div>
@@ -434,7 +434,7 @@ const OrderListScreen = () => {
       {viewMode === 'KANBAN' ? (
         <OrderKanbanBoard orders={orders} onDragEnd={handleDragEnd} onOrderClick={openModal} />
       ) : (
-        <div className="bg-surface rounded-3xl shadow-sm border border-accent-gold/20 overflow-hidden h-[600px]">
+        <div className="bg-[#111111] shadow-sm border border-accent-gold/10 overflow-hidden h-[600px]">
           <TableVirtuoso
             data={orders}
             useWindowScroll={false}
@@ -443,7 +443,7 @@ const OrderListScreen = () => {
               TableRow: (props) => <tr {...props} className="grid grid-cols-2 md:table-row gap-y-1 p-3 mb-3 border border-accent-gold/20 md:border-none rounded-xl md:rounded-none bg-surface md:bg-transparent shadow-sm md:shadow-none md:p-0 relative hover:bg-bg-base/50 transition-colors cursor-pointer" />
             }}
             fixedHeaderContent={() => (
-              <tr className="bg-bg-base/95 backdrop-blur-sm border-b border-accent-gold/20 shadow-sm hidden md:table-row">
+              <tr className="bg-[#111111] border-b border-accent-gold/10 shadow-sm hidden md:table-row">
                 <th className="px-6 py-4 text-sm font-bold text-text-primary/80 uppercase tracking-wider w-12 z-10">
                   <input
                     type="checkbox"
@@ -517,7 +517,7 @@ const OrderListScreen = () => {
         <button
           disabled={page === 1}
           onClick={() => setPage(p => p - 1)}
-          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 min-h-12 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
+          className="bg-[#111111] border border-accent-gold/20 text-text-primary font-bold py-2 min-h-12 px-6 transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
         >
           Previous
         </button>
@@ -525,7 +525,7 @@ const OrderListScreen = () => {
         <button
           disabled={page >= totalPages}
           onClick={() => setPage(p => p + 1)}
-          className="bg-surface border border-accent-gold/40 text-text-primary font-bold py-2 min-h-12 px-6 rounded-lg transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
+          className="bg-[#111111] border border-accent-gold/20 text-text-primary font-bold py-2 min-h-12 px-6 transition-colors disabled:opacity-50 hover:border-accent-gold hover:text-accent-gold"
         >
           Next
         </button>
@@ -533,10 +533,10 @@ const OrderListScreen = () => {
 
       {/* Order Details Modal */}
       {isModalOpen && selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="bg-surface border border-accent-gold/20 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 animate-fade-in">
+          <div className="bg-[#050505] border border-accent-gold/20 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto flex flex-col relative">
 
-            <div className="sticky top-0 bg-surface/95 backdrop-blur z-10 px-6 py-4 border-b border-accent-gold/20 flex justify-between items-center">
+            <div className="sticky top-0 bg-[#050505] z-10 px-6 py-4 border-b border-accent-gold/10 flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-serif font-bold text-text-primary">Order for {selectedOrder.user?.name || 'Customer'}</h2>
                 {selectedOrder.paymentMethod === 'Cash On Delivery' && (

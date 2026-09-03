@@ -16,16 +16,16 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="flex h-full min-h-[80vh] flex-col md:flex-row rounded-3xl overflow-hidden shadow-sm border border-accent-gold/20 bg-surface">
+    <div className="flex h-full min-h-[80vh] flex-col md:flex-row shadow-sm border border-accent-gold/10 bg-surface">
       {/* Mobile Toggle Button */}
-      <div className="md:hidden bg-bg-base/95 backdrop-blur-md border-b border-accent-gold/20 p-4 flex justify-between items-center z-20">
-        <span className="font-bold tracking-widest text-accent-gold uppercase">Admin Panel</span>
+      <div className="md:hidden bg-bg-base border-b border-accent-gold/10 p-4 flex justify-between items-center z-20">
+        <span className="font-bold tracking-widest text-accent-gold uppercase text-sm">Admin Panel</span>
         <button onClick={toggleSidebar} className="focus:outline-none hover:text-accent-gold min-h-12 min-w-12 flex items-center justify-center text-text-primary transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {isSidebarOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" />
             ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h16" />
             )}
           </svg>
         </button>
@@ -34,28 +34,28 @@ const AdminLayout = () => {
       {/* Sidebar */}
       <aside
         className={`${isSidebarOpen ? 'block' : 'hidden'
-          } md:block w-full md:w-64 bg-surface border-r border-accent-gold/10 text-text-secondary flex-shrink-0 transition-all duration-300 z-10`}
+          } md:block w-full md:w-64 bg-[#050505] border-r border-accent-gold/10 text-text-secondary flex-shrink-0 transition-all duration-300 z-10`}
       >
         <div className="p-6 hidden md:block border-b border-accent-gold/10">
-          <h2 className="text-lg font-extrabold tracking-widest text-accent-gold uppercase">Back Office</h2>
+          <h2 className="text-sm font-extrabold tracking-widest text-accent-gold uppercase">Back Office</h2>
         </div>
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-1">
           {navLinks.map((link) => (
             <NavLink
               key={link.name}
               to={link.path}
               onClick={() => setIsSidebarOpen(false)} // Close on mobile click
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 min-h-12 rounded-xl transition-all duration-200 font-medium ${isActive
-                  ? 'bg-accent-gold/10 text-accent-gold border border-accent-gold/20 shadow-sm'
-                  : 'hover:bg-accent-gold/5 hover:text-accent-gold text-text-secondary'
+                `flex items-center gap-3 px-4 py-3 min-h-12 transition-all duration-200 font-medium ${isActive
+                  ? 'border-l-2 border-accent-gold text-accent-gold bg-[#111111]'
+                  : 'hover:text-accent-gold text-text-secondary hover:bg-[#0A0A0A]'
                 }`
               }
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={link.icon} />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d={link.icon} />
               </svg>
-              {link.name}
+              <span className="text-sm">{link.name}</span>
             </NavLink>
           ))}
         </nav>

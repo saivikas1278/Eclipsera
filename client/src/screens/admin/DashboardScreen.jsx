@@ -73,8 +73,8 @@ const DashboardScreen = () => {
       {/* Summary Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {/* Revenue Card */}
-        <div className="bg-surface/60 backdrop-blur-xl border border-accent-gold/20 hover:border-accent-gold/50 hover:-translate-y-1 transition-all duration-300 rounded-3xl p-6 text-text-primary shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between h-48 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+        <div className="bg-[#111111] border border-accent-gold/10 hover:border-accent-gold/30 hover:-translate-y-1 transition-all duration-300 p-6 text-text-primary flex flex-col justify-between h-48 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
             <svg className="w-24 h-24 text-accent-gold" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
           </div>
           <div className="flex justify-between items-start relative z-10">
@@ -97,7 +97,7 @@ const DashboardScreen = () => {
         </div>
 
         {/* Orders Card */}
-        <div className="bg-surface/60 backdrop-blur-xl border border-accent-gold/20 hover:border-accent-gold/50 hover:-translate-y-1 transition-all duration-300 rounded-3xl p-6 text-text-primary shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between h-48 relative overflow-hidden group">
+        <div className="bg-[#111111] border border-accent-gold/10 hover:border-accent-gold/30 hover:-translate-y-1 transition-all duration-300 p-6 text-text-primary flex flex-col justify-between h-48 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <svg className="w-24 h-24 text-accent-gold" fill="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
           </div>
@@ -120,7 +120,7 @@ const DashboardScreen = () => {
         </div>
 
         {/* Users Card */}
-        <div className="bg-surface/60 backdrop-blur-xl border border-accent-gold/20 hover:border-accent-gold/50 hover:-translate-y-1 transition-all duration-300 rounded-3xl p-6 text-text-primary shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between h-48 relative overflow-hidden group">
+        <div className="bg-[#111111] border border-accent-gold/10 hover:border-accent-gold/30 hover:-translate-y-1 transition-all duration-300 p-6 text-text-primary flex flex-col justify-between h-48 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
              <svg className="w-24 h-24 text-accent-gold" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           </div>
@@ -140,7 +140,7 @@ const DashboardScreen = () => {
         </div>
 
         {/* Products Card */}
-        <div className="bg-surface/60 backdrop-blur-xl border border-accent-gold/20 hover:border-accent-gold/50 hover:-translate-y-1 transition-all duration-300 rounded-3xl p-6 text-text-primary shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col justify-between h-48 relative overflow-hidden group">
+        <div className="bg-[#111111] border border-accent-gold/10 hover:border-accent-gold/30 hover:-translate-y-1 transition-all duration-300 p-6 text-text-primary flex flex-col justify-between h-48 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <svg className="w-24 h-24 text-accent-gold" fill="currentColor" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
           </div>
@@ -159,16 +159,16 @@ const DashboardScreen = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Live Activity Feed */}
-        <div className="bg-surface/80 backdrop-blur-md rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-accent-gold/20 p-8 flex flex-col">
-          <div className="flex items-center justify-between mb-8 pb-4 border-b border-accent-gold/10">
-            <div className="flex items-center gap-3">
+        <div className="lg:col-span-2 bg-[#111111] border border-accent-gold/10 p-6 flex flex-col">
+          <div className="flex justify-between items-center mb-6 border-b border-accent-gold/10 pb-4">
+            <h2 className="text-xl font-serif font-bold text-accent-gold flex items-center gap-2 tracking-tight">
               <div className="p-2 bg-accent-gold/10 rounded-lg">
                 <svg className="w-6 h-6 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
               </div>
               <h2 className="text-2xl font-serif font-bold text-text-primary">Live Activity Feed</h2>
-            </div>
+            </h2>
             <div className="flex items-center gap-2">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -188,7 +188,7 @@ const DashboardScreen = () => {
                 {recentOrders.map((order, idx) => (
                   <div key={order._id} className="relative pl-6 border-l-2 border-accent-gold/20 pb-2 last:pb-0 group">
                     <div className="absolute w-3 h-3 bg-bg-base border-2 border-accent-gold rounded-full -left-[7.5px] top-1.5 group-hover:scale-125 group-hover:bg-accent-gold transition-all"></div>
-                    <div className="bg-bg-base/50 p-4 rounded-2xl border border-accent-gold/10 hover:border-accent-gold/30 transition-all">
+                    <div className="bg-bg-base/50 p-4 rounded-none border border-accent-gold/10 hover:border-accent-gold/30 transition-all">
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="text-sm font-bold text-text-primary">
                           New Order Placed
@@ -216,8 +216,8 @@ const DashboardScreen = () => {
         </div>
 
         {/* Low Stock Alerts */}
-        <div className="bg-surface/80 backdrop-blur-md rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-accent-gold/20 p-8">
-          <div className="flex items-center justify-between mb-8 pb-4 border-b border-accent-gold/10">
+        <div className="bg-[#111111] border border-accent-gold/10 p-6">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-accent-gold/10">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-red-500/10 rounded-lg">
                 <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

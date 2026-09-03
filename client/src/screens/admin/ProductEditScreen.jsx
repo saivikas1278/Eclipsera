@@ -226,7 +226,7 @@ const ProductEditScreen = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left Column: Form */}
-        <div className="lg:col-span-2 bg-surface/80 backdrop-blur-md p-6 sm:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-accent-gold/20">
+        <div className="lg:col-span-2 bg-[#111111] p-6 sm:p-10 border border-accent-gold/10 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
           <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8 tracking-tight">Edit Product</h1>
 
           <form onSubmit={submitHandler} className="space-y-6">
@@ -370,7 +370,7 @@ const ProductEditScreen = () => {
             </div>
 
             {/* Sticky Save Bar */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-surface/90 backdrop-blur-xl border-t border-accent-gold/20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#050505] border-t border-accent-gold/10 z-50">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-end">
                 <button
                   type="submit"
@@ -386,7 +386,7 @@ const ProductEditScreen = () => {
 
         {/* Right Column: Real-Time Mobile Preview */}
         <div className="hidden lg:block lg:col-span-1 sticky top-24">
-          <div className="bg-surface/40 backdrop-blur-md rounded-3xl p-6 border border-accent-gold/10 shadow-lg mb-4 text-center">
+          <div className="bg-[#111111] p-6 border border-accent-gold/10 shadow-sm mb-4 text-center">
             <h3 className="text-xs font-bold text-accent-gold uppercase tracking-widest mb-1 flex items-center justify-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
               Live Mobile Preview

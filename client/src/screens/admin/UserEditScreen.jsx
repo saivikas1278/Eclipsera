@@ -85,7 +85,7 @@ const UserEditScreen = () => {
         Go Back
       </Link>
 
-      <div className="bg-surface rounded-3xl shadow-sm border border-accent-gold/20 p-8">
+      <div className="bg-[#111111] shadow-sm border border-accent-gold/10 p-8">
         <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8">Edit User</h1>
 
         {loading ? (
@@ -110,7 +110,7 @@ const UserEditScreen = () => {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-surface border border-accent-gold/20 text-text-primary rounded-xl focus:ring-accent-gold focus:border-accent-gold block px-5 py-4 min-h-12 transition-colors outline-none"
+                className="w-full bg-bg-base/50 border border-accent-gold/20 text-text-primary rounded-xl focus:ring-accent-gold focus:border-accent-gold block px-5 py-4 min-h-12 transition-colors outline-none"
                 required
               />
             </div>
@@ -124,7 +124,7 @@ const UserEditScreen = () => {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-surface border border-accent-gold/20 text-text-primary rounded-xl focus:ring-accent-gold focus:border-accent-gold block px-5 py-4 min-h-12 transition-colors outline-none"
+                className="w-full bg-bg-base/50 border border-accent-gold/20 text-text-primary rounded-xl focus:ring-accent-gold focus:border-accent-gold block px-5 py-4 min-h-12 transition-colors outline-none"
                 required
               />
             </div>
@@ -143,7 +143,7 @@ const UserEditScreen = () => {
             </div>
 
             {/* Sticky Save Bar */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-surface/90 backdrop-blur-xl border-t border-accent-gold/20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#050505] border-t border-accent-gold/10 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-end">
                 <button
                   type="submit"

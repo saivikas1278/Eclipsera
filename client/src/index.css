@@ -9,12 +9,12 @@
   --color-accent-gold-hover: #C5A059;
 
   /* Background Base */
-  --color-bg-base: #121212;
-  --color-bg-secondary: #1A1A1A;
+  --color-bg-base: #050505;
+  --color-bg-secondary: #0A0A0A;
 
   /* Card & Surface */
-  --color-surface: #242424;
-  --color-elevated: #2D2D2D;
+  --color-surface: #111111;
+  --color-elevated: #18181B;
 
   /* Text */
   --color-text-primary: #F5F5F0;

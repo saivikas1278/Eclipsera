@@ -84,7 +84,7 @@ const UserListScreen = () => {
     <div className="animate-fade-in max-w-[1600px] mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8">Users</h1>
       
-      <div className="bg-surface rounded-3xl shadow-sm border border-accent-gold/20 overflow-hidden">
+      <div className="bg-[#111111] shadow-sm border border-accent-gold/10 overflow-hidden">
         {/* Desktop Table */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -150,7 +150,7 @@ const UserListScreen = () => {
         {/* Mobile Stacked Cards */}
         <div className="md:hidden flex flex-col divide-y divide-accent-gold/10">
           {users.map((user) => (
-            <div key={user._id} className="p-4 bg-surface/50 hover:bg-bg-base/50 transition-colors flex flex-col gap-3">
+            <div key={user._id} className="p-4 bg-[#111111] border border-accent-gold/10 hover:bg-bg-base/50 transition-colors flex flex-col gap-3">
               <div className="flex justify-between items-start">
                 <div>
                   <span className="text-base font-bold text-text-primary block">{user.name}</span>
@@ -164,7 +164,7 @@ const UserListScreen = () => {
                       ADMIN
                     </span>
                   ) : (
-                    <span className="bg-surface text-text-secondary text-[10px] font-bold px-2 py-1 rounded-full border border-accent-gold/20">
+                    <span className="bg-[#111111] text-text-secondary text-[10px] font-bold px-2 py-1 rounded-full border border-accent-gold/10">
                       USER
                     </span>
                   )}
@@ -174,14 +174,14 @@ const UserListScreen = () => {
               <div className="flex justify-end gap-2 mt-1">
                 <Link
                   to={`/admin/user/${user._id}/edit`}
-                  className="inline-flex items-center justify-center px-4 min-h-[40px] text-xs font-bold text-text-primary bg-surface hover:bg-accent-gold/10 hover:text-accent-gold rounded-lg transition-colors border border-accent-gold/20 shadow-sm"
+                  className="inline-flex items-center justify-center px-4 min-h-[40px] text-xs font-bold text-text-primary bg-[#111111] hover:bg-accent-gold/10 hover:text-accent-gold transition-colors border border-accent-gold/10 shadow-sm"
                 >
                   Edit
                 </Link>
                 <button
                   onClick={() => deleteHandler(user._id)}
                   disabled={deleteLoading}
-                  className="inline-flex items-center justify-center px-4 min-h-[40px] text-xs font-bold bg-red-900/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg border border-red-500/20 transition-colors shadow-sm disabled:opacity-50"
+                  className="inline-flex items-center justify-center px-4 min-h-[40px] text-xs font-bold bg-red-900/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20 transition-colors shadow-sm disabled:opacity-50"
                 >
                   Delete
                 </button>
