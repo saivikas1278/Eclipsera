@@ -219,7 +219,7 @@ const ProductEditScreen = () => {
   }
 
   return (
-    <div className="py-8 pb-32 animate-fade-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="pt-4 md:pt-8 pb-32 animate-fade-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <Link to="/admin/productlist" className="inline-flex items-center min-h-12 mb-8 text-text-primary/60 hover:text-accent-gold font-medium transition-colors">
         &larr; Back to Products
       </Link>

@@ -196,7 +196,7 @@ const ProductListScreen = () => {
   }
 
   return (
-    <div className="py-8 animate-fade-in relative px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
+    <div className="pt-4 md:pt-8 pb-8 animate-fade-in relative px-2 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-[60] bg-accent-gold text-bg-base font-bold px-6 py-3 rounded-lg shadow-xl animate-fade-in">
@@ -204,10 +204,10 @@ const ProductListScreen = () => {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <h1 className="text-4xl font-serif font-extrabold text-text-primary tracking-tight">Products</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-3xl sm:text-4xl font-serif font-extrabold text-text-primary tracking-tight">Products</h1>
         
-        <div className="flex flex-wrap gap-4 items-center w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-center w-full md:w-auto">
           <input 
             type="text" 
             placeholder="Search products..."
@@ -220,14 +220,14 @@ const ProductListScreen = () => {
               setIsInlineEditMode(!isInlineEditMode);
               setModifiedProducts({});
             }}
-            className={`font-bold py-3 px-6 min-h-12 shadow-sm transition-all border ${isInlineEditMode ? 'bg-bg-base border-accent-gold text-accent-gold hover:bg-accent-gold/10' : 'bg-[#111111] border-accent-gold/10 hover:border-accent-gold text-text-primary'}`}
+            className={`w-full sm:w-auto font-bold py-3 px-6 min-h-12 shadow-sm transition-all border ${isInlineEditMode ? 'bg-bg-base border-accent-gold text-accent-gold hover:bg-accent-gold/10' : 'bg-[#111111] border-accent-gold/10 hover:border-accent-gold text-text-primary'}`}
           >
             {isInlineEditMode ? 'Cancel Edit' : 'Inline Edit Mode'}
           </button>
           <button 
             onClick={createProductHandler}
             disabled={actionLoading || isInlineEditMode}
-            className="bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-3 px-6 min-h-12 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
+            className="w-full sm:w-auto bg-accent-gold hover:bg-accent-gold-hover text-white font-bold py-3 px-6 min-h-12 rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

@@ -75,7 +75,7 @@ const RefundQueueScreen = () => {
   }
 
   return (
-    <div className="py-8 animate-fade-in relative px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
+    <div className="pt-4 md:pt-8 pb-8 animate-fade-in relative px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-[60] bg-accent-gold text-bg-base font-bold px-6 py-3 rounded-lg shadow-xl animate-fade-in">
@@ -83,9 +83,9 @@ const RefundQueueScreen = () => {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-4xl font-serif font-extrabold text-text-primary tracking-tight mb-2">Refunds Queue</h1>
+          <h1 className="text-3xl sm:text-4xl font-serif font-extrabold text-text-primary tracking-tight mb-2">Refunds Queue</h1>
           <p className="text-text-secondary">Orders that have been paid but cancelled. Awaiting manual refund.</p>
         </div>
         <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-2 rounded-lg font-bold">

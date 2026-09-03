@@ -74,7 +74,7 @@ const UserEditScreen = () => {
   };
 
   return (
-    <div className="animate-fade-in max-w-2xl mx-auto py-8 pb-32 px-4 sm:px-6 lg:px-8">
+    <div className="animate-fade-in max-w-2xl mx-auto pt-4 md:pt-8 pb-32 px-4 sm:px-6 lg:px-8">
       <Link
         to="/admin/userlist"
         className="inline-flex items-center text-text-primary/60 hover:text-accent-gold font-medium mb-6 transition-colors"

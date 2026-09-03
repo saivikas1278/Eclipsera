@@ -81,8 +81,8 @@ const UserListScreen = () => {
   }
 
   return (
-    <div className="animate-fade-in max-w-[1600px] mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-3xl font-serif font-extrabold text-text-primary mb-8">Users</h1>
+    <div className="animate-fade-in max-w-[1600px] mx-auto pt-4 md:pt-8 pb-8 px-4 sm:px-6 lg:px-8">
+      <h1 className="text-3xl sm:text-4xl font-serif font-extrabold text-text-primary mb-8 tracking-tight">Users</h1>
       
       <div className="bg-[#111111] shadow-sm border border-accent-gold/10 overflow-hidden">
         {/* Desktop Table */}

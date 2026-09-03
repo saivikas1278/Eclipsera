@@ -313,7 +313,7 @@ const OrderListScreen = () => {
   }
 
   return (
-    <div className="py-8 animate-fade-in relative px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
+    <div className="pt-4 md:pt-8 pb-8 animate-fade-in relative px-2 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-[60] bg-accent-gold text-bg-base font-bold px-6 py-3 rounded-lg shadow-xl animate-fade-in">
@@ -321,11 +321,11 @@ const OrderListScreen = () => {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          <h1 className="text-4xl font-serif font-extrabold text-text-primary tracking-tight">Customer Orders</h1>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full lg:w-auto">
+          <h1 className="text-3xl sm:text-4xl font-serif font-extrabold text-text-primary tracking-tight">Customer Orders</h1>
           {/* View Toggle */}
-          <div className="flex items-center bg-surface border border-accent-gold/20 rounded-xl p-1 shadow-inner">
+          <div className="flex items-center bg-[#111111] border border-accent-gold/10 rounded-xl p-1 shadow-inner w-full sm:w-auto justify-center">
             <button
               onClick={() => setViewMode('LIST')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
