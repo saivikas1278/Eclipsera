@@ -15,7 +15,7 @@ const {
 const { protect, admin } = require('../middleware/authMiddleware');
 const { cacheMiddleware } = require('../services/cacheService');
 
-router.get('/top', getTopProducts);
+router.get('/top', cacheMiddleware('products_top'), getTopProducts);
 router.route('/my-reviews').get(protect, getUserReviews);
 
 // Route: /api/products/

@@ -36,6 +36,7 @@ const getProducts = asyncHandler(async (req, res) => {
 
   const totalCount = await Product.countDocuments(filter);
   const products = await Product.find(filter)
+    .select('name price image rating numReviews countInStock category')
     .skip(limit * (page - 1))
     .limit(limit)
     .sort({ createdAt: -1 })
@@ -84,6 +85,7 @@ const createProduct = asyncHandler(async (req, res) => {
 
   const createdProduct = await product.save();
   await clearCache('products_all');
+  await clearCache('products_top');
   res.status(201).json(createdProduct);
 });
 
@@ -109,6 +111,7 @@ const updateProduct = asyncHandler(async (req, res) => {
 
     const updatedProduct = await product.save();
     await clearCache('products_all');
+    await clearCache('products_top');
     res.json(updatedProduct);
   } else {
     res.status(404);
@@ -130,6 +133,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
   if (product) {
     await Product.deleteOne({ _id: product._id });
     await clearCache('products_all');
+    await clearCache('products_top');
     res.json({ message: 'Product removed' });
   } else {
     res.status(404);
@@ -185,6 +189,8 @@ const createProductReview = asyncHandler(async (req, res) => {
       product.reviews.length;
 
     await product.save();
+    await clearCache('products_all');
+    await clearCache('products_top');
     res.status(201).json({ message: 'Review added' });
   } else {
     res.status(404);
@@ -198,8 +204,12 @@ const createProductReview = asyncHandler(async (req, res) => {
  * @access  Public
  */
 const getTopProducts = asyncHandler(async (req, res) => {
-  // Get top 4 rated products
-  const products = await Product.find({}).sort({ rating: -1 }).limit(4).lean();
+  // Get top 4 rated products, selecting only necessary fields
+  const products = await Product.find({})
+    .select('name price image rating numReviews countInStock category')
+    .sort({ rating: -1 })
+    .limit(4)
+    .lean();
   res.json(products);
 });
 
@@ -294,6 +304,7 @@ const bulkUpdateProducts = asyncHandler(async (req, res) => {
 
   await recordAuditLog(`Bulk inline update performed on ${updates.length} products`, 'CATALOG');
   await clearCache('products_all');
+  await clearCache('products_top');
 
   res.json({ message: `Successfully updated ${updates.length} products` });
 });
