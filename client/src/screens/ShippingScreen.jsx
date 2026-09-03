@@ -122,7 +122,7 @@ const ShippingScreen = () => {
             />
             {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
             <label className="block text-sm font-semibold text-text-primary/80 mb-2">State</label>
             <input
@@ -144,7 +144,7 @@ const ShippingScreen = () => {
             {errors.postalCode && <p className="text-red-500 text-sm mt-1">{errors.postalCode.message}</p>}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
             <label className="block text-sm font-semibold text-text-primary/80 mb-2">Country</label>
             <input
