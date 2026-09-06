@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 
 const WhatsAppWidget = () => {
   const [isVisible, setIsVisible] = useState(false);
-  
+
   // Replace this with the actual store phone number
-  const phoneNumber = '919876543210'; 
+  const phoneNumber = '917989001874';
   const defaultMessage = 'Hi! I am interested in your luxury products.';
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(defaultMessage)}`;
 
@@ -17,10 +17,9 @@ const WhatsAppWidget = () => {
   }, []);
 
   return (
-    <div 
-      className={`fixed bottom-24 md:bottom-6 right-6 z-50 transition-all duration-700 transform ${
-        isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-12 opacity-0 scale-50'
-      }`}
+    <div
+      className={`fixed bottom-24 md:bottom-6 right-6 z-50 transition-all duration-700 transform ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-12 opacity-0 scale-50'
+        }`}
     >
       <div className="relative group">
         {/* Tooltip */}
@@ -31,7 +30,7 @@ const WhatsAppWidget = () => {
         </div>
 
         {/* WhatsApp Button */}
-        <a 
+        <a
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
