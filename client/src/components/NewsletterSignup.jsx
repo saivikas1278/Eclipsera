@@ -1,6 +1,6 @@
 const NewsletterSignup = () => {
   return (
-    <section className="bg-surface border border-accent-gold/20 rounded-2xl p-8 md:p-12 text-center max-w-4xl mx-auto my-20 shadow-2xl relative overflow-hidden">
+    <section className="bg-surface border border-accent-gold/20 rounded-2xl p-8 md:p-12 text-center max-w-4xl mx-4 md:mx-auto my-20 shadow-2xl relative overflow-hidden">
       {/* Decorative gradient overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--color-accent-gold)_0%,_transparent_70%)] opacity-5 pointer-events-none"></div>
       

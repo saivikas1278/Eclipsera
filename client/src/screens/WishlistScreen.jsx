@@ -40,7 +40,7 @@ const WishlistScreen = () => {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
               {wishlistItems.map((product) => (
                 <div key={product._id} className="bg-bg-base border border-accent-gold/10 rounded-lg overflow-hidden flex flex-col group relative">
                   

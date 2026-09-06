@@ -29,7 +29,7 @@ const CategoryTiles = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-bg-base/90 to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-6 w-full text-center">
-              <h3 className="text-xl font-serif text-text-primary font-medium group-hover:text-accent-gold transition-colors">
+              <h3 className="text-lg sm:text-xl font-serif text-text-primary font-medium group-hover:text-accent-gold transition-colors">
                 {cat.name}
               </h3>
             </div>
