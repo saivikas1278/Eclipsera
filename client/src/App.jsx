@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
 import AdminLayout from './components/AdminLayout';
+import WhatsAppWidget from './components/WhatsAppWidget';
 
 const HomeScreen = lazy(() => import('./screens/HomeScreen'));
 const ProductScreen = lazy(() => import('./screens/ProductScreen'));
@@ -88,6 +89,7 @@ function App() {
           },
         }}
       />
+      <WhatsAppWidget />
       {!isAuthPage && <Header />}
       <main className={`flex-grow container mx-auto px-4 sm:px-6 lg:px-8 w-full max-w-7xl pb-24 md:pb-8 ${isAuthPage ? '' : 'pt-8'}`}>
         <Suspense fallback={
