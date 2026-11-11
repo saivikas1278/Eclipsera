@@ -73,6 +73,12 @@ const addOrderItems = asyncHandler(async (req, res) => {
       }
     })();
 
+    // Broadcast live event to Admin Kanban and Orders list
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin-room').emit('order:created', createdOrder);
+    }
+
     res.status(201).json(createdOrder);
   } catch (error) {
     await session.abortTransaction();
@@ -220,6 +226,12 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 
     const updatedOrder = await order.save();
 
+    // Broadcast live update to Admin Kanban and Orders list
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin-room').emit('order:updated', updatedOrder);
+    }
+
     // Send admin alert asynchronously
     const { sendEmail } = require('../utils/sendEmail');
     const itemNames = updatedOrder.orderItems?.map(item => `${item.quantity || 1}x ${item.name}`).join(', ') || 'Items';
@@ -245,6 +257,12 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
     order.fulfillmentStatus = 'DELIVERED';
 
     const updatedOrder = await order.save();
+
+    // Broadcast live update to Admin Kanban and Orders list
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin-room').emit('order:updated', updatedOrder);
+    }
     res.json(updatedOrder);
   } else {
     res.status(404);
@@ -272,6 +290,12 @@ const updateOrderFulfillment = asyncHandler(async (req, res) => {
     }
 
     const updatedOrder = await order.save();
+
+    // Broadcast live update to Admin Kanban and Orders list
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin-room').emit('order:updated', updatedOrder);
+    }
 
     const itemNames = order.orderItems?.map(item => `${item.quantity || 1}x ${item.name}`).join(', ') || 'Items';
 
@@ -429,6 +453,12 @@ const verifyManualPayment = asyncHandler(async (req, res) => {
     };
 
     const updatedOrder = await order.save();
+
+    // Broadcast live update to Admin Kanban and Orders list
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin-room').emit('order:updated', updatedOrder);
+    }
     res.json(updatedOrder);
   } else {
     res.status(404);
@@ -477,6 +507,12 @@ const cancelOrder = asyncHandler(async (req, res) => {
     }
 
     const updatedOrder = await order.save();
+
+    // Broadcast live update to Admin Kanban and Orders list
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin-room').emit('order:updated', updatedOrder);
+    }
 
     if (order.user) {
       await Notification.create({
@@ -533,8 +569,14 @@ const markOrderRefunded = asyncHandler(async (req, res) => {
     
     order.financialStatus = 'REFUNDED';
     const updatedOrder = await order.save();
+
+    // Broadcast live update to Admin Kanban and Orders list
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin-room').emit('order:updated', updatedOrder);
+    }
     
-    const { recordAuditLog } = require('../utils/auditLog');
+    const { recordAuditLog } = require('../services/auditService');
     await recordAuditLog(`Order ${order._id} marked as REFUNDED`, 'ORDER');
     
     res.json(updatedOrder);

@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { StoreContext } from '../../context/StoreContext';
+import { compressImage } from '../../utils/imageCompressor';
 
 const ProductEditScreen = () => {
   const { id: productId } = useParams();
@@ -56,13 +57,17 @@ const ProductEditScreen = () => {
   }, [productId]);
 
   const uploadFileHandler = async (e) => {
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('image', file);
+    const rawFile = e.target.files[0];
+    if (!rawFile) return;
+
     setUploading(true);
     setUploadError(null);
 
     try {
+      const file = await compressImage(rawFile);
+      const formData = new FormData();
+      formData.append('image', file);
+
       const config = {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -84,8 +89,8 @@ const ProductEditScreen = () => {
   };
 
   const uploadMultipleFilesHandler = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
+    const rawFiles = Array.from(e.target.files);
+    if (rawFiles.length === 0) return;
     
     setUploadingMultiple(true);
     setUploadMultipleError(null);
@@ -100,7 +105,8 @@ const ProductEditScreen = () => {
         },
       };
 
-      for (const file of files) {
+      for (const rawFile of rawFiles) {
+        const file = await compressImage(rawFile);
         const formData = new FormData();
         formData.append('image', file); // We use 'image' because backend upload.single expects it
         const { data } = await axios.post('/api/upload', formData, config);

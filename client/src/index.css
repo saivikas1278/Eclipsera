@@ -21,6 +21,14 @@
   --color-text-secondary: #B8A99A;
 }
 
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility bottom-safe {
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+
 @layer base {
   body {
     background-color: var(--color-bg-base);

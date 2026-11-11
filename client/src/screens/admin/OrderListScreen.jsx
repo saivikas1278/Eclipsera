@@ -5,6 +5,8 @@ import { StoreContext } from '../../context/StoreContext';
 import { TableVirtuoso } from 'react-virtuoso';
 import { useDebounce } from '../../hooks/useDebounce';
 import OrderKanbanBoard from './OrderKanbanBoard';
+import { io } from 'socket.io-client';
+import toast from 'react-hot-toast';
 
 const OrderListScreen = () => {
   const [orders, setOrders] = useState([]);
@@ -56,6 +58,30 @@ const OrderListScreen = () => {
 
   const { userInfo, handleLogout } = useContext(StoreContext);
   const navigate = useNavigate();
+
+  // Real-time WebSocket sync for live orders and Kanban transitions
+  useEffect(() => {
+    const socket = io();
+    socket.emit('join-admin');
+
+    socket.on('order:created', (newOrder) => {
+      setOrders((prev) => [newOrder, ...prev.filter((o) => o._id !== newOrder._id)]);
+      toast.success(`New order received! #${newOrder._id?.substring(18) || ''}`, {
+        icon: '🛍️',
+        duration: 5000,
+      });
+    });
+
+    socket.on('order:updated', (updatedOrder) => {
+      setOrders((prev) =>
+        prev.map((o) => (o._id === updatedOrder._id ? { ...o, ...updatedOrder } : o))
+      );
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const fetchOrders = async () => {

@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const WhatsAppWidget = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const location = useLocation();
 
   // Replace this with the actual store phone number
   const phoneNumber = '917989001874';
   const defaultMessage = 'Hi! I am interested in your luxury products.';
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(defaultMessage)}`;
+
+  const isProductPage = location.pathname.startsWith('/product/');
 
   // Animate in after a short delay
   useEffect(() => {
@@ -18,8 +22,13 @@ const WhatsAppWidget = () => {
 
   return (
     <div
-      className={`fixed bottom-24 md:bottom-6 right-6 z-50 transition-all duration-700 transform ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-12 opacity-0 scale-50'
-        }`}
+      className={`fixed ${
+        isProductPage
+          ? 'bottom-[calc(9.5rem+env(safe-area-inset-bottom,0px))] md:bottom-6'
+          : 'bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] md:bottom-6'
+      } right-4 sm:right-6 z-40 transition-all duration-700 transform ${
+        isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-12 opacity-0 scale-50'
+      }`}
     >
       <div className="relative group">
         {/* Tooltip */}

@@ -1,12 +1,15 @@
 // 1. Import necessary packages
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const dotenv = require('dotenv');
+const { Server } = require('socket.io');
 
 // 3. Load environment variables from the .env file
 // This MUST happen before requiring local routes/config so they have access to process.env
-dotenv.config();
+const path = require('path');
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 // 2. Import the database connection and routes
 const connectDB = require('./config/db');
@@ -104,12 +107,28 @@ app.use((err, req, res, next) => {
   });
 });
 
-// --- Server Startup ---
+// --- Server & Socket.io Setup ---
 
-// Define the port, defaulting to 5000 if not specified in .env
 const PORT = process.env.PORT || 5000;
+const server = http.createServer(app);
 
-// Tell the Express app to listen for incoming requests on the specified port
-app.listen(PORT, () => {
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+  },
+});
+
+app.set('io', io);
+
+io.on('connection', (socket) => {
+  socket.on('join-admin', () => {
+    socket.join('admin-room');
+  });
+});
+
+// Tell the server to listen for incoming requests on the specified port
+server.listen(PORT, () => {
   console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });

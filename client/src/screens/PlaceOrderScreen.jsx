@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { StoreContext } from '../context/StoreContext';
 import toast from 'react-hot-toast';
+import { compressImage } from '../utils/imageCompressor';
 
 const PlaceOrderScreen = () => {
   const { cartItems, shippingAddress, userInfo, clearCart, setUserInfo } = useContext(StoreContext);
@@ -100,13 +101,17 @@ const PlaceOrderScreen = () => {
   };
 
   const uploadReceiptHandler = async (e) => {
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('image', file);
+    const rawFile = e.target.files[0];
+    if (!rawFile) return;
+
     setUploadingReceipt(true);
     setUploadError(null);
 
     try {
+      const file = await compressImage(rawFile, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
+      const formData = new FormData();
+      formData.append('image', file);
+
       const config = {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -265,7 +270,7 @@ const PlaceOrderScreen = () => {
       </div>
 
       {/* Sticky Bottom Call to Action */}
-      <div className="fixed bottom-[64px] md:bottom-0 left-0 right-0 p-4 bg-surface/95 backdrop-blur-xl border-t border-accent-gold/20 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.15)]">
+      <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 p-4 bg-surface/95 backdrop-blur-xl border-t border-accent-gold/20 z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.15)]">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="hidden sm:block">
             <p className="text-sm text-text-secondary">Total Amount</p>

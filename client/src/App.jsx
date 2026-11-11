@@ -47,6 +47,7 @@ function App() {
 
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/forgot-password' || location.pathname.startsWith('/reset-password');
   const isAdminPage = location.pathname.startsWith('/admin');
+  const isCheckoutFlow = ['/cart', '/shipping', '/placeorder'].includes(location.pathname);
 
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
@@ -89,9 +90,13 @@ function App() {
           },
         }}
       />
-      <WhatsAppWidget />
+      {!isAuthPage && !isAdminPage && !isCheckoutFlow && <WhatsAppWidget />}
       {!isAuthPage && <Header />}
-      <main className={`flex-grow container mx-auto px-4 sm:px-6 lg:px-8 w-full max-w-7xl pb-24 md:pb-8 ${isAuthPage ? '' : 'pt-8'}`}>
+      <main className={`flex-grow w-full ${
+        isAdminPage 
+          ? 'max-w-full p-0 pb-0 pt-0' 
+          : `container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl pb-24 md:pb-8 ${isAuthPage ? '' : 'pt-8'}`
+      }`}>
         <Suspense fallback={
           <div className="w-full flex flex-col gap-8 p-4 md:p-8 animate-fade-in">
             <div className="w-full h-12 bg-zinc-800/50 animate-pulse rounded-xl mb-8"></div>
@@ -158,8 +163,8 @@ function App() {
       </main>
 
       {/* Removed duplicate WhatsApp bubble in favor of WhatsAppWidget component */}
-      {!isAuthPage && <Footer />}
-      {!isAuthPage && <MobileBottomNav />}
+      {!isAuthPage && !isAdminPage && <Footer />}
+      {!isAuthPage && !isAdminPage && <MobileBottomNav />}
     </div>
   );
 }

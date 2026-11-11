@@ -692,7 +692,7 @@ const ProductScreen = () => {
 
       {/* Sticky Add-to-Cart Bar (Mobile & Desktop) */}
       <div
-        className={`fixed bottom-[64px] md:bottom-0 left-0 right-0 p-3 sm:p-4 bg-surface/95 backdrop-blur-xl border-t border-accent-gold/20 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] transition-transform duration-300 z-40 ${showStickyBar && !isOutOfStock ? 'translate-y-0' : 'translate-y-full'
+        className={`fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 p-3 sm:p-4 bg-surface/95 backdrop-blur-xl border-t border-accent-gold/20 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] transition-transform duration-300 z-40 ${showStickyBar && !isOutOfStock ? 'translate-y-0' : 'translate-y-full'
           }`}
       >
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-8 px-0 md:px-8">

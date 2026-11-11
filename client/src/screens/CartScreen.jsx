@@ -67,7 +67,7 @@ const CartScreen = () => {
                     <Link to={`/product/${item._id}`} className="text-xl font-serif font-semibold text-text-primary hover:text-accent-gold truncate block transition-colors mb-2">
                       {item.name}
                     </Link>
-                    <div className="inline-flex items-center">
+                    <div className="flex items-center gap-3">
                       <select 
                         value={item.qty} 
                         onChange={(e) => addToCart(item, Number(e.target.value), item.variant, item.personalization)}
@@ -79,6 +79,9 @@ const CartScreen = () => {
                           </option>
                         ))}
                       </select>
+                      <div className="sm:hidden text-accent-gold font-bold text-base">
+                        ₹{(item.price * item.qty).toFixed(2)}
+                      </div>
                     </div>
                   </div>
                   
@@ -171,7 +174,7 @@ const CartScreen = () => {
 
       {/* Sticky Mobile Checkout Bar */}
       {cartItems.length > 0 && (
-        <div className="fixed bottom-[72px] md:bottom-0 left-0 right-0 p-4 bg-surface/90 backdrop-blur-xl border-t border-accent-gold/20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] md:hidden z-50 animate-slide-up">
+        <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 p-4 bg-surface/90 backdrop-blur-xl border-t border-accent-gold/20 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] md:hidden z-40 animate-slide-up">
           <div className="flex justify-between items-center max-w-lg mx-auto gap-4">
             <div className="flex flex-col">
               <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Subtotal</span>

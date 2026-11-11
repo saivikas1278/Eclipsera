@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Link, Outlet } from 'react-router-dom';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -16,10 +16,15 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="flex h-full min-h-[80vh] flex-col md:flex-row shadow-sm border border-accent-gold/10 bg-surface">
+    <div className="flex h-full min-h-[85vh] flex-col md:flex-row shadow-sm border border-accent-gold/10 bg-surface">
       {/* Mobile Toggle Button */}
       <div className="md:hidden bg-bg-base border-b border-accent-gold/10 p-4 flex justify-between items-center z-20">
-        <span className="font-bold tracking-widest text-accent-gold uppercase text-sm">Admin Panel</span>
+        <div className="flex items-center gap-3">
+          <Link to="/" className="text-xs text-text-secondary hover:text-accent-gold flex items-center gap-1 border border-accent-gold/20 px-2 py-1 rounded">
+            ← Store
+          </Link>
+          <span className="font-bold tracking-widest text-accent-gold uppercase text-sm">Admin Panel</span>
+        </div>
         <button onClick={toggleSidebar} className="focus:outline-none hover:text-accent-gold min-h-12 min-w-12 flex items-center justify-center text-text-primary transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {isSidebarOpen ? (
@@ -58,11 +63,22 @@ const AdminLayout = () => {
               <span className="text-sm">{link.name}</span>
             </NavLink>
           ))}
+          <div className="pt-4 mt-4 border-t border-accent-gold/10">
+            <Link
+              to="/"
+              className="flex items-center gap-3 px-4 py-3 min-h-12 text-text-secondary hover:text-accent-gold hover:bg-[#0A0A0A] transition-all duration-200 font-medium"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span className="text-sm">Storefront</span>
+            </Link>
+          </div>
         </nav>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-3 pb-24 md:pb-8 md:p-8 overflow-y-auto bg-bg-base">
+      <main className="flex-1 p-3 md:p-8 overflow-y-auto bg-bg-base">
         <Outlet />
       </main>
     </div>
