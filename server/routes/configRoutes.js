@@ -1,14 +1,18 @@
 const express = require('express');
 const { getStorefrontConfig, updateStorefrontConfig } = require('../controllers/configController');
 const { protect, admin } = require('../middleware/authMiddleware');
+const { cacheMiddleware, clearCache } = require('../services/cacheService');
 
 const router = express.Router();
 
 const { sendEmail } = require('../utils/sendEmail');
 
 router.route('/storefront')
-  .get(getStorefrontConfig)
-  .put(protect, admin, updateStorefrontConfig);
+  .get(cacheMiddleware('storefront_config', 300), getStorefrontConfig)
+  .put(protect, admin, async (req, res, next) => {
+    await clearCache('storefront_config');
+    next();
+  }, updateStorefrontConfig);
 
 router.post('/contact', async (req, res) => {
   const { name, email, subject, message } = req.body;

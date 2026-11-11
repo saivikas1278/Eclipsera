@@ -33,11 +33,11 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <div className="bg-surface rounded-2xl overflow-hidden border-transparent hover:shadow-lg transition-all duration-300 relative group flex flex-col h-full shadow-sm">
+    <div className="bg-surface rounded-2xl overflow-hidden border border-white/[0.05] hover:border-accent-gold/40 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(212,175,55,0.12)] transition-all duration-300 relative group flex flex-col h-full shadow-sm">
       {/* Wishlist Button */}
       <button
         onClick={toggleWishlist}
-        className="absolute top-2 right-2 z-20 p-2 bg-black/40 hover:bg-black/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:text-accent-gold transition-colors focus:outline-none"
+        className="absolute top-2 right-2 z-20 p-2 bg-black/40 hover:bg-black/80 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:text-accent-gold active:scale-90 transition-all duration-150 focus:outline-none"
         aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
       >
         <svg
@@ -82,7 +82,7 @@ const ProductCard = ({ product }) => {
             onClick={handleQuickAdd}
             disabled={product.countInStock === 0}
             className={`
-              relative overflow-hidden font-bold rounded-lg transition-all duration-300 shadow-sm
+              relative overflow-hidden font-bold rounded-lg transition-all duration-300 shadow-sm active:scale-95
               ${product.countInStock === 0 
                 ? 'bg-zinc-800 text-zinc-500 px-3 py-1.5 text-[10px]' 
                 : 'bg-accent-gold/10 text-accent-gold border-none hover:bg-accent-gold hover:text-bg-base px-5 py-1.5 text-xs sm:text-sm'}
