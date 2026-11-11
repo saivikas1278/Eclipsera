@@ -100,6 +100,7 @@ const updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
 
   if (product) {
+    const previousStock = product.countInStock || 0;
     product.name = name;
     product.price = price;
     product.description = description;
@@ -110,6 +111,29 @@ const updateProduct = asyncHandler(async (req, res) => {
     if (upiId !== undefined) product.upiId = upiId;
 
     const updatedProduct = await product.save();
+
+    // Automated Back-in-Stock Customer Notification
+    if (previousStock === 0 && Number(countInStock) > 0) {
+      (async () => {
+        try {
+          const StockAlert = require('../models/stockAlertModel');
+          const { sendEmail } = require('../utils/sendEmail');
+          const alerts = await StockAlert.find({ product: product._id, status: 'PENDING' });
+          for (const alert of alerts) {
+            await sendEmail({
+              to: alert.email,
+              subject: `Back in Stock: ${product.name}`,
+              text: `Great news! "${product.name}" is back in stock at Eclipsera Premium. Grab yours before it sells out again!\n\nView product: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/product/${product._id}`,
+            });
+            alert.status = 'NOTIFIED';
+            await alert.save();
+          }
+        } catch (err) {
+          console.error('Stock alert notification error:', err.message);
+        }
+      })();
+    }
+
     await clearCache('products_all');
     await clearCache('products_top');
     res.json(updatedProduct);
@@ -309,6 +333,236 @@ const bulkUpdateProducts = asyncHandler(async (req, res) => {
   res.json({ message: `Successfully updated ${updates.length} products` });
 });
 
+/**
+ * @desc    Subscribe to back-in-stock notification
+ * @route   POST /api/products/:id/stock-alert
+ * @access  Public
+ */
+const subscribeStockAlert = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.includes('@')) {
+    res.status(400);
+    throw new Error('Valid email address is required');
+  }
+
+  const product = await Product.findById(req.params.id);
+  if (!product) {
+    res.status(404);
+    throw new Error('Product not found');
+  }
+
+  const StockAlert = require('../models/stockAlertModel');
+  const existing = await StockAlert.findOne({
+    product: req.params.id,
+    email: email.toLowerCase(),
+    status: 'PENDING',
+  });
+
+  if (existing) {
+    return res.status(200).json({ message: 'You are already registered for alerts on this item.' });
+  }
+
+  await StockAlert.create({
+    product: req.params.id,
+    email: email.toLowerCase(),
+  });
+
+  res.status(201).json({ message: 'Successfully subscribed to stock notification.' });
+});
+
+/**
+ * @desc    Get personalized product recommendations based on browsing affinity
+ * @route   GET /api/products/recommendations
+ * @access  Public
+ */
+const getPersonalizedRecommendations = asyncHandler(async (req, res) => {
+  const viewedIds = (req.query.viewed || '').split(',').filter(Boolean);
+
+  let targetCategories = [];
+  if (viewedIds.length > 0) {
+    const viewedProducts = await Product.find({ _id: { $in: viewedIds } }).select('category');
+    targetCategories = [...new Set(viewedProducts.map(p => p.category).filter(Boolean))];
+  }
+
+  let recommendations = [];
+  if (targetCategories.length > 0) {
+    recommendations = await Product.find({
+      category: { $in: targetCategories },
+      _id: { $nin: viewedIds },
+      countInStock: { $gt: 0 },
+    })
+      .sort({ rating: -1, numReviews: -1 })
+      .limit(8)
+      .lean();
+  }
+
+  // Fallback to top curated items if empty or insufficient
+  if (recommendations.length < 4) {
+    const additional = await Product.find({
+      _id: { $nin: [...viewedIds, ...recommendations.map(r => r._id)] },
+      countInStock: { $gt: 0 },
+    })
+      .sort({ rating: -1, createdAt: -1 })
+      .limit(8 - recommendations.length)
+      .lean();
+    recommendations = [...recommendations, ...additional];
+  }
+
+  res.json(recommendations);
+});
+
+/**
+ * @desc    Get complementary products frequently bought together
+ * @route   GET /api/products/:id/bought-together
+ * @access  Public
+ */
+const getFrequentlyBoughtTogether = asyncHandler(async (req, res) => {
+  const currentProduct = await Product.findById(req.params.id);
+  if (!currentProduct) {
+    res.status(404);
+    throw new Error('Product not found');
+  }
+
+  const Order = require('../models/orderModel');
+  const orders = await Order.find({ 'orderItems.product': req.params.id })
+    .select('orderItems.product')
+    .limit(50)
+    .lean();
+
+  const productCounts = {};
+  orders.forEach(order => {
+    order.orderItems?.forEach(item => {
+      const pid = item.product?.toString();
+      if (pid && pid !== req.params.id) {
+        productCounts[pid] = (productCounts[pid] || 0) + 1;
+      }
+    });
+  });
+
+  const sortedIds = Object.keys(productCounts)
+    .sort((a, b) => productCounts[b] - productCounts[a])
+    .slice(0, 3);
+
+  let complementary = [];
+  if (sortedIds.length > 0) {
+    complementary = await Product.find({ _id: { $in: sortedIds }, countInStock: { $gt: 0 } }).lean();
+  }
+
+  // Fallback to same category items
+  if (complementary.length === 0) {
+    complementary = await Product.find({
+      _id: { $ne: req.params.id },
+      category: currentProduct.category,
+      countInStock: { $gt: 0 },
+    })
+      .limit(2)
+      .lean();
+  }
+
+  res.json(complementary);
+});
+
+/**
+ * @desc    AI Semantic & Natural Language Search
+ * @route   GET /api/products/ai-search
+ * @access  Public
+ */
+const aiSearchProducts = asyncHandler(async (req, res) => {
+  const query = (req.query.q || '').trim();
+  if (!query) {
+    return res.json({ query: '', parsedFilters: {}, products: [] });
+  }
+
+  const lower = query.toLowerCase();
+  let maxPrice = null;
+  let minPrice = null;
+
+  // Extract budget: "under 1500", "below 2000", "< 3000", "within 1000", "under 1.5k"
+  const underMatch = lower.match(/(?:under|below|less than|within|<=?)\s*(?:rs\.?|inr|₹)?\s*(\d+(?:\.\d+)?)\s*(k)?/i);
+  if (underMatch) {
+    let val = parseFloat(underMatch[1]);
+    if (underMatch[2]) val *= 1000;
+    maxPrice = val;
+  }
+
+  const aboveMatch = lower.match(/(?:above|over|more than|>=?)\s*(?:rs\.?|inr|₹)?\s*(\d+(?:\.\d+)?)\s*(k)?/i);
+  if (aboveMatch) {
+    let val = parseFloat(aboveMatch[1]);
+    if (aboveMatch[2]) val *= 1000;
+    minPrice = val;
+  }
+
+  const categoryKeywords = {
+    Jewelry: ['jewelry', 'ring', 'necklace', 'bracelet', 'pendant', 'chain', 'earring', 'silver', 'gold'],
+    Apparel: ['apparel', 'shirt', 'hoodie', 'tshirt', 'cloth', 'wear', 'jacket'],
+    Accessories: ['accessory', 'accessories', 'keychain', 'bag', 'wallet', 'case', 'strap'],
+  };
+
+  let detectedCategory = null;
+  for (const [cat, words] of Object.entries(categoryKeywords)) {
+    if (words.some(w => lower.includes(w))) {
+      detectedCategory = cat;
+      break;
+    }
+  }
+
+  const cleanSearchTerms = lower
+    .replace(/(?:under|below|above|over|less than|more than)\s*(?:rs\.?|inr|₹)?\s*\d+\s*k?/gi, '')
+    .replace(/\b(for|a|an|the|gift|best|cheap|luxury|items|products|looking|want|show|me)\b/gi, '')
+    .trim();
+
+  const conditions = [];
+
+  if (maxPrice !== null) {
+    conditions.push({ price: { $lte: maxPrice } });
+  }
+  if (minPrice !== null) {
+    conditions.push({ price: { $gte: minPrice } });
+  }
+  if (detectedCategory) {
+    conditions.push({ category: detectedCategory });
+  }
+
+  if (cleanSearchTerms) {
+    const termRegex = new RegExp(cleanSearchTerms.split(/\s+/).filter(Boolean).join('|'), 'i');
+    conditions.push({
+      $or: [
+        { name: termRegex },
+        { description: termRegex },
+        { category: termRegex },
+        { materials: termRegex },
+        { story: termRegex },
+      ],
+    });
+  }
+
+  let mongoQuery = conditions.length > 0 ? { $and: conditions } : {};
+  let products = await Product.find(mongoQuery)
+    .sort({ rating: -1, countInStock: -1 })
+    .limit(16)
+    .lean();
+
+  if (products.length === 0 && cleanSearchTerms) {
+    const termRegex = new RegExp(cleanSearchTerms.split(/\s+/)[0], 'i');
+    products = await Product.find({
+      $or: [{ name: termRegex }, { description: termRegex }],
+    })
+      .limit(10)
+      .lean();
+  }
+
+  res.json({
+    query,
+    parsedFilters: {
+      detectedCategory,
+      maxPrice,
+      minPrice,
+      keywords: cleanSearchTerms,
+    },
+    count: products.length,
+    products,
+  });
+});
 
 module.exports = {
   getProducts,
@@ -321,4 +575,8 @@ module.exports = {
   getUserReviews,
   getRelatedProducts,
   bulkUpdateProducts,
+  subscribeStockAlert,
+  getPersonalizedRecommendations,
+  getFrequentlyBoughtTogether,
+  aiSearchProducts,
 };

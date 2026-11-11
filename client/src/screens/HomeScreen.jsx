@@ -10,6 +10,7 @@ import NewsletterSignup from '../components/NewsletterSignup';
 import TrustBadges from '../components/TrustBadges';
 import ProductCard from '../components/ProductCard';
 import SkeletonCard from '../components/SkeletonCard';
+import PersonalizedRecommendations from '../components/PersonalizedRecommendations';
 import SEO from '../components/SEO';
 
 const HomeScreen = () => {
@@ -257,6 +258,8 @@ const HomeScreen = () => {
         </div>
 
         <ProductCarousel />
+
+        <PersonalizedRecommendations />
 
         {loading ? (
           <section className="mb-24">

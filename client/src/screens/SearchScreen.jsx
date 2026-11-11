@@ -16,6 +16,7 @@ const SearchScreen = () => {
   const initialMinPrice = queryParams.get('minPrice') || '';
   const initialMaxPrice = queryParams.get('maxPrice') || '';
   const initialInStock = queryParams.get('inStock') === 'true';
+  const initialIsAi = queryParams.get('ai') === 'true';
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,9 +31,27 @@ const SearchScreen = () => {
   const [minPrice, setMinPrice] = useState(initialMinPrice);
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice);
   const [inStock, setInStock] = useState(initialInStock);
+  const [isAiMode, setIsAiMode] = useState(initialIsAi);
+  const [aiInsights, setAiInsights] = useState(null);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const categories = ['All', 'Jewelry', 'Home Decor', 'Candles', 'New', 'BestSellers', 'Gifts'];
+
+  const fetchAiProducts = async (query) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const { data } = await axios.get(`/api/products/ai-search?q=${encodeURIComponent(query)}`);
+      setProducts(data.products || []);
+      setAiInsights(data.parsedFilters || null);
+      setPage(1);
+      setTotalPages(1);
+      setLoading(false);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to perform AI semantic search');
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     // If URL changes via footer links, update local state
@@ -41,14 +60,21 @@ const SearchScreen = () => {
     const currentMinPrice = queryParams.get('minPrice') || '';
     const currentMaxPrice = queryParams.get('maxPrice') || '';
     const currentInStock = queryParams.get('inStock') === 'true';
+    const currentIsAi = queryParams.get('ai') === 'true';
     
     if (currentCategory !== category) setCategory(currentCategory);
     if (currentSearch !== searchKeyword) setSearchKeyword(currentSearch);
     if (currentMinPrice !== minPrice) setMinPrice(currentMinPrice);
     if (currentMaxPrice !== maxPrice) setMaxPrice(currentMaxPrice);
     if (currentInStock !== inStock) setInStock(currentInStock);
+    setIsAiMode(currentIsAi);
     
-    fetchProducts(1, currentCategory, currentSearch, currentMinPrice, currentMaxPrice, currentInStock);
+    if (currentIsAi && currentSearch) {
+      fetchAiProducts(currentSearch);
+    } else {
+      setAiInsights(null);
+      fetchProducts(1, currentCategory, currentSearch, currentMinPrice, currentMaxPrice, currentInStock);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
 
@@ -220,25 +246,88 @@ const SearchScreen = () => {
     <div className="animate-fade-in py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-screen flex flex-col">
       
       {/* Header & Mobile Filter Button */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-accent-gold/20 gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 pb-4 border-b border-accent-gold/20 gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-serif font-extrabold text-text-primary tracking-tight">
-            {category === 'All' ? (searchKeyword ? 'Search Results' : 'All Products') : category === 'BestSellers' ? 'Bestsellers' : category}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl md:text-4xl font-serif font-extrabold text-text-primary tracking-tight">
+              {isAiMode ? '✨ AI Smart Search' : (category === 'All' ? (searchKeyword ? 'Search Results' : 'All Products') : category === 'BestSellers' ? 'Bestsellers' : category)}
+            </h1>
+            {isAiMode && (
+              <span className="text-xs uppercase tracking-widest font-bold bg-accent-gold/15 text-accent-gold border border-accent-gold/30 px-3 py-1 rounded-full">
+                AI Powered
+              </span>
+            )}
+          </div>
           {searchKeyword && (
-            <p className="text-text-secondary mt-2">Showing results for "{searchKeyword}"</p>
+            <p className="text-text-secondary mt-2">
+              Showing results for <span className="text-text-primary font-semibold">"{searchKeyword}"</span>
+            </p>
           )}
         </div>
-        
-        {/* Mobile Filter Button */}
-        <button 
-          onClick={() => setIsMobileFiltersOpen(true)}
-          className="md:hidden flex items-center justify-center gap-2 bg-surface border border-accent-gold/40 text-text-primary px-4 py-2 min-h-12 rounded-lg font-bold focus:outline-none"
-        >
-          <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-          Filters & Search
-        </button>
+
+        {/* AI Mode Toggle & Mobile Filter Button */}
+        <div className="flex items-center gap-3">
+          {searchKeyword && (
+            <button
+              onClick={() => {
+                const params = new URLSearchParams(location.search);
+                if (isAiMode) {
+                  params.delete('ai');
+                } else {
+                  params.set('ai', 'true');
+                }
+                navigate(`/search?${params.toString()}`);
+              }}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 border ${
+                isAiMode 
+                  ? 'bg-accent-gold text-bg-base border-accent-gold shadow-md' 
+                  : 'bg-surface text-accent-gold border-accent-gold/40 hover:bg-accent-gold/10'
+              }`}
+            >
+              <span>✨</span>
+              <span>{isAiMode ? 'AI Search Active' : 'Enable AI Search'}</span>
+            </button>
+          )}
+
+          {/* Mobile Filter Button */}
+          <button 
+            onClick={() => setIsMobileFiltersOpen(true)}
+            className="md:hidden flex items-center justify-center gap-2 bg-surface border border-accent-gold/40 text-text-primary px-4 py-2 min-h-12 rounded-lg font-bold focus:outline-none"
+          >
+            <svg className="w-5 h-5 text-accent-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+            Filters
+          </button>
+        </div>
       </div>
+
+      {/* AI Insights Chip Bar */}
+      {isAiMode && aiInsights && (
+        <div className="mb-6 p-4 rounded-xl bg-surface border border-accent-gold/20 flex flex-wrap items-center gap-2 text-xs text-text-secondary animate-fade-in">
+          <span className="font-bold text-accent-gold uppercase tracking-wider flex items-center gap-1.5 mr-2">
+            <span>✨</span> Extracted Intent:
+          </span>
+          {aiInsights.detectedCategory && (
+            <span className="px-2.5 py-1 rounded bg-bg-base border border-accent-gold/30 text-text-primary font-medium">
+              Category: <strong className="text-accent-gold">{aiInsights.detectedCategory}</strong>
+            </span>
+          )}
+          {aiInsights.maxPrice && (
+            <span className="px-2.5 py-1 rounded bg-bg-base border border-accent-gold/30 text-text-primary font-medium">
+              Max Budget: <strong className="text-accent-gold">≤ ₹{aiInsights.maxPrice}</strong>
+            </span>
+          )}
+          {aiInsights.minPrice && (
+            <span className="px-2.5 py-1 rounded bg-bg-base border border-accent-gold/30 text-text-primary font-medium">
+              Min Budget: <strong className="text-accent-gold">≥ ₹{aiInsights.minPrice}</strong>
+            </span>
+          )}
+          {aiInsights.keywords && (
+            <span className="px-2.5 py-1 rounded bg-bg-base border border-accent-gold/30 text-text-primary font-medium">
+              Keywords: <strong className="text-text-primary">"{aiInsights.keywords}"</strong>
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-col md:flex-row gap-10 flex-grow">
         

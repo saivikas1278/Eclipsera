@@ -11,11 +11,17 @@ const {
   getUserReviews,
   getRelatedProducts,
   bulkUpdateProducts,
+  subscribeStockAlert,
+  getPersonalizedRecommendations,
+  getFrequentlyBoughtTogether,
+  aiSearchProducts,
 } = require('../controllers/productController');
 const { protect, admin } = require('../middleware/authMiddleware');
 const { cacheMiddleware } = require('../services/cacheService');
 
 router.get('/top', cacheMiddleware('products_top'), getTopProducts);
+router.get('/recommendations', getPersonalizedRecommendations);
+router.get('/ai-search', aiSearchProducts);
 router.route('/my-reviews').get(protect, getUserReviews);
 
 // Route: /api/products/
@@ -35,5 +41,7 @@ router.route('/:id')
 
 router.route('/:id/reviews').post(protect, createProductReview);
 router.route('/:id/related').get(getRelatedProducts);
+router.route('/:id/bought-together').get(getFrequentlyBoughtTogether);
+router.route('/:id/stock-alert').post(subscribeStockAlert);
 
 module.exports = router;

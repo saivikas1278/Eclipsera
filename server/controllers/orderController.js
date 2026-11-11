@@ -47,6 +47,23 @@ const addOrderItems = asyncHandler(async (req, res) => {
         { $inc: { countInStock: -qty } },
         { session }
       );
+
+      // Automated Low-Stock Alert to Admin if units drop <= 3
+      const remainingStock = product.countInStock - qty;
+      if (remainingStock <= 3) {
+        (async () => {
+          try {
+            const { sendEmail } = require('../utils/sendEmail');
+            await sendEmail({
+              to: 'eclipserapremium@gmail.com',
+              subject: `⚠️ Low Stock Alert: ${product.name} (${remainingStock} left)`,
+              text: `Inventory Warning:\n\nProduct "${product.name}" has reached low inventory threshold.\nRemaining Units: ${remainingStock}\n\nPlease restock promptly to avoid stockouts.`,
+            });
+          } catch (err) {
+            console.error('Low stock alert email error:', err.message);
+          }
+        })();
+      }
     }
 
     const order = new Order({

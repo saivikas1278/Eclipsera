@@ -8,6 +8,8 @@ import OptimizedImage from '../components/OptimizedImage';
 import ImageZoom from '../components/ImageZoom';
 import SEO from '../components/SEO';
 import toast from 'react-hot-toast';
+import StockAlertBox from '../components/StockAlertBox';
+import BoughtTogether from '../components/BoughtTogether';
 
 const StarRating = ({ rating }) => {
   return (
@@ -522,6 +524,14 @@ const ProductScreen = () => {
                 )}
               </button>
             </div>
+
+            {/* Out of Stock Waitlist Notification Box */}
+            {isOutOfStock && (
+              <StockAlertBox productId={product._id} productName={product.name} />
+            )}
+
+            {/* Frequently Bought Together Bundle */}
+            <BoughtTogether productId={product._id} currentPrice={product.price} />
 
             {/* Artisan Trust Signals */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-12 pt-8 border-t border-accent-gold/10 animate-fade-in" style={{ animationDelay: '350ms', animationFillMode: 'both' }}>
