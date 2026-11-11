@@ -638,7 +638,27 @@ const OrderListScreen = () => {
                     </p>
                     {selectedOrder.paymentMethod === 'PHONEPE' && (
                       <div className="mt-4 pt-4 border-t border-walnut/10">
-                        <p className="font-bold text-text-primary mb-2">PhonePe Manual Payment</p>
+                        <p className="font-bold text-text-primary mb-2">Direct P2P UPI Payment</p>
+                        
+                        {selectedOrder.utrNumber && (
+                          <div className="flex items-center justify-between p-3 bg-bg-base rounded-lg border border-accent-gold/25 mb-3">
+                            <div>
+                              <span className="text-[10px] text-text-secondary uppercase tracking-widest font-bold block">12-Digit Bank UTR</span>
+                              <span className="font-mono text-sm text-accent-gold font-bold">{selectedOrder.utrNumber}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(selectedOrder.utrNumber);
+                                showToast('UTR copied to clipboard!');
+                              }}
+                              className="px-2.5 py-1 text-xs font-bold rounded bg-surface border border-accent-gold/30 text-accent-gold hover:bg-accent-gold hover:text-bg-base transition-colors"
+                            >
+                              Copy UTR
+                            </button>
+                          </div>
+                        )}
+
                         {selectedOrder.paymentReceipt ? (
                           <div className="mb-4">
                             <a href={selectedOrder.paymentReceipt} target="_blank" rel="noreferrer" className="text-accent-gold underline text-sm">
@@ -649,10 +669,10 @@ const OrderListScreen = () => {
                             </div>
                           </div>
                         ) : (
-                          <p className="text-sm text-red-400 mb-4">No receipt uploaded</p>
+                          !selectedOrder.utrNumber && <p className="text-sm text-red-400 mb-4">No receipt or UTR recorded</p>
                         )}
 
-                        {!selectedOrder.isVerifiedByAdmin && selectedOrder.paymentReceipt && !selectedOrder.isCancelled && (
+                        {!selectedOrder.isVerifiedByAdmin && (selectedOrder.utrNumber || selectedOrder.paymentReceipt) && !selectedOrder.isCancelled && (
                           <div className="w-full mt-4 bg-bg-base p-4 rounded-xl border border-walnut/10">
                             {!showDeclineOptions ? (
                               <div className="flex gap-2 w-full">

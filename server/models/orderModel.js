@@ -45,6 +45,11 @@ const orderSchema = new mongoose.Schema(
     paymentReceipt: {
       type: String,
     },
+    utrNumber: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     cancelReason: {
       type: String,
     },
@@ -113,6 +118,7 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.index({ fulfillmentStatus: 1, createdAt: -1 });
 orderSchema.index({ isPaid: 1, createdAt: -1 });
+orderSchema.index({ utrNumber: 1 });
 
 const Order = mongoose.model('Order', orderSchema);
 module.exports = Order;

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { StoreContext } from '../context/StoreContext';
 import toast from 'react-hot-toast';
 import { compressImage } from '../utils/imageCompressor';
+import { QRCodeSVG } from 'qrcode.react';
 
 const PlaceOrderScreen = () => {
   const { cartItems, shippingAddress, userInfo, clearCart, setUserInfo } = useContext(StoreContext);
@@ -14,24 +15,26 @@ const PlaceOrderScreen = () => {
   const [paymentReceipt, setPaymentReceipt] = useState('');
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [uploadError, setUploadError] = useState(null);
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
 
-  // Fetch QR code for the first item in the cart if PHONEPE is selected
+  // Direct P2P UPI State
+  const [merchantUpiId, setMerchantUpiId] = useState('eclipsera@upi');
+  const [merchantName, setMerchantName] = useState('Eclipsera Premium');
+  const [utrNumber, setUtrNumber] = useState('');
+  const [copiedUpi, setCopiedUpi] = useState(false);
+
+  // Fetch dynamic merchant UPI configuration
   useEffect(() => {
-    const fetchQr = async () => {
-      if (cartItems.length > 0 && paymentMethod === 'PHONEPE') {
-        try {
-          const { data } = await axios.get(`/api/products/${cartItems[0]._id}`);
-          if (data.paymentQRCode) {
-            setQrCodeUrl(data.paymentQRCode);
-          }
-        } catch (error) {
-          console.error('Failed to fetch QR code', error);
-        }
+    const fetchConfig = async () => {
+      try {
+        const { data } = await axios.get('/api/orders/payment-config');
+        if (data.merchantUpiId) setMerchantUpiId(data.merchantUpiId);
+        if (data.merchantName) setMerchantName(data.merchantName);
+      } catch (error) {
+        console.error('Failed to fetch payment config, using defaults', error);
       }
     };
-    fetchQr();
-  }, [cartItems, paymentMethod]);
+    fetchConfig();
+  }, []);
 
   // If there's no shipping address saved, bounce them back to the shipping screen
   // If the cart is empty, bounce them back to the cart screen
@@ -50,6 +53,19 @@ const PlaceOrderScreen = () => {
     e.preventDefault();
     if (cartItems.length === 0) return;
     
+    // Direct P2P UPI validation: require either 10-12 digit UTR or receipt screenshot
+    if (paymentMethod === 'PHONEPE') {
+      const cleanUtr = utrNumber.trim();
+      if (!cleanUtr && !paymentReceipt) {
+        toast.error('Please enter the 12-digit UTR number or upload your payment screenshot');
+        return;
+      }
+      if (cleanUtr && cleanUtr.length < 10) {
+        toast.error('Please enter a valid 10 to 12 digit Bank UTR / Reference number');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const config = {
@@ -73,6 +89,7 @@ const PlaceOrderScreen = () => {
           totalPrice: Number(totalPrice),
           paymentMethod,
           paymentReceipt,
+          utrNumber: utrNumber.trim(),
         },
         config
       );
@@ -204,19 +221,7 @@ const PlaceOrderScreen = () => {
               <h3 className="text-xl font-bold text-text-primary mb-4 border-b border-accent-gold/20 pb-2">Payment Method</h3>
               
               <div className="space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer min-h-12">
-                  <input 
-                    type="radio" 
-                    name="paymentMethod" 
-                    value="COD" 
-                    checked={paymentMethod === 'COD'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-5 h-5 text-accent-gold focus:ring-accent-gold bg-surface border-accent-gold/40"
-                  />
-                  <span className="text-text-primary text-lg font-medium">Cash on Delivery (COD)</span>
-                </label>
-                
-                <label className="flex items-center gap-3 cursor-pointer min-h-12">
+                <label className="flex items-center gap-3 cursor-pointer min-h-12 p-3 rounded-lg border border-transparent hover:border-accent-gold/20 transition-all">
                   <input 
                     type="radio" 
                     name="paymentMethod" 
@@ -225,33 +230,128 @@ const PlaceOrderScreen = () => {
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="w-5 h-5 text-accent-gold focus:ring-accent-gold bg-surface border-accent-gold/40"
                   />
-                  <span className="text-text-primary text-lg font-medium">PhonePe (Scan & Pay)</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-text-primary text-base font-bold">Direct UPI / QR Transfer</span>
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-accent-gold/15 text-accent-gold border border-accent-gold/30">
+                        0% Gateway Fee
+                      </span>
+                    </div>
+                    <p className="text-xs text-text-secondary mt-0.5">Google Pay, PhonePe, Paytm, BHIM or any UPI App</p>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer min-h-12 p-3 rounded-lg border border-transparent hover:border-accent-gold/20 transition-all">
+                  <input 
+                    type="radio" 
+                    name="paymentMethod" 
+                    value="COD" 
+                    checked={paymentMethod === 'COD'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-5 h-5 text-accent-gold focus:ring-accent-gold bg-surface border-accent-gold/40"
+                  />
+                  <div className="flex-1">
+                    <span className="text-text-primary text-base font-medium">Cash on Delivery (COD)</span>
+                    <p className="text-xs text-text-secondary mt-0.5">Pay upon package arrival</p>
+                  </div>
                 </label>
               </div>
             </div>
 
-            {paymentMethod === 'PHONEPE' && (
-              <div className="mb-8 bg-surface p-6 rounded-xl border border-accent-gold/20">
-                <h3 className="text-lg font-bold text-text-primary mb-4">Complete Payment</h3>
-                <p className="text-text-primary/70 mb-4 text-sm">Please pay ₹{totalPrice} to our official PhonePe account and upload the screenshot below.</p>
-                
-                {/* Display dynamic Cloudinary QR code, fallback to placeholder */}
-                <img src={qrCodeUrl || "/images/qr-placeholder.png"} alt="Scan to Pay" className="w-48 h-48 mx-auto mb-4 object-contain border border-accent-gold/20 p-2 rounded-lg" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/200x200?text=Scan+QR'; }} />
-                
-                <div className="mt-4">
-                  <label className="block text-sm font-semibold text-text-primary mb-2">Upload Payment Receipt / Screenshot *</label>
-                  <input
-                    type="file"
-                    accept=".jpg,.jpeg,.png"
-                    onChange={uploadReceiptHandler}
-                    className="w-full text-sm text-text-primary/70 min-h-12 file:mr-4 file:py-3 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent-gold/10 file:text-accent-gold hover:file:bg-accent-gold/20"
-                  />
-                  {uploadingReceipt && <p className="text-accent-gold text-sm mt-2 font-medium animate-pulse">Uploading...</p>}
-                  {uploadError && <p className="text-red-500 text-sm mt-2">{uploadError}</p>}
-                  {paymentReceipt && <p className="text-green-500 text-sm mt-2 font-medium">✓ Receipt uploaded</p>}
+            {paymentMethod === 'PHONEPE' && (() => {
+              const upiUrl = `upi://pay?pa=${encodeURIComponent(merchantUpiId)}&pn=${encodeURIComponent(merchantName)}&am=${totalPrice}&cu=INR&tn=${encodeURIComponent('Eclipsera Order')}`;
+              
+              return (
+                <div className="mb-8 bg-surface p-6 rounded-2xl border border-accent-gold/30 shadow-lg animate-fade-in">
+                  <div className="flex items-center justify-between mb-4 border-b border-accent-gold/20 pb-3">
+                    <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                      <span>📲</span> Direct UPI Payment
+                    </h3>
+                    <span className="text-xs font-mono font-bold px-2 py-1 bg-accent-gold/15 text-accent-gold rounded-md border border-accent-gold/20">
+                      ₹{totalPrice}
+                    </span>
+                  </div>
+
+                  {/* 1-Click Mobile Intent Button */}
+                  <a
+                    href={upiUrl}
+                    className="w-full sm:hidden flex items-center justify-center gap-2 py-3.5 px-4 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-bold rounded-xl shadow-md transition-all active:scale-[0.98] mb-5 text-center text-sm uppercase tracking-wider"
+                  >
+                    <span>⚡ Pay with Installed UPI App</span>
+                  </a>
+
+                  {/* Dynamic SVG QR Code with Prefilled Amount */}
+                  <div className="flex flex-col items-center justify-center p-4 bg-bg-base/70 rounded-xl border border-accent-gold/20 mb-5">
+                    <div className="p-3 bg-white rounded-xl shadow-md">
+                      <QRCodeSVG
+                        value={upiUrl}
+                        size={170}
+                        level="M"
+                        includeMargin={false}
+                      />
+                    </div>
+                    <p className="text-xs text-text-secondary mt-3 text-center">
+                      Scan with Google Pay, PhonePe or Paytm<br />
+                      Amount <strong className="text-accent-gold font-bold">₹{totalPrice}</strong> prefilled automatically
+                    </p>
+                  </div>
+
+                  {/* Official Merchant UPI ID & Copy Action */}
+                  <div className="flex items-center justify-between p-3.5 bg-bg-base rounded-xl border border-accent-gold/20 mb-5">
+                    <div>
+                      <p className="text-[10px] text-text-secondary uppercase tracking-widest font-semibold">Official Merchant UPI</p>
+                      <p className="font-mono text-sm text-text-primary font-bold">{merchantUpiId}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(merchantUpiId);
+                        setCopiedUpi(true);
+                        toast.success('UPI ID copied!');
+                        setTimeout(() => setCopiedUpi(false), 2000);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-surface border border-accent-gold/30 text-accent-gold text-xs font-bold hover:bg-accent-gold hover:text-bg-base transition-colors"
+                    >
+                      {copiedUpi ? '✓ Copied' : 'Copy UPI'}
+                    </button>
+                  </div>
+
+                  {/* 12-Digit UTR Input */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold text-text-primary mb-1">
+                      12-Digit Bank UTR / Reference No. <span className="text-accent-gold">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={12}
+                      placeholder="e.g. 412356789012"
+                      value={utrNumber}
+                      onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, ''))}
+                      className="w-full bg-bg-base border border-accent-gold/40 rounded-xl px-4 py-3 text-text-primary font-mono tracking-wider focus:outline-none focus:border-accent-gold text-sm transition-colors"
+                    />
+                    <p className="text-[11px] text-text-secondary mt-1">
+                      Enter the 12-digit transaction ID / UTR shown on your payment confirmation screen.
+                    </p>
+                  </div>
+
+                  {/* Optional Screenshot Upload */}
+                  <div className="pt-3 border-t border-accent-gold/15">
+                    <label className="block text-xs font-semibold text-text-secondary mb-1.5">
+                      Upload Screenshot (Optional if UTR provided)
+                    </label>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png"
+                      onChange={uploadReceiptHandler}
+                      className="w-full text-xs text-text-primary/70 file:mr-3 file:py-2 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent-gold/10 file:text-accent-gold hover:file:bg-accent-gold/20"
+                    />
+                    {uploadingReceipt && <p className="text-accent-gold text-xs mt-1.5 font-medium animate-pulse">Compressing & Uploading...</p>}
+                    {uploadError && <p className="text-red-500 text-xs mt-1.5">{uploadError}</p>}
+                    {paymentReceipt && <p className="text-green-500 text-xs mt-1.5 font-medium">✓ Screenshot uploaded</p>}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Trust Badges */}
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-6 p-4 bg-surface/50 rounded-xl border border-accent-gold/10 text-text-secondary">
@@ -278,7 +378,7 @@ const PlaceOrderScreen = () => {
           </div>
           <button
             onClick={placeOrderHandler}
-            disabled={cartItems.length === 0 || loading || (paymentMethod === 'PHONEPE' && !paymentReceipt)}
+            disabled={cartItems.length === 0 || loading || (paymentMethod === 'PHONEPE' && !utrNumber.trim() && !paymentReceipt)}
             className="flex-1 sm:flex-none sm:w-64 bg-accent-gold hover:bg-accent-gold-hover text-bg-base font-extrabold py-4 min-h-[56px] rounded-xl shadow-md transition-all hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg uppercase tracking-wide"
           >
               {loading ? (

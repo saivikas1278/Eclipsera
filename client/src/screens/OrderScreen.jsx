@@ -246,10 +246,16 @@ const OrderScreen = () => {
 
           <div className="bg-surface p-8 rounded-3xl shadow-sm border border-accent-gold/20">
             <h2 className="text-2xl font-serif font-extrabold text-text-primary mb-4 border-b border-accent-gold/20 pb-4">Payment Method</h2>
-            <p className="text-text-primary/70 text-lg mb-4">
+            <p className="text-text-primary/70 text-lg mb-2">
               <span className="font-semibold text-text-primary mr-2">Method: </span>
-              {order.paymentMethod === 'PHONEPE' ? 'PhonePe (Manual Verification)' : 'Cash on Delivery (COD)'}
+              {order.paymentMethod === 'PHONEPE' ? 'Direct P2P UPI Transfer' : 'Cash on Delivery (COD)'}
             </p>
+            {order.utrNumber && (
+              <p className="text-text-primary/70 text-sm mb-4 font-mono">
+                <span className="font-semibold text-text-primary font-sans mr-2">Bank UTR / Ref: </span>
+                <span className="bg-bg-base border border-accent-gold/30 px-2.5 py-1 rounded text-accent-gold font-bold">{order.utrNumber}</span>
+              </p>
+            )}
             {order.isPaid ? (
               <div className="bg-green-900/30 text-green-400 p-4 rounded-xl border border-green-800/50 font-medium">
                 Paid on {new Date(order.paidAt).toLocaleString()}

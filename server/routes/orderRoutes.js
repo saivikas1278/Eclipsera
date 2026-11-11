@@ -12,10 +12,13 @@ const {
   downloadInvoice,
   bulkUpdateOrderStatuses,
   verifyManualPayment,
+  getPaymentConfig,
   cancelOrder,
   markOrderRefunded,
 } = require('../controllers/orderController');
 const { protect, admin, optionalProtect } = require('../middleware/authMiddleware');
+
+router.get('/payment-config', getPaymentConfig);
 
 router.route('/')
   .post(optionalProtect, addOrderItems)

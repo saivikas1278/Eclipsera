@@ -20,11 +20,25 @@ const addOrderItems = asyncHandler(async (req, res) => {
     totalPrice,
     paymentMethod,
     paymentReceipt,
+    utrNumber,
   } = req.body;
 
   if (orderItems && orderItems.length === 0) {
     res.status(400);
     throw new Error('No order items');
+  }
+
+  // Anti-Fraud UTR validation for Direct P2P UPI transfers
+  const cleanedUtr = (utrNumber || '').trim();
+  if (cleanedUtr) {
+    const existingOrderWithUtr = await Order.findOne({
+      utrNumber: cleanedUtr,
+      isCancelled: false,
+    });
+    if (existingOrderWithUtr) {
+      res.status(400);
+      throw new Error(`This 12-digit UTR/Reference number (${cleanedUtr}) has already been recorded for order #${existingOrderWithUtr._id.toString().slice(-6)}. Duplicate transactions are not permitted.`);
+    }
   }
 
   const session = await mongoose.startSession();
@@ -72,6 +86,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
       totalPrice,
       paymentMethod,
       paymentReceipt,
+      utrNumber: cleanedUtr,
       user: req.user ? req.user._id : undefined,
     });
 
@@ -464,7 +479,7 @@ const verifyManualPayment = asyncHandler(async (req, res) => {
     order.financialStatus = 'PAID';
     order.paidAt = Date.now();
     order.paymentResult = {
-      id: 'MANUAL_VERIFICATION',
+      id: order.utrNumber ? `UTR_${order.utrNumber}` : 'MANUAL_P2P_UPI',
       status: 'COMPLETED',
       email_address: req.user.email,
     };
@@ -481,6 +496,18 @@ const verifyManualPayment = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error('Order not found');
   }
+});
+
+/**
+ * @desc    Get merchant UPI payment config (0% fee direct checkout)
+ * @route   GET /api/orders/payment-config
+ * @access  Public
+ */
+const getPaymentConfig = asyncHandler(async (req, res) => {
+  res.json({
+    merchantUpiId: process.env.MERCHANT_UPI_ID || 'eclipsera@upi',
+    merchantName: process.env.MERCHANT_NAME || 'Eclipsera Premium',
+  });
 });
 
 /**
@@ -615,6 +642,7 @@ module.exports = {
   downloadInvoice,
   bulkUpdateOrderStatuses,
   verifyManualPayment,
+  getPaymentConfig,
   markOrderRefunded,
   cancelOrder,
 };
